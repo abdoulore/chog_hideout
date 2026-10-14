@@ -4,7 +4,7 @@ A browser-playable platforming prototype for a colourful Chog adventure. Jump ro
 
 The chosen production art direction is **Rooftop Mischief**. Its illustrated world and story are documented alongside the working gameplay experiment.
 
-![Rooftop Mischief visual target](docs/art-direction/rooftop-mischief.png)
+![Rooftop Mischief visual target](docs/art-direction/rooftop-mischief.jpg)
 
 *Concept art target. The current playable prototype uses simple placeholder graphics.*
 
@@ -67,7 +67,7 @@ A wide gap followed closely by spikes is too unforgiving on touch controls. The 
 | `dist/index.html` / `dist/style.css` | Playtest interface |
 | `tests/` | Automated checks |
 | `docs/WORLD_AND_ART_BIBLE.md` | Proposed universe, art rules, and production plan |
-| `docs/art-direction/rooftop-mischief.png` | Selected concept image |
+| `docs/art-direction/rooftop-mischief.jpg` | Selected concept image |
 | `scripts/serve.mjs` | Dependency-free local development server |
 
 ## Lore and artwork
@@ -75,3 +75,4 @@ A wide gap followed closely by spikes is too unforgiving on touch controls. The 
 The new story, characters, and locations are proposed game lore, not official Chog canon. The visual concept uses Chog as a character reference. No licence to the underlying Chog brand or collection artwork is granted by this repository.
 
 Official project: https://www.chog.xyz/ · Hackathon: https://chogathon.chog.xyz/
+
