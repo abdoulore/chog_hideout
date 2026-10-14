@@ -24,7 +24,7 @@ npm test
 
 ## Illustrated rooftop run
 
-Open **http://localhost:8080/play.html** for the immersive illustrated game. It has a layered city, textured rooftops, eight character poses, touch controls, and pause/retry. `/movement.html` redirects here. The technical Canvas/Phaser comparison is preserved at `/renderer-lab.html`; both use the same movement simulation.
+Open **http://localhost:8080/play.html** for the immersive illustrated game. It has a layered city, textured rooftops, eight character poses, touch controls, and pause/retry. Movement now has interpolated presentation, landing dust, dash trails, sparkle bursts, and original synthesized sound cues. Sound starts after pressing Play and can be muted with the music-note button; the preference is saved on this browser. `/movement.html` redirects here. The technical Canvas/Phaser comparison is preserved at `/renderer-lab.html`; both use the same movement simulation.
 
 See [art implementation notes](docs/ART_IMPLEMENTATION.md) for asset briefs, provenance, and validation limits.
 
@@ -55,7 +55,7 @@ An earlier **Dojo** experiment remains available in the comparison tab. It uses 
 
 - Further animation cleanup, richer foreground structure, and consistent chapter art.
 - The opening chapter, **The Missing Light**.
-- Sound, ambience, story payoff, and polished in-game UI.
+- Ambient soundscape, story payoff, and further in-game polish.
 - Verified Chog ownership, owner-controlled shared hideouts, and limited guest permissions.
 
 NFT integration, shared rooms, and wallet connections are **not implemented**. The new illustrated assets are a playable art pass, not a finished production animation pipeline. Current saves and statistics belong to the browser. Dojo has a cautious strategy that beats all sample opponents and is not evidence of lasting strategic depth.

@@ -1,20 +1,46 @@
 import {STEP,newRun,stepRun,MOVEMENT_ROOM} from './engine.mjs';
 import {loadArt,drawWorld} from './world-renderer.mjs';
+import {createFeedback,snapshot} from './feedback.mjs';
+import {createSound} from './sound.mjs';
 const $=id=>document.getElementById(id),canvas=$('canvas'),ctx=canvas.getContext('2d'),room=MOVEMENT_ROOM;
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
-let run=newRun(room),images=null,started=false,paused=false,input={},acc=0,last=0;
+const feedback=createFeedback({reducedMotion}),sound=createSound();
+let run=newRun(room),previous=snapshot(run),images=null,started=false,paused=false,input={},acc=0,last=0,finishDelay=null;
+try{sound.setMuted(localStorage.getItem('chog-sound-muted')==='true');}catch{}
+function soundLabel(){const off=sound.muted;$('sound').textContent=off?'♫̸':'♪';$('sound').setAttribute('aria-pressed',String(off));$('sound').setAttribute('aria-label',off?'Unmute sound':'Mute sound');$('sound').title=off?'Sound off':'Sound on';}
+soundLabel();
+async function unlockSound(){const ok=await sound.unlock();if(!ok){$('sound').disabled=true;$('sound').title='Sound unavailable in this browser';$('sound').setAttribute('aria-label','Sound unavailable');}}
 const resetInput=()=>input={left:false,right:false,jump:false,dash:false};resetInput();
 function fit(){const box=$('screen').getBoundingClientRect();canvas.width=900;canvas.height=Math.max(430,Math.min(1900,Math.round(900*box.height/Math.max(box.width,1))));}
 fit();window.addEventListener('resize',fit);
 function show(kicker,title,message,button){$('kicker').textContent=kicker;$('title').textContent=title;$('message').textContent=message;$('play').textContent=button;$('overlay').hidden=false;$('pause-actions').hidden=!paused;}
-function start(){if(!images)return;run=newRun(room);started=true;paused=false;acc=0;resetInput();$('overlay').hidden=true;$('pause').textContent='Ⅱ';canvas.focus({preventScroll:true});}
-function pause(){if(!started||run.status!=='playing'||paused)return;paused=true;resetInput();show('TAKE A BREATHER','Your rooftop can wait.','Resume your run, or take another route from the start.','Keep going →');}
-function resume(){if(!started||run.status!=='playing'){start();return;}paused=false;acc=0;resetInput();$('overlay').hidden=true;$('pause-actions').hidden=true;canvas.focus({preventScroll:true});}
-function finish(){resetInput();if(run.status==='won')show('A CLEAN GETAWAY','Beautifully done.',`${run.coins} of ${room.orbs.length} sparks · ${run.time.toFixed(2)} seconds. There might be a better route.`,'One more run →');else show('A LITTLE SETBACK',run.deathReason==='gap'?'Mind the landing.':'Nearly had it.',run.deathReason==='gap'?'Jump before the edge, then dash while airborne.':'Watch the next trap. Your next attempt starts right away.','Try again →');}
+function start(){if(!images)return;run=newRun(room);previous=snapshot(run);feedback.reset();finishDelay=null;started=true;paused=false;acc=0;resetInput();void unlockSound();$('overlay').hidden=true;$('pause').textContent='Ⅱ';canvas.focus({preventScroll:true});}
+function pause(){if(!started||run.status!=='playing'||paused)return;paused=true;resetInput();sound.pause();show('TAKE A BREATHER','Your rooftop can wait.','Resume your run, or take another route from the start.','Keep going →');}
+function resume(){if(!started||run.status!=='playing'){start();return;}paused=false;acc=0;resetInput();void unlockSound();$('overlay').hidden=true;$('pause-actions').hidden=true;canvas.focus({preventScroll:true});}
+function finish(){if(run.status==='won')show('A CLEAN GETAWAY','Beautifully done.',`${run.coins} of ${room.orbs.length} sparks · ${run.time.toFixed(2)} seconds. There might be a better route.`,'One more run →');else show('A LITTLE SETBACK',run.deathReason==='gap'?'Mind the landing.':'Nearly had it.',run.deathReason==='gap'?'Jump before the edge, then dash while airborne.':'Watch the next trap. Your next attempt starts right away.','Try again →');}
 function hud(){$('time').textContent=`${run.time.toFixed(2)}s`;$('gem-count').textContent=`${run.coins} / ${room.orbs.length}`;$('distance').value=Math.min(100,run.x/(room.width-74)*100);$('dash-status').textContent=run.dashCooldown>0?`${run.dashCooldown.toFixed(1)}s`:'DASH';$('dash').classList.toggle('cooling',run.dashCooldown>0);}
-function frame(t){const dt=Math.min((t-last)/1000||0,.05);last=t;if(images&&started&&!paused&&run.status==='playing'&&!document.hidden){acc+=dt;while(acc>=STEP){stepRun(run,input);input.jump=false;input.dash=false;acc-=STEP;if(run.status!=='playing'){finish();acc=0;break;}}}hud();if(images)drawWorld(ctx,run,images,canvas.width,canvas.height,{displayWidth:canvas.getBoundingClientRect().width,reducedMotion});requestAnimationFrame(frame);}requestAnimationFrame(frame);
-$('play').onclick=()=>paused?resume():start();$('retry').onclick=start;$('pause').onclick=()=>paused?resume():pause();$('focus').onclick=async()=>{document.body.classList.toggle('focus');$('focus').textContent=document.body.classList.contains('focus')?'⛶ Standard view':'⛶ Expand game';try{if(!document.fullscreenElement)await $('screen').requestFullscreen?.();else await document.exitFullscreen?.();}catch{}fit();};
+function frame(t){
+ const dt=Math.min((t-last)/1000||0,.05);last=t;
+ if(images&&started&&!paused&&!document.hidden){
+  feedback.update(dt);
+  if(finishDelay!==null){finishDelay-=dt;if(finishDelay<=0){finishDelay=null;finish();}}
+  if(run.status==='playing'){
+   acc+=dt;
+   while(acc>=STEP){previous=snapshot(run);stepRun(run,input);for(const event of feedback.observe(previous,run))sound.play(event);input.jump=false;input.dash=false;acc-=STEP;
+    if(run.status!=='playing'){resetInput();finishDelay=run.status==='won'?.65:.3;acc=0;break;}
+   }
+  }
+ }
+ hud();
+ if(images){const alpha=acc/STEP,present=run.status==='playing'&&!paused?{...run,x:previous.x+(run.x-previous.x)*alpha,y:previous.y+(run.y-previous.y)*alpha}:run;drawWorld(ctx,present,images,canvas.width,canvas.height,{displayWidth:canvas.getBoundingClientRect().width,reducedMotion,feedback:feedback.state});}
+ requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+$('sound').onclick=()=>{sound.setMuted(!sound.muted);soundLabel();try{localStorage.setItem('chog-sound-muted',String(sound.muted));}catch{}if(started&&!paused&&run.status==='playing')void unlockSound();};
+$('play').onclick=()=>paused?resume():start();$('retry').onclick=start;$('pause').onclick=()=>paused?resume():pause();
+$('focus').onclick=async()=>{document.body.classList.toggle('focus');$('focus').textContent=document.body.classList.contains('focus')?'⛶ Standard view':'⛶ Expand game';try{if(!document.fullscreenElement)await $('screen').requestFullscreen?.();else await document.exitFullscreen?.();}catch{}fit();};
 for(const [id,key] of [['left','left'],['right','right'],['jump','jump'],['dash','dash']]){const b=$(id);b.onpointerdown=e=>{e.preventDefault();b.setPointerCapture(e.pointerId);if(!started||paused||run.status!=='playing')return;input[key]=true;};b.onpointerup=b.onpointercancel=b.onlostpointercapture=()=>{if(key==='left'||key==='right')input[key]=false;};}
 window.addEventListener('keydown',e=>{if(['SELECT','INPUT','TEXTAREA'].includes(document.activeElement?.tagName))return;const k=e.key.toLowerCase();if(['arrowleft','arrowright','arrowup',' ','a','d','w','x','shift','r','escape'].includes(k))e.preventDefault();if(k==='escape'){paused?resume():pause();return;}if(k==='r'&&!e.repeat){start();return;}if(!started||paused||run.status!=='playing')return;if(k==='a'||k==='arrowleft')input.left=true;if(k==='d'||k==='arrowright')input.right=true;if([' ','w','arrowup'].includes(k)&&!e.repeat)input.jump=true;if(['shift','x'].includes(k)&&!e.repeat)input.dash=true;});
-window.addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(k==='a'||k==='arrowleft')input.left=false;if(k==='d'||k==='arrowright')input.right=false;});window.addEventListener('blur',pause);document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
+window.addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(k==='a'||k==='arrowleft')input.left=false;if(k==='d'||k==='arrowright')input.right=false;});
+window.addEventListener('blur',()=>{sound.pause();pause();});document.addEventListener('visibilitychange',()=>{if(document.hidden){sound.pause();pause();}});
 loadArt().then(result=>{images=result;$('play').disabled=false;show('THE BURROWS / ROOFTOP RUN','A little trouble.','Find your way across the rooftops. Follow the sparks to the golden doorway.','Let’s go →');}).catch(()=>{$('asset-error').hidden=false;$('title').textContent='The rooftops need a moment.';$('message').textContent='Please refresh to load the artwork again.';$('play').textContent='Artwork unavailable';});

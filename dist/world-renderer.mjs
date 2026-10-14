@@ -11,7 +11,7 @@ export async function loadArt(){
 }
 export function artCamera(run,displayWidth,width=900){const zoom=displayWidth<600?1.7:1.2,view=width/zoom;return {zoom,x:Math.max(0,Math.min(run.room.width-view,run.x-view*.28))};}
 function sprite(ctx,img,frame,x,y,w,h){ctx.drawImage(img,...frame,x,y,w,h);}
-export function drawWorld(ctx,run,images,width=900,height=520,{displayWidth=900,reducedMotion=false}={}){
+export function drawWorld(ctx,run,images,width=900,height=520,{displayWidth=900,reducedMotion=false,feedback=null}={}){
  const m=manifest,cam=artCamera(run,displayWidth,width),groundY=height*.73;
  ctx.clearRect(0,0,width,height);
  // The distant city moves more slowly than the physical gameplay plane.
@@ -21,7 +21,8 @@ export function drawWorld(ctx,run,images,width=900,height=520,{displayWidth=900,
   ctx.save();if(tile%2){ctx.translate(x+bgW,(height-bgH)*.2);ctx.scale(-1,1);ctx.drawImage(images.city,0,0,bgW,bgH);}else ctx.drawImage(images.city,x,(height-bgH)*.2,bgW,bgH);ctx.restore();
  }
  ctx.fillStyle='rgba(255,230,194,.07)';ctx.fillRect(0,0,width,height);
- ctx.save();ctx.translate(0,groundY-FLOOR*cam.zoom);ctx.scale(cam.zoom,cam.zoom);ctx.translate(-cam.x,0);
+ const fx=feedback||{};const shake=!reducedMotion&&fx.impact?Math.sin(fx.clock*85)*fx.impact*7:0;
+ ctx.save();ctx.translate(shake,groundY-FLOOR*cam.zoom);ctx.scale(cam.zoom,cam.zoom);ctx.translate(-cam.x,0);
  const house=m.props.frames.house;
  for(const [x,w] of [[-170,325],[555,290],[1995,290]]){
   const h=w*house[3]/house[2];sprite(ctx,images.props,house,x,FLOOR-h,w,h);
@@ -45,11 +46,19 @@ export function drawWorld(ctx,run,images,width=900,height=520,{displayWidth=900,
  const door=m.props.frames.door,doorWidth=118,doorHeight=doorWidth*door[3]/door[2];
  sprite(ctx,images.props,door,run.room.width-137,FLOOR-doorHeight,doorWidth,doorHeight);
  // Frames share an illustration scale; each pose is anchored by its visible feet.
- let frame=0;if(run.dashTime>0)frame=6;else if(!run.ground)frame=run.vy<0?4:5;else if(Math.abs(run.vx)>0)frame=[1,2,3,2][Math.floor(run.time*12)%4];
+ let frame=0;if(run.dashTime>0)frame=6;else if(!run.ground)frame=run.vy<0?4:5;else if(fx.land>.08)frame=7;else if(Math.abs(run.vx)>0)frame=[1,2,3,2][Math.floor(fx.stride??run.time*12)%4];
  const f=m.chog.frames[frame],scale=74/m.chog.frames[0][3],fw=f[2]*scale,fh=f[3]*scale;
- ctx.save();ctx.translate(run.x+14,run.y+34);ctx.scale(run.facing,1);
+ // Soft contact shadow and tiny pose deformation keep the silhouette grounded.
+ if(run.ground){ctx.save();ctx.fillStyle='rgba(49,27,44,.22)';ctx.beginPath();ctx.ellipse(run.x+14,run.y+36,21,3,0,0,Math.PI*2);ctx.fill();ctx.restore();}
+ const squash=!reducedMotion&&fx.land>0?Math.sin(fx.land/.16*Math.PI)*.08:0;
+ const stretch=!reducedMotion&&fx.jump>0?Math.sin(fx.jump/.18*Math.PI)*.05:0;
+ const breathe=!reducedMotion&&run.ground&&Math.abs(run.vx)===0?Math.sin((fx.clock??run.time)*2.8)*.012:0;
+ ctx.save();ctx.translate(run.x+14,run.y+34);ctx.scale(run.facing*(1+squash-stretch),1-squash+stretch+breathe);
  if(run.dashTime>0&&!reducedMotion){ctx.globalAlpha=.17;sprite(ctx,images.chog,f,-fw/2-33,-fh,fw,fh);ctx.globalAlpha=.30;sprite(ctx,images.chog,f,-fw/2-17,-fh,fw,fh);ctx.globalAlpha=1;}
- sprite(ctx,images.chog,f,-fw/2,-fh,fw,fh);ctx.restore();ctx.restore();
+ sprite(ctx,images.chog,f,-fw/2,-fh,fw,fh);ctx.restore();
+ if(!reducedMotion)for(const p of fx.particles||[]){ctx.globalAlpha=Math.max(0,1-p.age/p.life);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.size*(1-p.age/p.life*.4),0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;
+ // The doorway responds to a clean escape with a warm, restrained glow.
+ if(fx.victory>0){ctx.save();ctx.globalAlpha=fx.victory*.24;ctx.fillStyle='#ffe4a0';ctx.beginPath();ctx.ellipse(run.room.width-78,FLOOR-48,70,90,0,0,Math.PI*2);ctx.fill();ctx.restore();}ctx.restore();
  // A quiet foreground shade gives glass controls contrast without covering the route.
  const shade=ctx.createLinearGradient(0,height*.79,0,height);shade.addColorStop(0,'rgba(32,20,42,0)');shade.addColorStop(1,'rgba(27,19,37,.78)');ctx.fillStyle=shade;ctx.fillRect(0,height*.79,width,height*.21);
 }

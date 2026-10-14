@@ -19,7 +19,7 @@ The generated originals were inspected, resized, and compressed into delivery as
 
 `world-renderer.mjs` renders the real fixed-step simulation using separate assets. Character poses are chosen from motion state, mirrored with facing, and anchored at the feet. Camera framing retains the gap plus at least 80 world units of safe landing at the sampled takeoff position on mobile and desktop. The top HUD, pause menu, progress indicator, and touch controls are DOM elements over the canvas. The main route has no framework download dependency.
 
-This is a first illustrated art pass. The mascot is not an NFT-specific avatar. Generated pose sheets still need animation cleanup; foreground walls use simple shaded structure beneath the illustrated roof. Sound, story scenes, ownership verification, and player-owned hideouts remain future work.
+This is a first illustrated art pass. The mascot is not an NFT-specific avatar. Generated pose sheets still need animation cleanup; foreground walls use simple shaded structure beneath the illustrated roof. Story scenes, ownership verification, and player-owned hideouts remain future work. Original synthesized sound effects and movement feedback are now implemented; see `GAME_FEEL.md`.
 
 ## Verification
 

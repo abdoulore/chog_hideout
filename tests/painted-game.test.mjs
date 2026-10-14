@@ -22,7 +22,7 @@ test('painted screen loads art, runs, pauses on blur, resumes and retries',async
  const html=fs.readFileSync(new URL('../dist/play.html',import.meta.url),'utf8'),nodes=new Map(),events=new Map();
  const context=new Proxy({createLinearGradient:()=>({addColorStop(){}})},{get:(o,k)=>o[k]||(()=>{}),set:()=>true});
  function element(tag='div',attrs=''){
-  const classes=new Set();return {tagName:tag.toUpperCase(),hidden:/\bhidden\b/.test(attrs),disabled:/\bdisabled\b/.test(attrs),textContent:'',value:0,classList:{toggle(k,force){const on=force??!classes.has(k);on?classes.add(k):classes.delete(k);return on;},contains:k=>classes.has(k)},getContext:()=>context,getBoundingClientRect:()=>({width:360,height:630}),focus(){document.activeElement=this;},setPointerCapture(){},click(){if(!this.disabled)return this.onclick?.();}};
+  const classes=new Set();return {tagName:tag.toUpperCase(),hidden:/\bhidden\b/.test(attrs),disabled:/\bdisabled\b/.test(attrs),textContent:'',value:0,setAttribute(k,v){this[k]=v;},classList:{toggle(k,force){const on=force??!classes.has(k);on?classes.add(k):classes.delete(k);return on;},contains:k=>classes.has(k)},getContext:()=>context,getBoundingClientRect:()=>({width:360,height:630}),focus(){document.activeElement=this;},setPointerCapture(){},click(){if(!this.disabled)return this.onclick?.();}};
  }
  for(const m of html.matchAll(/<([a-z][a-z0-9]*)\b([^>]*\bid="([^"]+)"[^>]*)>/g))nodes.set(m[3],element(m[1],m[2]));
  globalThis.document={hidden:false,activeElement:null,getElementById:id=>{assert(nodes.has(id));return nodes.get(id);},body:element('body'),addEventListener:(t,cb)=>events.set('document:'+t,cb)};
