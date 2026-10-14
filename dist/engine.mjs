@@ -19,14 +19,20 @@ export function stepRun(s,input,dt=STEP){
  if(input.dash&&s.dashCooldown===0){s.dashTime=MOVE.dashDuration;s.dashCooldown=MOVE.dashCooldown;s.dashes++;}
  s.vx=s.dashTime>0?s.facing*MOVE.dashSpeed:direction*MOVE.speed;
  if(s.jumpBuffer>0&&s.coyote>0){s.vy=-MOVE.jump;s.ground=false;s.coyote=0;s.jumpBuffer=0;}
- const oldBottom=s.y+34;if(s.dashTime===0)s.vy+=MOVE.gravity*dt;s.x=Math.max(8,Math.min((s.room.width||W)-36,s.x+s.vx*dt));if(s.dashTime===0)s.y+=s.vy*dt;s.ground=false;
- for(const p of [...s.room.platforms,...groundSegments(s.room)]){
+ const oldBottom=s.y+34,oldX=s.x,oldY=s.y;if(s.dashTime===0)s.vy+=MOVE.gravity*dt;s.x=Math.max(8,Math.min((s.room.width||W)-36,s.x+s.vx*dt));// Resolve solid walls horizontally before integrating vertical movement.
+ for(const p of s.room.solids||[]){if(s.y+34>p.y&&s.y<p.y+p.h&&s.x+28>p.x&&s.x<p.x+p.w){
+  if(oldX+28<=p.x){s.x=p.x-28;s.vx=0;}else if(oldX>=p.x+p.w){s.x=p.x+p.w;s.vx=0;}
+ }}
+ if(s.dashTime===0)s.y+=s.vy*dt;s.ground=false;
+ for(const p of s.room.solids||[]){if(s.vy<0&&oldY>=p.y+p.h&&s.y<p.y+p.h&&s.x+28>p.x&&s.x<p.x+p.w){s.y=p.y+p.h;s.vy=0;}}
+
+ for(const p of [...s.room.platforms,...groundSegments(s.room),...(s.room.solids||[])]){
   if(s.vy>=0&&oldBottom<=p.y+.1&&s.y+34>=p.y&&s.x+28>p.x&&s.x<p.x+p.w){s.y=p.y-34;s.vy=0;s.ground=true;}
  }
  for(const slot of s.room.spikes){if(overlap({x:s.x+5,y:s.y+4,w:18,h:30},{x:slot*50+10,y:FLOOR-23,w:30,h:23})){s.status='dead';s.deathReason='spikes';break;}}
  if(s.y>H+50){s.status='dead';s.deathReason='gap';}
  s.room.orbs.forEach((o,i)=>{if(!s.collected.includes(i)&&Math.hypot(s.x+14-o.x,s.y+17-o.y)<30){s.collected.push(i);s.coins++;}});
- if(s.status==='playing'&&s.x>(s.room.width||W)-74&&s.y+34>390)s.status='won';
+ if(!s.room.heist&&s.status==='playing'&&s.x>(s.room.width||W)-74&&s.y+34>390)s.status='won';
  s.sample+=dt;if(s.sample>=1/30){s.trail.push({x:s.x,y:s.y,t:s.time,dash:s.dashTime>0});s.sample=0;}
  return s;
 }

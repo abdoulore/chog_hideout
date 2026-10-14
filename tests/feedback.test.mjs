@@ -27,7 +27,7 @@ function fakeAudio(){
 test('sound waits for user unlock, supports every cue, and stops voices on mute/pause',async()=>{
  const {ctx,calls}=fakeAudio();let created=0;const s=createSound({getContext:()=>{created++;return ctx;}});
  s.play('jump');assert.equal(created,0);assert.equal(calls.length,0);assert(await s.unlock());assert.equal(created,1);
- for(const cue of ['step','jump','land','dash','spark','hurt','win'])s.play(cue);assert(calls.some(c=>c[0]==='start'));
+ for(const cue of ['step','jump','land','dash','spark','pickup','hurt','win'])s.play(cue);assert(calls.some(c=>c[0]==='start'));
  s.setMuted(true);const starts=calls.filter(c=>c[0]==='start').length;s.play('jump');assert.equal(calls.filter(c=>c[0]==='start').length,starts);assert(calls.some(c=>c[0]==='stop'));
  s.setMuted(false);s.pause();s.play('dash');assert.equal(calls.filter(c=>c[0]==='start').length,starts);await s.unlock();s.play('jump');assert(calls.filter(c=>c[0]==='start').length>starts);assert.equal(created,1);
 });

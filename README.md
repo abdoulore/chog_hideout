@@ -1,6 +1,6 @@
 # Chog Hideout
 
-A browser-playable platforming prototype for a colourful Chog adventure. Jump rooftop traps, dash across gaps, escape short raids, and experiment with a small hideout editor.
+A browser-playable Chog rooftop heist. Recover the Pocket Sun, escape through a changed route, and restore the light at home. The earlier movement/editor experiments remain in the playtest lab.
 
 The chosen production art direction is **Rooftop Mischief**. Its illustrated world and story are documented alongside the working gameplay experiment.
 
@@ -22,9 +22,9 @@ Open **http://localhost:8080**. Alternatively, serve `dist/` with a static HTTP 
 npm test
 ```
 
-## Illustrated rooftop run
+## Borrowed Sunshine — first heist
 
-Open **http://localhost:8080/play.html** for the immersive illustrated game. It has a layered city, textured rooftops, eight character poses, touch controls, and pause/retry. Movement now has interpolated presentation, landing dust, dash trails, sparkle bursts, and original synthesized sound cues. Sound starts after pressing Play and can be muted with the music-note button; the preference is saved on this browser. `/movement.html` redirects here. The technical Canvas/Phaser comparison is preserved at `/renderer-lab.html`; both use the same movement simulation.
+Open **http://localhost:8080/play.html** for the illustrated heist. The bridge retracts and a shutter closes after pickup; return home via the upper maintenance route and a leftward dash crossing. It has a layered city, textured rooftops, eight character poses, touch controls, and pause/retry. Movement now has interpolated presentation, landing dust, dash trails, sparkle bursts, and original synthesized sound cues. Sound starts after pressing Play and can be muted with the music-note button; the preference is saved on this browser. `/movement.html` redirects here. The technical Canvas/Phaser comparison is preserved at `/renderer-lab.html`; both use the same movement simulation.
 
 See [art implementation notes](docs/ART_IMPLEMENTATION.md) for asset briefs, provenance, and validation limits.
 
@@ -37,13 +37,15 @@ See [art implementation notes](docs/ART_IMPLEMENTATION.md) for asset briefs, pro
 | Dash | Shift or X | Dash button |
 | Retry | R | Restart button |
 
-Jump before a gap, then dash in the air. Dash adds distance, not invulnerability. Sparks are optional; reach the glowing doorway in the illustrated run to finish. The original lab still uses an exit flag. The editor lets you place up to five traps in a short room and save the layout after completing it.
+Jump before a gap, then dash in the air. Dash adds distance, not invulnerability. Sparks are optional. Recover the Pocket Sun from its plinth, turn left, and bring it home to finish. The vault checkpoint supports practice retries after pickup; clean-heist and escape records are separate and browser-local. R restarts the whole heist. The original lab still uses an exit flag. The editor lets you place up to five traps in a short room and save the layout after completing it.
 
 An earlier **Dojo** experiment remains available in the comparison tab. It uses deterministic fights and editable behaviour rules; Hideout is the current gameplay direction.
 
 ## What exists
 
-- Three scrolling raids, jump buffering, coyote time, and dash cooldown.
+- A complete two-phase heist with a retracted bridge, closed shutter, roof bypass, Sun carry cue, and home restoration.
+- A vault checkpoint, clean-heist/practice records, and direction-aware camera.
+- Three original scrolling raids, jump buffering, coyote time, and dash cooldown.
 - Keyboard and touch-input handlers.
 - Local trap editor with completion-gated saving.
 - Replays of the player's own attempts.
@@ -54,7 +56,7 @@ An earlier **Dojo** experiment remains available in the comparison tab. It uses 
 ## What is planned
 
 - Further animation cleanup, richer foreground structure, and consistent chapter art.
-- The opening chapter, **The Missing Light**.
+- More missions in **The Missing Light** after external playtests validate the first heist.
 - Ambient soundscape, story payoff, and further in-game polish.
 - Verified Chog ownership, owner-controlled shared hideouts, and limited guest permissions.
 
@@ -74,6 +76,9 @@ The unfair crossings have been shortened and given at least 200 world units of c
 | `tests/` | Automated checks |
 | `dist/play.html` / `dist/play.mjs` / `dist/play.css` | Illustrated full-screen game |
 | `dist/world-renderer.mjs` / `dist/assets/` | Layered scene and optimized raster assets |
+| `dist/heist.mjs` / `dist/heist-records.mjs` | Two-phase mission, checkpoint and versioned local records |
+| `dist/heist-visuals.mjs` | Mechanism states, Sun and home restoration |
+| `docs/HEIST_SLICE.md` | Implemented mission, validation and limits |
 | `dist/renderer-lab.html` / `dist/renderer-lab.mjs` | Technical renderer comparison |
 | `dist/art.mjs` | Code-drawn mascot reference |
 | `docs/MOVEMENT_SLICE.md` | Tuning changes, verification, and remaining validation |

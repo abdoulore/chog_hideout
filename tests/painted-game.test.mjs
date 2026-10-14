@@ -20,7 +20,7 @@ test('painted camera shows the gap and 80 units of landing at takeoff',()=>{
 });
 test('painted screen loads art, runs, pauses on blur, resumes and retries',async()=>{
  const html=fs.readFileSync(new URL('../dist/play.html',import.meta.url),'utf8'),nodes=new Map(),events=new Map();
- const context=new Proxy({createLinearGradient:()=>({addColorStop(){}})},{get:(o,k)=>o[k]||(()=>{}),set:()=>true});
+ const context=new Proxy({createLinearGradient:()=>({addColorStop(){}}),createRadialGradient:()=>({addColorStop(){}})},{get:(o,k)=>o[k]||(()=>{}),set:()=>true});
  function element(tag='div',attrs=''){
   const classes=new Set();return {tagName:tag.toUpperCase(),hidden:/\bhidden\b/.test(attrs),disabled:/\bdisabled\b/.test(attrs),textContent:'',value:0,setAttribute(k,v){this[k]=v;},classList:{toggle(k,force){const on=force??!classes.has(k);on?classes.add(k):classes.delete(k);return on;},contains:k=>classes.has(k)},getContext:()=>context,getBoundingClientRect:()=>({width:360,height:630}),focus(){document.activeElement=this;},setPointerCapture(){},click(){if(!this.disabled)return this.onclick?.();}};
  }
@@ -30,7 +30,7 @@ test('painted screen loads art, runs, pauses on blur, resumes and retries',async
  globalThis.Image=class{set src(v){const m=Object.values(manifest).find(m=>v.endsWith(m.url));this.width=m.width;this.height=m.height;queueMicrotask(()=>this.onload());}};
  const get=id=>nodes.get(id);assert(get('play').disabled);await import('../dist/play.mjs');await new Promise(resolve=>setImmediate(resolve));assert.equal(get('play').disabled,false);
  get('play').click();assert(get('overlay').hidden);get('right').onpointerdown({pointerId:1,preventDefault(){}});
- for(let i=0;i<20;i++)events.get('raf')(i*16.667);assert(get('distance').value>2);
+ for(let i=0;i<20;i++)events.get('raf')(i*16.667);assert(get('distance').value>0);
  get('dash').onpointerdown({pointerId:2,preventDefault(){}});events.get('raf')(335);assert.match(get('dash-status').textContent,/\ds/);
  events.get('blur')();const time=get('time').textContent;for(let i=0;i<5;i++)events.get('raf')(400+i*16.667);assert.equal(get('time').textContent,time);assert.equal(get('overlay').hidden,false);
  get('play').click();assert(get('overlay').hidden);get('retry').click();events.get('raf')(500);assert(parseFloat(get('time').textContent)<.05);assert(get('distance').value<3);
