@@ -6,7 +6,7 @@ The chosen production art direction is **Rooftop Mischief**. Its illustrated wor
 
 ![Rooftop Mischief visual target](docs/art-direction/rooftop-mischief.jpg)
 
-*Concept art target. The current playable prototype uses simple placeholder graphics.*
+*Concept art target. The focused game now uses illustrated city, rooftop, prop, and character assets inspired by this direction.*
 
 ## Run locally
 
@@ -22,9 +22,11 @@ Open **http://localhost:8080**. Alternatively, serve `dist/` with a static HTTP 
 npm test
 ```
 
-## Movement slice
+## Illustrated rooftop run
 
-Open **http://localhost:8080/movement.html** for a focused raid with a purple mascot reference, calibrated camera framing, touch controls, pause/retry, and a Canvas/Phaser renderer comparison. Phaser 3.90.0 is loaded on demand from jsDelivr; the Canvas baseline stays available if that download fails. Both renderers share the same physics. This is a bounded framework experiment, not a full migration or finished NFT character.
+Open **http://localhost:8080/play.html** for the immersive illustrated game. It has a layered city, textured rooftops, eight character poses, touch controls, and pause/retry. `/movement.html` redirects here. The technical Canvas/Phaser comparison is preserved at `/renderer-lab.html`; both use the same movement simulation.
+
+See [art implementation notes](docs/ART_IMPLEMENTATION.md) for asset briefs, provenance, and validation limits.
 
 ## Play
 
@@ -35,7 +37,7 @@ Open **http://localhost:8080/movement.html** for a focused raid with a purple ma
 | Dash | Shift or X | Dash button |
 | Retry | R | Restart button |
 
-Jump before a gap, then dash in the air. Dash adds distance, not invulnerability. Coins are optional; reach the exit flag to finish. The editor lets you place up to five traps in a short room and save the layout after completing it.
+Jump before a gap, then dash in the air. Dash adds distance, not invulnerability. Sparks are optional; reach the glowing doorway in the illustrated run to finish. The original lab still uses an exit flag. The editor lets you place up to five traps in a short room and save the layout after completing it.
 
 An earlier **Dojo** experiment remains available in the comparison tab. It uses deterministic fights and editable behaviour rules; Hideout is the current gameplay direction.
 
@@ -51,12 +53,12 @@ An earlier **Dojo** experiment remains available in the comparison tab. It uses 
 
 ## What is planned
 
-- Finished character animation and layered Rooftop Mischief environments.
+- Further animation cleanup, richer foreground structure, and consistent chapter art.
 - The opening chapter, **The Missing Light**.
 - Sound, ambience, story payoff, and polished in-game UI.
 - Verified Chog ownership, owner-controlled shared hideouts, and limited guest permissions.
 
-NFT integration, shared rooms, wallet connections, and the illustrated production art are **not implemented**. Current saves and statistics belong to the browser. Dojo has a cautious strategy that beats all sample opponents and is not evidence of lasting strategic depth.
+NFT integration, shared rooms, and wallet connections are **not implemented**. The new illustrated assets are a playable art pass, not a finished production animation pipeline. Current saves and statistics belong to the browser. Dojo has a cautious strategy that beats all sample opponents and is not evidence of lasting strategic depth.
 
 ## Known playtest issue
 
@@ -70,7 +72,9 @@ The unfair crossings have been shortened and given at least 200 world units of c
 | `dist/app.mjs` | Rendering, controls, menus, editor, replay, and local progress |
 | `dist/index.html` / `dist/style.css` | Playtest interface |
 | `tests/` | Automated checks |
-| `dist/movement.html` / `dist/movement.mjs` | Focused movement and renderer comparison |
+| `dist/play.html` / `dist/play.mjs` / `dist/play.css` | Illustrated full-screen game |
+| `dist/world-renderer.mjs` / `dist/assets/` | Layered scene and optimized raster assets |
+| `dist/renderer-lab.html` / `dist/renderer-lab.mjs` | Technical renderer comparison |
 | `dist/art.mjs` | Code-drawn mascot reference |
 | `docs/MOVEMENT_SLICE.md` | Tuning changes, verification, and remaining validation |
 | `docs/WORLD_AND_ART_BIBLE.md` | Proposed universe, art rules, and production plan |

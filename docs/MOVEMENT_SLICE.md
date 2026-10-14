@@ -6,7 +6,7 @@ Resolve the unfair landing reported during the phone playtest, establish a repea
 
 ## Play
 
-Run `npm run dev`, then open `/movement.html`. Use the renderer selector to compare Canvas with the Phaser experiment. The baseline remains available if the framework download fails. Focus view reduces the surrounding interface without depending on browser fullscreen or orientation-lock support.
+Run `npm run dev`, then open `/play.html` for the illustrated run, or `/renderer-lab.html` for the framework comparison. Use the renderer selector to compare Canvas with the Phaser experiment. The baseline remains available if the framework download fails. Focus view reduces the surrounding interface without depending on browser fullscreen or orientation-lock support.
 
 ## Tuning
 
@@ -20,7 +20,7 @@ Run `npm run dev`, then open `/movement.html`. Use the renderer selector to comp
 
 ## Character and art boundary
 
-The purple Chog is a code-drawn mascot reference used to calibrate silhouette, scale, and motion. It is not a verified Genesis token or a production animation sheet. Environment shapes establish a warm rooftop palette and depth; the approved illustrated art is still a production target.
+The technical renderer comparison retains its code-drawn mascot. The main `/play.html` route now uses a separate illustrated mascot sheet and layered city, rooftop, and prop assets. Neither character is a verified Genesis token. See `ART_IMPLEMENTATION.md` for the art pass and its limits.
 
 ## Phaser boundary
 
@@ -44,4 +44,4 @@ The sampling demonstrates a wider mechanical tolerance than the original narrow 
 1. Play Canvas in portrait and landscape. Try early and later dashes deliberately.
 2. Check simultaneous movement/jump/dash, readable landing space, and restart speed.
 3. Switch to Phaser, repeat the same route, and note camera/scale differences or rendering failures.
-4. Choose a renderer only after those observations. Then author a consistent production character sheet and layered environment for the same scene.
+4. Choose a renderer only after those observations. Compare against the illustrated `/play.html` route and review animation consistency and foreground readability.
