@@ -22,6 +22,10 @@ Open **http://localhost:8080**. Alternatively, serve `dist/` with a static HTTP 
 npm test
 ```
 
+## Movement slice
+
+Open **http://localhost:8080/movement.html** for a focused raid with a purple mascot reference, calibrated camera framing, touch controls, pause/retry, and a Canvas/Phaser renderer comparison. Phaser 3.90.0 is loaded on demand from jsDelivr; the Canvas baseline stays available if that download fails. Both renderers share the same physics. This is a bounded framework experiment, not a full migration or finished NFT character.
+
 ## Play
 
 | Action | Keyboard | Touch |
@@ -43,7 +47,7 @@ An earlier **Dojo** experiment remains available in the comparison tab. It uses 
 - Replays of the player's own attempts.
 - Browser-local personal bests and copyable feedback.
 - World and art bible, supporting cast, opening story arc, and approved visual reference.
-- Seven automated checks covering simulation and DOM-mock interaction flows.
+- Automated checks covering simulation, timing sweeps, camera framing, and DOM-mock interaction flows.
 
 ## What is planned
 
@@ -56,7 +60,7 @@ NFT integration, shared rooms, wallet connections, and the illustrated productio
 
 ## Known playtest issue
 
-A wide gap followed closely by spikes is too unforgiving on touch controls. The next movement pass should improve landing space and validate a range of timings. Scripted completions prove possibility, not enjoyable difficulty. Real-browser layout and touch feel still need hands-on validation; DOM mocks are not browser tests.
+The unfair crossings have been shortened and given at least 200 world units of clear landing space before the next spike. Dash holds height briefly. Timing sweeps cover a range of jump positions and dash delays. These checks establish broader mechanical tolerance, not enjoyable touch feel: real-browser and device validation are still required.
 
 ## Project files
 
@@ -66,6 +70,9 @@ A wide gap followed closely by spikes is too unforgiving on touch controls. The 
 | `dist/app.mjs` | Rendering, controls, menus, editor, replay, and local progress |
 | `dist/index.html` / `dist/style.css` | Playtest interface |
 | `tests/` | Automated checks |
+| `dist/movement.html` / `dist/movement.mjs` | Focused movement and renderer comparison |
+| `dist/art.mjs` | Code-drawn mascot reference |
+| `docs/MOVEMENT_SLICE.md` | Tuning changes, verification, and remaining validation |
 | `docs/WORLD_AND_ART_BIBLE.md` | Proposed universe, art rules, and production plan |
 | `docs/art-direction/rooftop-mischief.jpg` | Selected concept image |
 | `scripts/serve.mjs` | Dependency-free local development server |
@@ -75,4 +82,3 @@ A wide gap followed closely by spikes is too unforgiving on touch controls. The 
 The new story, characters, and locations are proposed game lore, not official Chog canon. The visual concept uses Chog as a character reference. No licence to the underlying Chog brand or collection artwork is granted by this repository.
 
 Official project: https://www.chog.xyz/ · Hackathon: https://chogathon.chog.xyz/
-

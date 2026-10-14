@@ -1,4 +1,5 @@
-import {W,H,FLOOR,STEP,ROOMS,groundSegments,newRun,stepRun,OPPONENTS,simulateFight} from './engine.mjs';
+import {drawChog} from './art.mjs';
+import {W,H,FLOOR,STEP,ROOMS,groundSegments,cameraFrame,newRun,stepRun,OPPONENTS,simulateFight} from './engine.mjs';
 const $=id=>document.getElementById(id);
 const defaults=()=>({runs:0,wins:0,deaths:0,fights:0,changes:0,dojoWins:0,lastResult:'—',best:{},vote:'',note:'',custom:null});
 let data=defaults();try{data={...data,...JSON.parse(localStorage.getItem('chog-lab-v1')||'{}')};}catch{}
@@ -11,7 +12,7 @@ function resetInput(){input={left:false,right:false,jump:false,dash:false};}
 function rounded(ctx,x,y,w,h,r,fill){ctx.fillStyle=fill;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();}
 function label(ctx,t,x,y,size=13,color='#766b69',align='left'){ctx.fillStyle=color;ctx.font=`600 ${size}px "Space Grotesk",sans-serif`;ctx.textAlign=align;ctx.fillText(t,x,y);ctx.textAlign='left';}
 function chog(ctx,x,y,size=36,color='#c8dd88',facing=1,pose='idle'){
- ctx.save();ctx.translate(x,y);ctx.scale(facing,1);const s=size/44;
+ if(ctx===hctx){const action=run?.dashTime>0?'dash':run?.ground&&Math.abs(run?.vx)>0?'run':'idle';drawChog(ctx,x,y,size*1.12,facing,action,run?.time*20||0);return;}ctx.save();ctx.translate(x,y);ctx.scale(facing,1);const s=size/44;
  ctx.scale(s,s);ctx.fillStyle='#302329';ctx.beginPath();ctx.ellipse(0,22,21,4,0,0,Math.PI*2);ctx.globalAlpha=.12;ctx.fill();ctx.globalAlpha=1;
  rounded(ctx,-21,-13,42,33,13,color);ctx.fillStyle=color;ctx.beginPath();ctx.arc(-12,-12,9,0,Math.PI*2);ctx.arc(12,-12,9,0,Math.PI*2);ctx.fill();
  rounded(ctx,-15,-16,10,12,5,'#fffdf7');rounded(ctx,5,-16,10,12,5,'#fffdf7');rounded(ctx,-10,-13,4,6,2,'#302329');rounded(ctx,10,-13,4,6,2,'#302329');
@@ -27,7 +28,7 @@ function drawHide(){
  const c=hctx,r=replaying?lastReplayRoom:editing?{spikes:draft,platforms:[],orbs:[],width:W}:run?.room||currentRoom();stageBase(c);
  const ghost=replaying&&lastTrail?.length?lastTrail[Math.min(lastTrail.length-1,Math.floor(replayTime*30))]:null;
  const player=ghost||run||{x:55,y:FLOOR-34,vx:1,facing:1};
- const zoom=!editing&&hc.clientWidth<600?1.3:1,viewWidth=W/zoom;const camera=editing?0:Math.max(0,Math.min((r.width||W)-viewWidth,player.x-viewWidth*.32));
+ const framing=cameraFrame({...player,room:r},hc.clientWidth||900);const zoom=editing?1:framing.zoom;const camera=editing?0:framing.x;
  label(c,editing?'BUILD MODE / OPTIONAL':'JUMP THE TRAPS. DASH THE GAPS. GET OUT.',29,40,17,'#68775e');
  if(replaying)label(c,'YOUR LAST ATTEMPT',W/2,80,18,'#692d43','center');
  c.save();c.translate(0,FLOOR*(1-zoom));c.scale(zoom,zoom);c.translate(-camera,0);
