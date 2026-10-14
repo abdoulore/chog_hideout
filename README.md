@@ -47,6 +47,7 @@ An earlier **Dojo** experiment remains available in the comparison tab. It uses 
 - A vault checkpoint, clean-heist/practice records, and direction-aware camera.
 - Three original scrolling raids, jump buffering, coyote time, and dash cooldown.
 - Keyboard and touch-input handlers.
+- High-contrast illustrated traps with static warning markers, plus illustrated bridge, shutter and Pocket Sun assets.
 - Local trap editor with completion-gated saving.
 - Replays of the player's own attempts.
 - Browser-local personal bests and copyable feedback.

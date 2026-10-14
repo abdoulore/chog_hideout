@@ -1,4 +1,4 @@
-// Generated from inspected source alpha bounds.
+// Delivery dimensions and inspected alpha-frame bounds.
 export default {
   "city": {
     "url": "assets/burrows-city-v1.jpg",
@@ -100,6 +100,50 @@ export default {
         239,
         226
       ]
+    ]
+  },
+  "hazard": {
+    "url": "assets/burrows-trap-v2.webp",
+    "width": 384,
+    "height": 192,
+    "frame": [
+      9,
+      47,
+      365,
+      112
+    ]
+  },
+  "timber": {
+    "url": "assets/burrows-timber-v2.webp",
+    "width": 1000,
+    "height": 333,
+    "frame": [
+      9,
+      134,
+      982,
+      75
+    ]
+  },
+  "shutter": {
+    "url": "assets/burrows-shutter-v2.webp",
+    "width": 256,
+    "height": 683,
+    "frame": [
+      21,
+      23,
+      214,
+      635
+    ]
+  },
+  "sun": {
+    "url": "assets/burrows-sun-v2.webp",
+    "width": 256,
+    "height": 341,
+    "frame": [
+      21,
+      14,
+      214,
+      313
     ]
   }
 };

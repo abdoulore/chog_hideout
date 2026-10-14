@@ -1,6 +1,6 @@
 # Borrowed Sunshine — first playable heist
 
-The main route `/play.html` now implements an entry → pickup → changed escape → home loop. This is an authored solo mission using the existing Rooftop Mischief artwork and movement rules. New mechanisms use first-pass code-drawn art aligned to the actual collision geometry.
+The main route `/play.html` now implements an entry → pickup → changed escape → home loop. This is an authored solo mission using the existing Rooftop Mischief artwork and movement rules. The bridge, ledges, shutter and Pocket Sun now use illustrated replacements aligned to the existing collision geometry; traps have bright blades and static warning markers. See `READABILITY_ART_PASS.md`.
 
 ## Mission
 

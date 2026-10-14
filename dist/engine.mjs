@@ -9,6 +9,7 @@ export const MOVEMENT_ROOM={id:'movement-v3',width:2850,name:'The Burrows',spike
 export function groundSegments(room){let x=0,out=[];for(const gap of room.gaps||[]){out.push({x,y:FLOOR,w:gap.x-x,h:120});x=gap.x+gap.w;}out.push({x,y:FLOOR,w:(room.width||W)-x,h:120});return out;}
 export function cameraFrame(s,displayWidth=900){const zoom=displayWidth<600?1.5:1.05;const viewWidth=W/zoom;return {zoom,x:Math.max(0,Math.min((s.room.width||W)-viewWidth,s.x-viewWidth*.28)),y:FLOOR*(1-1/zoom)};}
 export function newRun(room){return {room,x:55,y:FLOOR-34,vx:0,vy:0,facing:1,ground:true,coyote:MOVE.coyote,jumpBuffer:0,dashTime:0,dashCooldown:0,dashes:0,time:0,status:'playing',deathReason:'',coins:0,collected:[],trail:[],sample:0};}
+export const spikeBounds=slot=>({x:slot*50+10,y:FLOOR-23,w:30,h:23});
 export function overlap(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
 export function stepRun(s,input,dt=STEP){
  if(s.status!=='playing')return s;
@@ -29,7 +30,7 @@ export function stepRun(s,input,dt=STEP){
  for(const p of [...s.room.platforms,...groundSegments(s.room),...(s.room.solids||[])]){
   if(s.vy>=0&&oldBottom<=p.y+.1&&s.y+34>=p.y&&s.x+28>p.x&&s.x<p.x+p.w){s.y=p.y-34;s.vy=0;s.ground=true;}
  }
- for(const slot of s.room.spikes){if(overlap({x:s.x+5,y:s.y+4,w:18,h:30},{x:slot*50+10,y:FLOOR-23,w:30,h:23})){s.status='dead';s.deathReason='spikes';break;}}
+ for(const slot of s.room.spikes){if(overlap({x:s.x+5,y:s.y+4,w:18,h:30},spikeBounds(slot))){s.status='dead';s.deathReason='spikes';break;}}
  if(s.y>H+50){s.status='dead';s.deathReason='gap';}
  s.room.orbs.forEach((o,i)=>{if(!s.collected.includes(i)&&Math.hypot(s.x+14-o.x,s.y+17-o.y)<30){s.collected.push(i);s.coins++;}});
  if(!s.room.heist&&s.status==='playing'&&s.x>(s.room.width||W)-74&&s.y+34>390)s.status='won';

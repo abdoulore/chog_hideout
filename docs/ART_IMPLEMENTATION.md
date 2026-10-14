@@ -4,7 +4,7 @@ The main playable route is `/play.html`. The old `/movement.html` address redire
 
 ## Art direction and generation briefs
 
-Four raster assets were generated with OpenAI image generation on 14 October 2026, using the approved Rooftop Mischief concept and Chog mascot reference. They are reusable scene components rather than a screenshot background with controls painted into it.
+The initial four raster assets were generated with OpenAI image generation on 14 October 2026, using the approved Rooftop Mischief concept and Chog mascot reference. They are reusable scene components rather than a screenshot background with controls painted into it.
 
 | Asset | Brief and role |
 | --- | --- |
@@ -13,7 +13,7 @@ Four raster assets were generated with OpenAI image generation on 14 October 202
 | `burrows-props-v1.webp` | Transparent atlas of separate rooftop house, glowing golden exit doorway, low metal spike trap, and golden diamond spark. Warm illustrated material treatment consistent with the concept. Individual measured frames avoid neighboring props. |
 | `burrows-chog-v1.webp` | Transparent 4 by 2 pose sheet of one consistent purple Chog mascot, side-facing right: idle, three running poses, jump, fall, dash, landing. Cream face, pink accents, spiky silhouette, warm painted finish; no labels or scene background. |
 
-The generated originals were inspected, resized, and compressed into delivery assets. `asset-manifest.mjs` and `assets/manifest.json` record atlas rectangles. All four delivery images together are below 1 MB. Large source images are not required at runtime.
+The generated originals were inspected, resized, and compressed into delivery assets. `asset-manifest.mjs` and `assets/manifest.json` record atlas rectangles. The initial four images and the four illustrated prop replacements together are below 1 MB. Large source images are not required at runtime. See `READABILITY_ART_PASS.md` for replacement assets and complete generation prompts.
 
 ## Implementation
 
