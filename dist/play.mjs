@@ -1,4 +1,5 @@
 import {STEP} from './engine.mjs';
+import {cameraBiasFor} from './scene-layout.mjs';
 import {newHeist,stepHeist,retryEscape,missionProgress,missionObjective} from './heist.mjs';
 import {readRecords,recordFinish,writeRecords,emptyRecords} from './heist-records.mjs';
 import {loadArt,drawWorld} from './world-renderer.mjs';
@@ -16,14 +17,14 @@ function soundLabel(){const off=sound.muted;$('sound').textContent=off?'♫̸':'
 soundLabel();
 async function unlockSound(){const ok=await sound.unlock();if(!ok){$('sound').disabled=true;$('sound').title='Sound unavailable in this browser';$('sound').setAttribute('aria-label','Sound unavailable');}}
 const resetInput=()=>input={left:false,right:false,jump:false,dash:false};resetInput();
-function fit(){const box=$('screen').getBoundingClientRect();canvas.width=900;canvas.height=Math.max(430,Math.min(1900,Math.round(900*box.height/Math.max(box.width,1))));}
+function fit(){const box=$('screen').getBoundingClientRect();canvas.width=900;canvas.height=Math.max(430,Math.min(1900,Math.round(900*box.height/Math.max(box.width,1))));cameraBias=cameraBiasFor(run.phase,box.width,canvas.width,canvas.height);}
 fit();window.addEventListener('resize',fit);
-function show(kicker,title,message,button){$('kicker').textContent=kicker;$('title').textContent=title;$('message').textContent=message;$('play').textContent=button;$('overlay').hidden=false;$('pause-actions').hidden=!paused;}
-function begin(next){if(!images)return;run=next;previous=snapshot(run);feedback.reset();finishDelay=null;noticeTime=0;recordSaved=true;cameraBias=run.phase==='escape'?.72:.28;started=true;paused=false;acc=0;resetInput();void unlockSound();$('overlay').hidden=true;$('notice').hidden=true;$('whole-run').hidden=true;$('practice').hidden=true;$('pause').textContent='Ⅱ';canvas.focus({preventScroll:true});}
+function show(kicker,title,message,button){document.body.classList.toggle('playing',false);$('kicker').textContent=kicker;$('title').textContent=title;$('message').textContent=message;$('play').textContent=button;$('overlay').hidden=false;$('pause-actions').hidden=!paused;}
+function begin(next){if(!images)return;run=next;previous=snapshot(run);feedback.reset();finishDelay=null;noticeTime=0;recordSaved=true;cameraBias=cameraBiasFor(run.phase,canvas.getBoundingClientRect().width,canvas.width,canvas.height);started=true;document.body.classList.toggle('playing',true);paused=false;acc=0;resetInput();document.body.classList.toggle('playing',true);void unlockSound();$('overlay').hidden=true;$('notice').hidden=true;$('whole-run').hidden=true;$('practice').hidden=true;$('pause').textContent='Ⅱ';canvas.focus({preventScroll:true});}
 function start(){begin(newHeist());}
 function retry(){begin(run.status==='dead'&&run.checkpoint?retryEscape(run):newHeist());}
 function pause(){if(!started||run.status!=='playing'||paused)return;paused=true;resetInput();sound.pause();show('TAKE A BREATHER','Your rooftop can wait.','Resume your run, or take another route from the start.','Keep going →');}
-function resume(){if(!started||run.status!=='playing'){start();return;}paused=false;acc=0;resetInput();void unlockSound();$('overlay').hidden=true;$('pause-actions').hidden=true;canvas.focus({preventScroll:true});}
+function resume(){if(!started||run.status!=='playing'){start();return;}paused=false;acc=0;resetInput();document.body.classList.toggle('playing',true);void unlockSound();$('overlay').hidden=true;$('pause-actions').hidden=true;canvas.focus({preventScroll:true});}
 function finish(){
  if(run.status==='won'){
   recordsLine();
@@ -37,7 +38,7 @@ function hud(){$('objective').textContent=missionObjective(run);$('time').textCo
 function frame(t){
  const dt=Math.min((t-last)/1000||0,.05);last=t;
  if(images&&started&&!paused&&!document.hidden){
-  feedback.update(dt);cameraBias+=( (run.phase==='escape'?.72:.28)-cameraBias)*Math.min(1,dt*4);if(noticeTime>0){noticeTime-=dt;if(noticeTime<=0)$('notice').hidden=true;}
+  feedback.update(dt);cameraBias+=( cameraBiasFor(run.phase,canvas.getBoundingClientRect().width,canvas.width,canvas.height)-cameraBias)*Math.min(1,dt*4);if(noticeTime>0){noticeTime-=dt;if(noticeTime<=0)$('notice').hidden=true;}
   if(finishDelay!==null){finishDelay-=dt;if(finishDelay<=0){finishDelay=null;finish();}}
   if(run.status==='playing'){
    acc+=dt;

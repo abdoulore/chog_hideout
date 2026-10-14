@@ -45,6 +45,7 @@ An earlier **Dojo** experiment remains available in the comparison tab. It uses 
 
 - A complete two-phase heist with a retracted bridge, closed shutter, roof bypass, Sun carry cue, and home restoration.
 - A vault checkpoint, clean-heist/practice records, and direction-aware camera.
+- Portrait framing with a larger Chog, compact active HUD, and supported timber platforms.
 - Three original scrolling raids, jump buffering, coyote time, and dash cooldown.
 - Keyboard and touch-input handlers.
 - High-contrast illustrated traps with static warning markers, plus illustrated bridge, shutter and Pocket Sun assets.

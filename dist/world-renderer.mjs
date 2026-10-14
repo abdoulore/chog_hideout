@@ -2,6 +2,7 @@ import {FLOOR,groundSegments} from './engine.mjs';
 import manifest from './asset-manifest.mjs';
 import {drawHeistProps,drawCarriedSun} from './heist-visuals.mjs';
 import {drawHazards} from './hazard-renderer.mjs';
+import {sceneCamera,sceneLayout} from './scene-layout.mjs';
 export {manifest};
 
 export async function loadArt(){
@@ -11,16 +12,16 @@ export async function loadArt(){
  })));
  return Object.fromEntries(entries);
 }
-export function artCamera(run,displayWidth,width=900){const zoom=displayWidth<600?1.7:1.2,view=width/zoom;return {zoom,x:Math.max(0,Math.min(run.room.width-view,run.x-view*(run.cameraBias??(run.phase==='escape'?.72:.28))))};}
+export function artCamera(run,displayWidth,width=900,height=520){return sceneCamera(run,displayWidth,width,height);}
 function sprite(ctx,img,frame,x,y,w,h){ctx.drawImage(img,...frame,x,y,w,h);}
 export function drawWorld(ctx,run,images,width=900,height=520,{displayWidth=900,reducedMotion=false,feedback=null}={}){
- const m=manifest,cam=artCamera(run,displayWidth,width),groundY=height*.73+Math.max(0,Math.max(170,height*.24)-(height*.73+(run.y+34-FLOOR)*cam.zoom));
+ const m=manifest,layout=sceneLayout(run,displayWidth,width,height),cam=layout.camera,groundY=layout.groundY;
  ctx.clearRect(0,0,width,height);
  // The distant city moves more slowly than the physical gameplay plane.
- const bgW=Math.max(width*1.45,height*images.city.width/images.city.height),bgH=bgW*images.city.height/images.city.width;
+ const bgW=Math.max(width*1.45,height*images.city.width/images.city.height*layout.backgroundScale),bgH=bgW*images.city.height/images.city.width;
  const offset=cam.x*.16;for(let tile=-1;tile<4;tile++){
   const x=tile*bgW-offset;
-  ctx.save();if(tile%2){ctx.translate(x+bgW,(height-bgH)*.2);ctx.scale(-1,1);ctx.drawImage(images.city,0,0,bgW,bgH);}else ctx.drawImage(images.city,x,(height-bgH)*.2,bgW,bgH);ctx.restore();
+  ctx.save();if(tile%2){ctx.translate(x+bgW,(height-bgH)*.2-layout.backgroundLift);ctx.scale(-1,1);ctx.drawImage(images.city,0,0,bgW,bgH);}else ctx.drawImage(images.city,x,(height-bgH)*.2-layout.backgroundLift,bgW,bgH);ctx.restore();
  }
  ctx.fillStyle='rgba(255,230,194,.07)';ctx.fillRect(0,0,width,height);
  const fx=feedback||{};const shake=!reducedMotion&&fx.impact?Math.sin(fx.clock*85)*fx.impact*7:0;
@@ -49,7 +50,7 @@ export function drawWorld(ctx,run,images,width=900,height=520,{displayWidth=900,
  if(run.room.heist)drawHeistProps(ctx,run,images);else sprite(ctx,images.props,door,run.room.width-137,FLOOR-doorHeight,doorWidth,doorHeight);
  // Frames share an illustration scale; each pose is anchored by its visible feet.
  let frame=0;if(run.dashTime>0)frame=6;else if(!run.ground)frame=run.vy<0?4:5;else if(fx.land>.08)frame=7;else if(Math.abs(run.vx)>0)frame=[1,2,3,2][Math.floor(fx.stride??run.time*12)%4];
- const f=m.chog.frames[frame],scale=74/m.chog.frames[0][3],fw=f[2]*scale,fh=f[3]*scale;
+ const f=m.chog.frames[frame],scale=layout.characterHeight/m.chog.frames[0][3],fw=f[2]*scale,fh=f[3]*scale;
  // Soft contact shadow and tiny pose deformation keep the silhouette grounded.
  if(run.ground){ctx.save();ctx.fillStyle='rgba(49,27,44,.22)';ctx.beginPath();ctx.ellipse(run.x+14,run.y+36,21,3,0,0,Math.PI*2);ctx.fill();ctx.restore();}
  const squash=!reducedMotion&&fx.land>0?Math.sin(fx.land/.16*Math.PI)*.08:0;
