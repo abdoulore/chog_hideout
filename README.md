@@ -16,7 +16,7 @@ Requires Node.js 20 or newer. No dependencies or installation step are needed.
 npm run dev
 ```
 
-Open **http://localhost:8080**. Alternatively, serve `dist/` with a static HTTP server. The files in `dist/` are the editable, buildless application source.
+Open **http://localhost:8080** for your illustrated guest hideout. The home remembers the recovered Pocket Sun, earned keepsakes, hideout name and personal records on this browser. The original lab is preserved at `/lab.html`. Alternatively, serve `dist/` with a static HTTP server. The files in `dist/` are the editable, buildless application source.
 
 ```bash
 npm test
@@ -43,6 +43,7 @@ An earlier **Dojo** experiment remains available in the comparison tab. It uses 
 
 ## What exists
 
+- A persistent illustrated guest home, renamed locally, with recovered Curio and earned keepsakes.
 - A complete two-phase heist with a retracted bridge, closed shutter, roof bypass, Sun carry cue, and home restoration.
 - A vault checkpoint, clean-heist/practice records, and direction-aware camera.
 - Portrait framing with a larger Chog, compact active HUD, and supported timber platforms.
@@ -74,7 +75,10 @@ The unfair crossings have been shortened and given at least 200 world units of c
 | --- | --- |
 | `dist/engine.mjs` | Movement, collision, room data, and Dojo combat rules |
 | `dist/app.mjs` | Rendering, controls, menus, editor, replay, and local progress |
-| `dist/index.html` / `dist/style.css` | Playtest interface |
+| `dist/index.html` | Redirect to the illustrated home |
+| `dist/home.html` / `dist/home.mjs` / `dist/home.css` | Illustrated guest home |
+| `dist/home-model.mjs` / `dist/home-scene.mjs` | Saved home state and scene composition |
+| `dist/lab.html` / `dist/style.css` | Original playtest interface |
 | `tests/` | Automated checks |
 | `dist/play.html` / `dist/play.mjs` / `dist/play.css` | Illustrated full-screen game |
 | `dist/world-renderer.mjs` / `dist/assets/` | Layered scene and optimized raster assets |
@@ -87,6 +91,8 @@ The unfair crossings have been shortened and given at least 200 world units of c
 | `docs/WORLD_AND_ART_BIBLE.md` | Proposed universe, art rules, and production plan |
 | `docs/art-direction/rooftop-mischief.jpg` | Selected concept image |
 | `scripts/serve.mjs` | Dependency-free local development server |
+
+See `docs/PERSISTENT_HOME.md` for saved-state behaviour, migration, artwork provenance and ownership preparation. This guest home is browser-local; NFT ownership and shared homes are not yet connected.
 
 ## Lore and artwork
 

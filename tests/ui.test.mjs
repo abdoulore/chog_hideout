@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 test('UI smoke: navigation, editor gating, rematch, feedback, and local persistence',async()=>{
- const html=fs.readFileSync(new URL('../dist/index.html',import.meta.url),'utf8');
+ const html=fs.readFileSync(new URL('../dist/lab.html',import.meta.url),'utf8');
  const nodes=new Map(),events=new Map(),timers=new Map(),storage=new Map();let timerId=0;
  const context=new Proxy({},{get:(_,key)=>key==='measureText'?()=>({width:20}):()=>{},set:()=>true});
  function element(tag='div',attrs=''){
