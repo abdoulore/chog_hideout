@@ -1,6 +1,6 @@
 # Chog Hideout
 
-A browser-playable Chog rooftop heist. Recover the Pocket Sun, escape through a changed route, and restore the light at home. The earlier movement/editor experiments remain in the playtest lab.
+A browser-playable Chog rooftop heist. In **One More Thing**, choose what to steal, distract a caretaker, and decide when to bank your haul. Theft changes the available routes. The earlier Borrowed Sunshine mission and movement/editor experiments remain playable.
 
 The chosen production art direction is **Rooftop Mischief**. Its illustrated world and story are documented alongside the working gameplay experiment.
 
@@ -22,7 +22,21 @@ Open **http://localhost:8080** for your illustrated guest hideout. The home reme
 npm test
 ```
 
-## Borrowed Sunshine — first heist
+## One More Thing — current gameplay prototype
+
+Open **http://localhost:8080/mischief.html**, or enter from the illustrated home. Any one treasure counts as an escape. Hold the action near the home door to bank what you carry, or turn back for more. Getting caught loses only the current, unbanked haul.
+
+- **Lift battery (1):** opens the street shutter, disables the moving lift. Return it to its socket to reverse that tradeoff.
+- **Pocket Sun (3):** rings the depot bell when taken.
+- **Music box (2):** keeps sounding while carried. Drop it as a recoverable decoy.
+- **Flowerpot:** knock it from the canopy to draw the caretaker away.
+- **Caretaker:** patrols, investigates noises, fills a visible suspicion bar, then chases. A marked planter and shutter block sight; breaking sight lets pursuit expire. The caretaker stays on the street; the canopy is the safer route.
+
+Touch has movement, jump, dash, a contextual hold action, and drop. Keyboard: arrows/A D, Space, X/Shift, hold E, Q to drop, M for a paused map, Escape to pause. The prototype has no hard countdown. Highest banked haul is the primary record; time breaks ties for the same haul. Records and recovered treasures save on this browser. No wallet is needed.
+
+See [implementation and test limits](docs/ONE_MORE_THING.md). Automated routes establish feasibility, not whether players find the game fun.
+
+## Borrowed Sunshine — original heist
 
 Open **http://localhost:8080/play.html** for the illustrated heist. The bridge retracts and a shutter closes after pickup; return home via the upper maintenance route and a leftward dash crossing. It has a layered city, textured rooftops, eight character poses, touch controls, and pause/retry. Movement now has interpolated presentation, landing dust, dash trails, sparkle bursts, and original synthesized sound cues. Sound starts after pressing Play and can be muted with the music-note button; the preference is saved on this browser. `/movement.html` redirects here. The technical Canvas/Phaser comparison is preserved at `/renderer-lab.html`; both use the same movement simulation.
 
@@ -43,7 +57,8 @@ An earlier **Dojo** experiment remains available in the comparison tab. It uses 
 
 ## What exists
 
-- A persistent illustrated guest home, renamed locally, with recovered Curio and earned keepsakes.
+- A persistent illustrated guest home, renamed locally, with recovered treasures, latest haul, personal records and earned keepsakes.
+- A connected rooftop block with reactive security, optional thefts, a power tradeoff, recoverable noise decoys and voluntary banking.
 - A complete two-phase heist with a retracted bridge, closed shutter, roof bypass, Sun carry cue, and home restoration.
 - A vault checkpoint, clean-heist/practice records, and direction-aware camera.
 - Portrait framing with a larger Chog, compact active HUD, and supported timber platforms.
@@ -80,6 +95,8 @@ The unfair crossings have been shortened and given at least 200 world units of c
 | `dist/home-model.mjs` / `dist/home-scene.mjs` | Saved home state and scene composition |
 | `dist/lab.html` / `dist/style.css` | Original playtest interface |
 | `tests/` | Automated checks |
+| `dist/mischief.html` / `dist/mischief-play.mjs` / `dist/mischief.css` | Current rooftop heist UI and controls |
+| `dist/mischief.mjs` / `dist/mischief-records.mjs` / `dist/mischief-visuals.mjs` | Reactive job, local banking, caretaker and object presentation |
 | `dist/play.html` / `dist/play.mjs` / `dist/play.css` | Illustrated full-screen game |
 | `dist/world-renderer.mjs` / `dist/assets/` | Layered scene and optimized raster assets |
 | `dist/heist.mjs` / `dist/heist-records.mjs` | Two-phase mission, checkpoint and versioned local records |

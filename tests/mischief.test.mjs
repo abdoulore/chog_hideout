@@ -1,0 +1,28 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {newMischief,stepMischief,nearbyAction,canSee,lootValue,BLOCK} from '../dist/mischief.mjs';
+import {readJob,bankJob,writeJob,emptyJob,MISCHIEF_KEY} from '../dist/mischief-records.mjs';
+import {readHome,keepsakes} from '../dist/home-model.mjs';
+import {sceneLayout} from '../dist/scene-layout.mjs';
+import {driver,batteryRoute,allTreasuresRoute} from './helpers/mischief-driver.mjs';
+const tick=(s,input={},seconds=1/120)=>stepMischief(s,input,seconds);
+const drive=s=>driver(()=>s,input=>tick(s,input));
+const hold=(s,seconds,input={interact:true})=>{for(let i=0;i<seconds*120;i++)tick(s,input);};
+
+test('a street theft can bank one treasure; continuing and getting caught cannot award progress',()=>{const s=newMischief();batteryRoute(drive(s));assert.equal(s.status,'won');assert.equal(s.banked,true);assert.deepEqual(s.loot,['battery']);assert.equal(s.powered,false);assert.equal(lootValue(s),1);const r=bankJob(emptyJob(),s);assert.equal(r.escapes,1);assert.equal(r.bestValue,1);assert.deepEqual(r.treasures,['battery']);const failed={...s,status:'dead',banked:false};assert.deepEqual(bankJob(r,failed),r);const oldTime=s.time;tick(s,{right:true});assert.equal(s.time,oldTime);});
+
+test('one continuous attempt uses the canopy, distraction, powered lift, and banks all three treasures',()=>{const s=newMischief();const d=drive(s);allTreasuresRoute(d,()=>s,input=>tick(s,input));assert.equal(s.status,'won');assert.equal(s.pot,'broken');assert.equal(s.powered,false);assert.equal(lootValue(s),6);assert.equal(s.loot.length,3);assert(s.time<35);assert(s.noise.some(n=>n.kind==='music'));assert.equal(bankJob(emptyJob(),s).bestValue,6);});
+
+test('stealing needs a continuous hold and one press cannot immediately restore a stolen battery',()=>{const s=newMischief(),d=drive(s);d.go(430);hold(s,.2);tick(s,{});assert.deepEqual(s.loot,[]);hold(s,.3);assert.deepEqual(s.loot,[]);tick(s,{});hold(s,2);assert.deepEqual(s.loot,['battery']);assert.equal(s.powered,false);tick(s,{});hold(s,.6);assert.deepEqual(s.loot,[]);assert.equal(s.powered,true);assert.equal(s.room.solids.length,1);assert.equal(s.room.platforms.some(p=>p.kind==='lift'),true);});
+
+test('shutter is real collision; losing power removes it and the lift without trapping the player',()=>{const s=newMischief(),d=drive(s);d.go(530);hold(s,.5,{right:true,dash:true});assert(s.x+28<=BLOCK.gate.x);d.go(430);d.act();d.go(660);assert(s.x>BLOCK.gate.x+BLOCK.gate.w);assert.equal(s.room.solids.length,0);assert.equal(s.room.platforms.some(p=>p.kind==='lift'),false);});
+
+test('sight has a warning window; cover blocks it; pursuit can be escaped and close pursuit catches',()=>{const s=newMischief();s.x=1500;s.caretaker.x=1230;s.caretaker.facing=1;assert(canSee(s));hold(s,.35,{});assert.equal(s.status,'playing');assert(s.caretaker.suspicion>0&&s.caretaker.suspicion<1);hold(s,.9,{});assert.equal(s.caretaker.mode,'chase');assert.equal(s.status,'playing');s.x=1040;assert.equal(canSee(s),false);hold(s,4.1,{});assert.notEqual(s.caretaker.mode,'chase');const caught=newMischief();caught.x=1250;caught.caretaker.x=1235;caught.caretaker.facing=1;caught.caretaker.mode='chase';caught.caretaker.suspicion=1;hold(caught,.1,{});assert.equal(caught.status,'dead');assert.equal(caught.deathReason,'caught');});
+
+test('pot noise changes the caretaker target; dropped music remains a recoverable sounding decoy',()=>{const s=newMischief();s.x=800;s.y=276;s.ground=true;assert.equal(nearbyAction(s).id,'pot');hold(s,.8);assert.equal(s.pot,'broken');assert.equal(s.caretaker.mode,'investigate');assert.equal(s.caretaker.target,970);
+ const m=newMischief();m.x=1450;m.y=276;m.ground=true;hold(m,.7);assert(m.loot.includes('music'));tick(m,{drop:true});assert.equal(m.loot.includes('music'),false);assert.equal(m.items.music.state,'world');const at=m.items.music.x;m.x=800;hold(m,2,{});assert(m.noise.some(n=>n.kind==='music'&&n.x===at));assert.equal(m.caretaker.mode,'investigate');m.x=at-14;m.y=m.items.music.y-34;hold(m,.8);assert(m.loot.includes('music'));});
+
+test('new job saves restore the home and do not create old clean/spark achievements',()=>{const s=newMischief();allTreasuresRoute(drive(s),()=>s,input=>tick(s,input));const map=new Map(),storage={getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)};const r=bankJob(emptyJob(),s);assert(writeJob(storage,r));const home=readHome(storage);assert.equal(home.job.bestValue,6);assert.equal(home.records.completed,false);assert(keepsakes(home.records,home.job).find(k=>k.id==='sun').earned);assert.equal(keepsakes(home.records,home.job).filter(k=>k.earned).length,1);assert.deepEqual(readJob(storage).treasures.sort(),['battery','music','sun']);const lower=newMischief();batteryRoute(drive(lower));const next=bankJob(r,lower);assert.equal(next.bestValue,6);assert.equal(next.bestTime,r.bestTime);assert.deepEqual(next.lastHaul,['battery']);assert.equal(next.escapes,2);
+ map.set(MISCHIEF_KEY,'corrupt');assert.deepEqual(readJob(storage),emptyJob());assert.equal(writeJob({setItem(){throw Error();}},r),false);assert.deepEqual(readJob({getItem(){throw Error();}}),emptyJob());assert.deepEqual(bankJob(r,{...s,loot:['sun','sun']}),r);});
+
+test('portrait look-ahead exposes the long roof landing before takeoff in either direction',()=>{for(const [x,bias,edge] of [[905,.2,1320],[1229,.8,860]]){const s=newMischief();s.x=x;s.y=276;s.cameraBias=bias;const layout=sceneLayout(s,360,900,1600),cam=layout.camera;if(bias<.5)assert(cam.x+900/cam.zoom>=edge);else assert(cam.x<=edge);assert(layout.characterHeight*cam.zoom>=145);}});

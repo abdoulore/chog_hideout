@@ -1,0 +1,7 @@
+import {JOB_ID,TREASURES,lootValue} from './mischief.mjs';
+export const MISCHIEF_KEY='chog-job:'+JOB_ID;
+export const emptyJob=()=>({version:JOB_ID,escapes:0,bestValue:0,bestTime:null,treasures:[],lastHaul:[],lastValue:0});
+const ids=a=>Array.isArray(a)?[...new Set(a.filter(id=>Object.hasOwn(TREASURES,id)))]:[];
+export function readJob(storage){try{const r=JSON.parse(storage.getItem(MISCHIEF_KEY));if(r?.version!==JOB_ID)return emptyJob();return {version:JOB_ID,escapes:Number.isSafeInteger(r.escapes)&&r.escapes>=0?r.escapes:0,bestValue:Number.isInteger(r.bestValue)&&r.bestValue>=0&&r.bestValue<=6?r.bestValue:0,bestTime:Number.isFinite(r.bestTime)&&r.bestTime>0?r.bestTime:null,treasures:ids(r.treasures),lastHaul:ids(r.lastHaul),lastValue:Number.isInteger(r.lastValue)&&r.lastValue>=0&&r.lastValue<=6?r.lastValue:0};}catch{return emptyJob();}}
+export function bankJob(records,run){if(run.jobId!==JOB_ID||run.status!=='won'||!run.banked||run.loot.length===0||ids(run.loot).length!==run.loot.length||!Number.isFinite(run.time)||run.time<=0)return {...records};const value=lootValue(run);return {...records,escapes:records.escapes+1,bestValue:Math.max(records.bestValue,value),bestTime:value>records.bestValue||records.bestTime===null?run.time:value===records.bestValue?Math.min(records.bestTime,run.time):records.bestTime,treasures:ids([...records.treasures,...run.loot]),lastHaul:[...run.loot],lastValue:value};}
+export function writeJob(storage,records){try{storage.setItem(MISCHIEF_KEY,JSON.stringify(records));return true;}catch{return false;}}

@@ -1,3 +1,4 @@
+import {drawMischiefProps,drawMischiefCarry} from './mischief-visuals.mjs';
 import {FLOOR,groundSegments} from './engine.mjs';
 import manifest from './asset-manifest.mjs';
 import {drawHeistProps,drawCarriedSun} from './heist-visuals.mjs';
@@ -47,7 +48,7 @@ export function drawWorld(ctx,run,images,width=900,height=520,{displayWidth=900,
  run.room.orbs.forEach((o,i)=>{if(run.collected.includes(i))return;const drift=reducedMotion?0:Math.sin(run.time*3+i)*1.5;sprite(ctx,images.props,gem,o.x-12,o.y-14+drift,24,28);});
  drawHazards(ctx,run,images);
  const door=m.props.frames.door,doorWidth=118,doorHeight=doorWidth*door[3]/door[2];
- if(run.room.heist)drawHeistProps(ctx,run,images);else sprite(ctx,images.props,door,run.room.width-137,FLOOR-doorHeight,doorWidth,doorHeight);
+ if(run.room.mischief)drawMischiefProps(ctx,run,images,{reducedMotion});else if(run.room.heist)drawHeistProps(ctx,run,images);else sprite(ctx,images.props,door,run.room.width-137,FLOOR-doorHeight,doorWidth,doorHeight);
  // Frames share an illustration scale; each pose is anchored by its visible feet.
  let frame=0;if(run.dashTime>0)frame=6;else if(!run.ground)frame=run.vy<0?4:5;else if(fx.land>.08)frame=7;else if(Math.abs(run.vx)>0)frame=[1,2,3,2][Math.floor(fx.stride??run.time*12)%4];
  const f=m.chog.frames[frame],scale=layout.characterHeight/m.chog.frames[0][3],fw=f[2]*scale,fh=f[3]*scale;
@@ -58,7 +59,7 @@ export function drawWorld(ctx,run,images,width=900,height=520,{displayWidth=900,
  const breathe=!reducedMotion&&run.ground&&Math.abs(run.vx)===0?Math.sin((fx.clock??run.time)*2.8)*.012:0;
  ctx.save();ctx.translate(run.x+14,run.y+34);ctx.scale(run.facing*(1+squash-stretch),1-squash+stretch+breathe);
  if(run.dashTime>0&&!reducedMotion){ctx.globalAlpha=.17;sprite(ctx,images.chog,f,-fw/2-33,-fh,fw,fh);ctx.globalAlpha=.30;sprite(ctx,images.chog,f,-fw/2-17,-fh,fw,fh);ctx.globalAlpha=1;}
- sprite(ctx,images.chog,f,-fw/2,-fh,fw,fh);ctx.restore();if(run.room.heist)drawCarriedSun(ctx,run,images);
+ sprite(ctx,images.chog,f,-fw/2,-fh,fw,fh);ctx.restore();if(run.room.mischief)drawMischiefCarry(ctx,run,images);else if(run.room.heist)drawCarriedSun(ctx,run,images);
  if(!reducedMotion)for(const p of fx.particles||[]){ctx.globalAlpha=Math.max(0,1-p.age/p.life);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.size*(1-p.age/p.life*.4),0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;
  // The doorway responds to a clean escape with a warm, restrained glow.
  if(fx.victory>0){ctx.save();ctx.globalAlpha=fx.victory*.24;ctx.fillStyle='#ffe4a0';ctx.beginPath();ctx.ellipse(run.room.heist?100:run.room.width-78,FLOOR-48,70,90,0,0,Math.PI*2);ctx.fill();ctx.restore();}ctx.restore();

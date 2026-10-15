@@ -46,3 +46,7 @@ Automated checks exercise real mission completion into persisted home data, prev
 
 The production home renderer was visually inspected at phone scale in empty, Sun-restored and fully decorated states. DOM mocks do not validate CSS layout or touch feel; no real browser/device test was available in this environment. Ownership verification and multi-user challenge permissions remain unimplemented.
 
+
+## One More Thing update — 15 October 2026
+
+The primary home action now opens `/mischief.html`. `/play.html` remains the original Borrowed Sunshine mission. New job records use the separate `chog-job:one-more-thing-v1` key; the original heist key, clean/practice times, and sparks are preserved. A banked Pocket Sun from either job lights the home hook. New battery and music-box trophies appear in the home scene and haul section. New job completions do not invent old clean or eight-spark achievements. See `ONE_MORE_THING.md` for the new rules and validation limits.

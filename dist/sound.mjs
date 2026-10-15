@@ -18,6 +18,9 @@ export function createSound({getContext=()=>{const Audio=globalThis.AudioContext
    if(event==='land'){noise(.09,.12,750);tone(115,t,.07,.07,'sine',75);}
    if(event==='dash'){noise(.18,.18,2400);tone(420,t,.16,.065,'triangle',140);}
    if(event==='spark'){const notes=[784,988,1175,1568],note=notes[sparkle++%notes.length];tone(note,t,.22,.16);tone(note*1.5,t+.04,.26,.055);}
+   if(event==='music')[784,988,880,659].forEach((f,i)=>tone(f,t+i*.12,.28,.065));
+   if(event==='pot'){noise(.22,.22,1900);tone(145,t,.15,.08,'triangle',70);}
+   if(event==='alarm')[440,554,440].forEach((f,i)=>tone(f,t+i*.15,.25,.11,'triangle'));
    if(event==='pickup')[392,523.25,783.99].forEach((f,i)=>tone(f,t+i*.085,.35,.13));
    if(event==='hurt'){tone(180,t,.2,.15,'triangle',65);noise(.14,.12,950);}
    if(event==='win')[523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f,t+i*.095,.5,.15));
