@@ -1,7 +1,8 @@
-import {drawTorchBeam,drawTorchSource} from './torchlight.mjs';
-import {FLOOR} from './engine.mjs';
+import {caretakerPose} from './caretaker-motion.mjs';
+import {drawTorchBeam,drawTorchSource} from './torchlight.mjs?motion=1';
+import {FLOOR} from './engine.mjs?motion=1';
 import manifest from './asset-manifest.mjs';
-import {BLOCK,TREASURES,nearbyAction} from './mischief.mjs';
+import {BLOCK,TREASURES,nearbyAction} from './mischief.mjs?motion=1';
 export const CARETAKER_URL='assets/burrows-caretaker-v1.webp';
 export function loadCaretaker(){return new Promise((resolve,reject)=>{const img=new Image(),timer=setTimeout(()=>reject(Error('Caretaker artwork timed out')),15000);img.onload=()=>{clearTimeout(timer);resolve(img);};img.onerror=()=>{clearTimeout(timer);reject(Error('Caretaker artwork unavailable'));};img.src=new URL(CARETAKER_URL,import.meta.url).href;});}
 function label(ctx,text,x,y,color='#fff0c8',size=10){ctx.save();ctx.font=`700 ${size}px system-ui`;ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='#2e243be6';ctx.strokeText(text,x,y);ctx.fillStyle=color;ctx.fillText(text,x,y);ctx.restore();}
@@ -23,16 +24,24 @@ export function drawMischiefProps(ctx,s,images,{reducedMotion=false}={}){
  for(let i=0;i<11;i++){ctx.fillStyle=i%2?'#547a52':'#8aab64';ctx.beginPath();ctx.ellipse(cover.x+8+i*6,cover.y+21+(i%3)*4,14,24,(i-5)*.13,0,Math.PI*2);ctx.fill();}label(ctx,'HIDE BEHIND',cover.x+cover.w/2,FLOOR+26,'#f0d9b0',8);
  // The pot's fall and the noise rings show the exact stimulus the AI hears.
  if(s.pot!=='broken'){const t=s.pot==='falling'?1-s.potTime/.42:0,x=BLOCK.pot.x+t*155,y=BLOCK.pot.y+t*140;ctx.save();ctx.translate(x,y);ctx.rotate(t*3);ctx.fillStyle='#c97a58';ctx.strokeStyle='#654452';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-14,-25);ctx.lineTo(14,-25);ctx.lineTo(10,0);ctx.lineTo(-10,0);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#6b8c53';for(let i=0;i<5;i++){ctx.beginPath();ctx.ellipse((i-2)*5,-28,5,13,(i-2)*.3,0,Math.PI*2);ctx.fill();}ctx.restore();}else{ctx.fillStyle='#c97a58';for(let i=0;i<5;i++)ctx.fillRect(950+i*8,FLOOR-5-i%2*3,6,4);}
- for(const item of Object.values(s.items)){if(item.state!=='world')continue;drawTreasure(ctx,item.id,item.x,item.y-4,1,images);label(ctx,item.id==='battery'?'BATTERY · 1':item.id==='music'?'MUSIC BOX · 2':'POCKET SUN · 3',item.x,item.y-68,'#fff0bf',9);}
+ for(const item of Object.values(s.items)){if(item.state!=='world')continue;const pulling=s.action===item.id?Math.min(1,s.actionTime/item.hold):0;const tug=reducedMotion?0:Math.sin(pulling*Math.PI);ctx.save();ctx.translate(item.x+(s.x+14-item.x)*pulling*.22,item.y-4-tug*12);ctx.rotate(reducedMotion?0:Math.sin(pulling*Math.PI*5)*pulling*.09);drawTreasure(ctx,item.id,0,0,1,images);ctx.restore();label(ctx,item.id==='battery'?'BATTERY · 1':item.id==='music'?'MUSIC BOX · 2':'POCKET SUN · 3',item.x,item.y-68,'#fff0bf',9);}
  if(s.items.battery.state!=='world'||s.items.battery.x!==TREASURES.battery.x){ctx.strokeStyle='#c9a472';ctx.lineWidth=3;ctx.strokeRect(TREASURES.battery.x-16,FLOOR-35,32,35);}
  const door=manifest.props.frames.door;ctx.drawImage(images.props,...door,52,FLOOR-109,115,109);label(ctx,s.loot.length?(s.controlMode==='gestures'?'HOME · TAP DOOR TO LEAVE':'HOME · HOLD ACTION TO LEAVE'):'YOUR WAY HOME',110,FLOOR+24,'#fff0bf',9);
  for(const n of s.noise){const age=s.time-n.time;if(age>1.2)continue;ctx.save();ctx.globalAlpha=(1-age/1.2)*.7;ctx.strokeStyle=n.kind==='bell'?'#ffb392':'#f8db94';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(n.x,n.y-15,18+age*80,12+age*35,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
  const guard=s.caretaker,eyeX=guard.x+14,eyeY=FLOOR-54;
  const torch=drawTorchBeam(ctx,s,{reducedMotion});
  ctx.save();ctx.fillStyle='rgba(42,25,42,.26)';ctx.beginPath();ctx.ellipse(eyeX,FLOOR+2,28,4,0,0,Math.PI*2);ctx.fill();ctx.restore();
- ctx.save();ctx.translate(eyeX,FLOOR);ctx.scale(guard.facing,1);const stride=reducedMotion?0:Math.sin(s.time*(guard.mode==='chase'?16:7))*1.2;if(images.caretaker)ctx.drawImage(images.caretaker,-51,-101+stride,102,101);ctx.restore();drawTorchSource(ctx,torch);
- const state=guard.mode==='chase'?'! CHASING':guard.suspicion>.05?'? NOTICING':guard.mode==='investigate'?'? INVESTIGATING':guard.mode==='search'?'? SEARCHING':'PATROLLING';label(ctx,state,eyeX,FLOOR-120,guard.mode==='chase'?'#ffc0a8':'#fff0c9',9);
+ const guardPose=caretakerPose(s,reducedMotion);ctx.save();ctx.translate(eyeX,FLOOR+guardPose.bob);ctx.scale(guard.facing,1);ctx.rotate(guardPose.angle);if(images.caretaker)ctx.drawImage(images.caretaker,-51,-101,102,101);ctx.restore();drawTorchSource(ctx,torch);
+ const state=guard.mode==='chase'?(guard.notice>0?'! GET READY':guard.roofWatch?'! BLOCKING YOUR ESCAPE':'! CHASING'):guard.suspicion>.05?'? NOTICING':guard.mode==='investigate'?(guard.notice>0?'? HEARD SOMETHING':'? INVESTIGATING'):guard.mode==='search'?'? SEARCHING':'PATROLLING';label(ctx,state,eyeX,FLOOR-120,guard.mode==='chase'?'#ffc0a8':'#fff0c9',9);
  ctx.fillStyle='#35273b';ctx.beginPath();ctx.roundRect(eyeX-27,FLOOR-113,54,5,2);ctx.fill();ctx.fillStyle=guard.mode==='chase'?'#f58a70':'#ffd17b';ctx.fillRect(eyeX-27,FLOOR-113,54*guard.suspicion,5);
  const a=nearbyAction(s);if(a){label(ctx,s.controlMode==='gestures'?'TAP · '+a.label.toUpperCase():a.id==='home'?'HOLD ACTION · LEAVE':'HOLD ACTION · '+a.label.toUpperCase(),s.x+14,s.y-76,'#fff3c9',10);if(s.actionTime>0){ctx.fillStyle='#33223a';ctx.fillRect(s.x-13,s.y-65,54,5);ctx.fillStyle='#ffe0a1';ctx.fillRect(s.x-13,s.y-65,54*Math.min(1,s.actionTime/a.hold),5);}}
 }
-export function drawMischiefCarry(ctx,s,images){s.loot.forEach((id,i)=>drawTreasure(ctx,id,s.x+14+(i-1)*21,s.y-30-(i%2)*9,.5,images));}
+export function drawMischiefCarry(ctx,s,images,{reducedMotion=false}={}){
+ s.loot.forEach((id,i)=>{
+  const endX=s.x+14+(i-1)*21,endY=s.y-30-(i%2)*9,fx=s.theftFX?.id===id?s.theftFX:null;
+  const t=fx&&!reducedMotion?1-fx.time/.32:1,ease=1-(1-t)**3;
+  const x=fx?fx.x+(endX-fx.x)*ease:endX,y=fx?fx.y+(endY-fx.y)*ease-Math.sin(t*Math.PI)*35:endY;
+  const bob=reducedMotion||fx?0:Math.sin(s.time*7-i)*1.5;
+  drawTreasure(ctx,id,x,y+bob,fx?1-.5*ease:.5,images);
+ });
+}

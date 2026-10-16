@@ -8,7 +8,7 @@ Test whether observing a caretaker, changing a route by stealing, and voluntaril
 
 ## Implemented rules
 
-The fixed block is 1,720 world units wide. Home is on the left; a street shutter, supported upper canopy, powered lift, planter and three treasures create two main routes. All lower ground is safe; the new job has no hard timer or spike gauntlet. Existing movement physics, jump buffer, coyote time and dash cooldown are reused.
+The fixed block is 1,720 world units wide. Home is on the left; a street shutter, supported upper canopy, powered lift, planter and three treasures create two main routes. All lower ground is safe; the new job has no hard timer or spike gauntlet. The heist now has brief acceleration, quick braking and roof-lip forgiveness. Jump height, coyote time, input buffer and dash limits remain shared with the original movement rules. See MOVEMENT_FEEL.md for the current profile.
 
 | Interaction | Immediate result | Tradeoff |
 | --- | --- | --- |
@@ -27,7 +27,7 @@ Hold E or the contextual touch button to interact. Jump/dash interrupts the hold
 
 A deterministic street-level character patrols, investigates sound locations, becomes suspicious on sight, and chases after the suspicion meter fills. Initial sight requires roughly 0.95 seconds of continuous exposure. Distances, facing and height affect visibility. The shutter and marked planter occlude line of sight. Visible pursuit overrides sound distraction; making a noise does not magically erase a guard who is watching you. Breaking sight for several seconds moves pursuit into search and eventually patrol. Contact during alerted pursuit catches the player.
 
-The caretaker cannot climb the canopy. That makes upper routing a deliberate refuge in this bounded prototype. It is a known simplification, not evidence of advanced navigation. The translucent wedge indicates facing/attention; it is not a pixel-perfect display of occluded vision. The actual suspicion bar and chase label are authoritative. Safe ground also means a missed upper jump is recoverable, although it may put the player near the caretaker.
+The caretaker cannot climb the canopy. Upper routing remains a refuge, but the caretaker now leads visible movement toward the predicted landing and pauses visibly before pursuit. It is a known simplification, not evidence of advanced navigation. The translucent wedge indicates facing/attention; it is not a pixel-perfect display of occluded vision. The actual suspicion bar and chase label are authoritative. Safe ground also means a missed upper jump is recoverable, although it may put the player near the caretaker.
 
 ## Saves and home
 
@@ -37,7 +37,7 @@ The home shows all recovered treasure types and the last successful haul. A bank
 
 ## Presentation and art
 
-The existing city, roofs, timber, shutter, Sun, Chog poses and home art are reused. Battery, music box, pot, planter and map are deterministic Canvas drawings. The caretaker uses one newly generated transparent sprite, mirrored by facing, with small idle/walking motion; this is not a full animated character sheet.
+The existing city, roofs, timber, shutter, Sun, Chog poses and home art are reused. Battery, music box, pot, planter and map are deterministic Canvas drawings. The caretaker uses one newly generated transparent sprite, mirrored by facing, with distance-based walking motion and a brief anticipation pose; this is not a full animated character sheet.
 
 Project asset: `dist/assets/burrows-caretaker-v1.webp`, compressed to 280 × 257 with alpha. Generated using the built-in image-generation tool, then cropped/resized and encoded with Pillow. Existing assets were not replaced.
 
@@ -76,3 +76,7 @@ The current touch default is Gestures. The previous button controls remain selec
 Added recognizer and controller checks cover two-pointer movement plus jump/dash, no jump on swipe, no delayed tap timers, directional dash priority, cancellation/reset, blocked preference storage, projected targets, tap-to-steal, tap-to-bank, targeted dropping, and cancelling a theft by moving away. Existing continuous full-haul feasibility routes and old button/keyboard flows remain covered.
 
 This is a trial for device playtesting. Tests validate event handling and simulation; no physical phone or live browser CSS/input validation was available. Tap-to-jump deliberately fires on release, so finger contact duration still contributes to perceived response time. Real-device jump-to-dash timing and thumb reach remain the acceptance gate before committing to these controls.
+
+## Movement and pursuit revision
+
+See [MOVEMENT_FEEL.md](MOVEMENT_FEEL.md) for acceleration/braking, lip assistance, continuous pose animation, theft reactions, interception, music-box escape behaviour, and validation limits.

@@ -1,3 +1,4 @@
+import {runVelocity,assistLedge} from './movement-feel.mjs';
 export const W=900,H=520,FLOOR=460,STEP=1/120;
 export const MOVE={speed:265,jump:555,gravity:1500,dashSpeed:720,dashDuration:.18,dashCooldown:1,coyote:.12,jumpBuffer:.14};
 export const ROOMS=[
@@ -15,10 +16,11 @@ export function stepRun(s,input,dt=STEP){
  if(s.status!=='playing')return s;
  s.time+=dt;s.jumpBuffer=Math.max(0,s.jumpBuffer-dt);if(input.jump)s.jumpBuffer=MOVE.jumpBuffer;
  s.coyote=s.ground?MOVE.coyote:Math.max(0,s.coyote-dt);
- s.dashCooldown=Math.max(0,s.dashCooldown-dt);s.dashTime=Math.max(0,s.dashTime-dt);
+ const wasDashing=s.dashTime>0;s.dashCooldown=Math.max(0,s.dashCooldown-dt);s.dashTime=Math.max(0,s.dashTime-dt);if(s.room.mischief)s.ledgeCatch=Math.max(0,(s.ledgeCatch||0)-dt);
  const direction=(input.right?1:0)-(input.left?1:0);if(direction&&s.dashTime===0)s.facing=direction;
  if(input.dash&&s.dashCooldown===0){s.dashTime=MOVE.dashDuration;s.dashCooldown=MOVE.dashCooldown;s.dashes++;}
- s.vx=s.dashTime>0?s.facing*MOVE.dashSpeed:direction*MOVE.speed;
+ if(s.room.mischief&&wasDashing&&s.dashTime===0)s.vx=Math.sign(s.vx)*Math.min(Math.abs(s.vx),MOVE.speed);
+ s.vx=s.dashTime>0?s.facing*MOVE.dashSpeed:s.room.mischief?runVelocity(s,direction,MOVE.speed,dt):direction*MOVE.speed;
  if(s.jumpBuffer>0&&s.coyote>0){s.vy=-MOVE.jump;s.ground=false;s.coyote=0;s.jumpBuffer=0;}
  const oldBottom=s.y+34,oldX=s.x,oldY=s.y;if(s.dashTime===0)s.vy+=MOVE.gravity*dt;s.x=Math.max(8,Math.min((s.room.width||W)-36,s.x+s.vx*dt));// Resolve solid walls horizontally before integrating vertical movement.
  for(const p of s.room.solids||[]){if(s.y+34>p.y&&s.y<p.y+p.h&&s.x+28>p.x&&s.x<p.x+p.w){
@@ -30,6 +32,7 @@ export function stepRun(s,input,dt=STEP){
  for(const p of [...s.room.platforms,...groundSegments(s.room),...(s.room.solids||[])]){
   if(s.vy>=0&&oldBottom<=p.y+.1&&s.y+34>=p.y&&s.x+28>p.x&&s.x<p.x+p.w){s.y=p.y-34;s.vy=0;s.ground=true;}
  }
+ if(s.room.mischief)assistLedge(s,oldBottom,direction);
  for(const slot of s.room.spikes){if(overlap({x:s.x+5,y:s.y+4,w:18,h:30},spikeBounds(slot))){s.status='dead';s.deathReason='spikes';break;}}
  if(s.y>H+50){s.status='dead';s.deathReason='gap';}
  s.room.orbs.forEach((o,i)=>{if(!s.collected.includes(i)&&Math.hypot(s.x+14-o.x,s.y+17-o.y)<30){s.collected.push(i);s.coins++;}});

@@ -1,10 +1,11 @@
-import {FLOOR} from './engine.mjs';
-import {BLOCK} from './mischief.mjs';
+import {caretakerPose} from './caretaker-motion.mjs';
+import {FLOOR} from './engine.mjs?motion=1';
+import {BLOCK} from './mischief.mjs?motion=1';
 // Presentation only: detection and suspicion continue to use the existing simulation.
 function clippedRay(origin,target,obstacles){let stop=1;const dx=target.x-origin.x,dy=target.y-origin.y;for(const b of obstacles){let near=0,far=1;for(const [p,d,min,max] of [[origin.x,dx,b.x,b.x+b.w],[origin.y,dy,b.y,b.y+b.h]]){if(Math.abs(d)<.00001){if(p<min||p>max){near=2;break;}}else{const a=(min-p)/d,z=(max-p)/d;near=Math.max(near,Math.min(a,z));far=Math.min(far,Math.max(a,z));}}if(near<=far&&near>=0&&near<stop)stop=near;}return {x:origin.x+dx*stop,y:origin.y+dy*stop};}
 function path(ctx,light,points){ctx.beginPath();ctx.moveTo(light.x,light.y);for(const p of points)ctx.lineTo(p.x,p.y);ctx.closePath();}
 export function drawTorchBeam(ctx,s,{reducedMotion=false}={}){
- const g=s.caretaker,bob=reducedMotion?0:Math.sin(s.time*(g.mode==='chase'?16:7))*1.2,light={x:g.x+14+g.facing*36,y:FLOOR-30+bob,alert:g.mode==='chase',noticing:g.suspicion>.05},range=(light.alert?400:300)-36,farX=light.x+g.facing*range,obstacles=[...s.room.solids,BLOCK.cover],points=[];
+ const g=s.caretaker,light={...caretakerPose(s,reducedMotion).light,alert:g.mode==='chase',noticing:g.suspicion>.05},range=(light.alert?400:300)-36,farX=light.x+g.facing*range,obstacles=[...s.room.solids,BLOCK.cover],points=[];
  for(let i=0;i<=32;i++)points.push(clippedRay(light,{x:farX,y:FLOOR-190+i*193/32},obstacles));
  ctx.save();path(ctx,light,points);const glow=ctx.createLinearGradient(light.x,light.y,farX,light.y);
  if(light.alert){glow.addColorStop(0,'rgba(255,151,94,.56)');glow.addColorStop(.55,'rgba(255,119,70,.30)');glow.addColorStop(1,'rgba(255,130,80,.10)');}else{glow.addColorStop(0,'rgba(255,232,142,.60)');glow.addColorStop(.5,'rgba(255,213,104,.32)');glow.addColorStop(1,'rgba(255,218,126,.10)');}
