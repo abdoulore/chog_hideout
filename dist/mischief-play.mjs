@@ -3,7 +3,7 @@ import {projectTarget} from './mischief-target.mjs';
 import {STEP} from './engine.mjs';
 import {newMischief,stepMischief,nearbyAction,lootValue,jobObjective,TREASURES,BLOCK} from './mischief.mjs';
 import {readJob,bankJob,writeJob,emptyJob} from './mischief-records.mjs';
-import {loadArt,drawWorld} from './world-renderer.mjs';
+import {loadArt,drawWorld} from './world-renderer.mjs?depth=1';
 import {loadCaretaker} from './mischief-visuals.mjs';
 import {createFeedback,snapshot} from './feedback.mjs';
 import {createSound} from './sound.mjs';

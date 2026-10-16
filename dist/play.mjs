@@ -2,7 +2,7 @@ import {STEP} from './engine.mjs';
 import {cameraBiasFor} from './scene-layout.mjs';
 import {newHeist,stepHeist,retryEscape,missionProgress,missionObjective} from './heist.mjs';
 import {readRecords,recordFinish,writeRecords,emptyRecords} from './heist-records.mjs';
-import {loadArt,drawWorld} from './world-renderer.mjs';
+import {loadArt,drawWorld} from './world-renderer.mjs?depth=1';
 import {createFeedback,snapshot} from './feedback.mjs';
 import {createSound} from './sound.mjs';
 const $=id=>document.getElementById(id),canvas=$('canvas'),ctx=canvas.getContext('2d');

@@ -40,7 +40,7 @@ See [implementation and test limits](docs/ONE_MORE_THING.md). Automated routes e
 
 Open **http://localhost:8080/play.html** for the illustrated heist. The bridge retracts and a shutter closes after pickup; return home via the upper maintenance route and a leftward dash crossing. It has a layered city, textured rooftops, eight character poses, touch controls, and pause/retry. Movement now has interpolated presentation, landing dust, dash trails, sparkle bursts, and original synthesized sound cues. Sound starts after pressing Play and can be muted with the music-note button; the preference is saved on this browser. `/movement.html` redirects here. The technical Canvas/Phaser comparison is preserved at `/renderer-lab.html`; both use the same movement simulation.
 
-See [art implementation notes](docs/ART_IMPLEMENTATION.md) for asset briefs, provenance, and validation limits.
+See [scene depth and background hierarchy](docs/SCENE_DEPTH.md) and [art implementation notes](docs/ART_IMPLEMENTATION.md) for asset briefs, provenance, and validation limits.
 
 ## Play
 

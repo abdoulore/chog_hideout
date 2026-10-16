@@ -1,3 +1,4 @@
+import {drawDistantCity,sceneryImage,createSceneSurface} from './scene-depth.mjs';
 import {drawMischiefProps,drawMischiefCarry} from './mischief-visuals.mjs';
 import {FLOOR,groundSegments} from './engine.mjs';
 import manifest from './asset-manifest.mjs';
@@ -15,22 +16,17 @@ export async function loadArt(){
 }
 export function artCamera(run,displayWidth,width=900,height=520){return sceneCamera(run,displayWidth,width,height);}
 function sprite(ctx,img,frame,x,y,w,h){ctx.drawImage(img,...frame,x,y,w,h);}
-export function drawWorld(ctx,run,images,width=900,height=520,{displayWidth=900,reducedMotion=false,feedback=null}={}){
+export function drawWorld(ctx,run,images,width=900,height=520,{displayWidth=900,reducedMotion=false,feedback=null,createSurface=createSceneSurface}={}){
  const m=manifest,layout=sceneLayout(run,displayWidth,width,height),cam=layout.camera,groundY=layout.groundY;
  ctx.clearRect(0,0,width,height);
- // The distant city moves more slowly than the physical gameplay plane.
- const bgW=Math.max(width*1.45,height*images.city.width/images.city.height*layout.backgroundScale),bgH=bgW*images.city.height/images.city.width;
- const offset=cam.x*.16;for(let tile=-1;tile<4;tile++){
-  const x=tile*bgW-offset;
-  ctx.save();if(tile%2){ctx.translate(x+bgW,(height-bgH)*.2-layout.backgroundLift);ctx.scale(-1,1);ctx.drawImage(images.city,0,0,bgW,bgH);}else ctx.drawImage(images.city,x,(height-bgH)*.2-layout.backgroundLift,bgW,bgH);ctx.restore();
- }
- ctx.fillStyle='rgba(255,230,194,.07)';ctx.fillRect(0,0,width,height);
+ drawDistantCity(ctx,run,images,width,height,layout,{createSurface});
  const fx=feedback||{};const shake=!reducedMotion&&fx.impact?Math.sin(fx.clock*85)*fx.impact*7:0;
  ctx.save();ctx.translate(shake,groundY-FLOOR*cam.zoom);ctx.scale(cam.zoom,cam.zoom);ctx.translate(-cam.x,0);
- const house=m.props.frames.house;
+ const house=m.props.frames.house,houseArt=sceneryImage(images.props,'houses',createSurface);ctx.save();ctx.globalAlpha=.70;
  for(const [x,w] of [[run.room.heist?-32:-170,325],[555,290],[1995,290]]){
-  const h=w*house[3]/house[2];sprite(ctx,images.props,house,x,FLOOR-h,w,h);
+  const h=w*house[3]/house[2];sprite(ctx,houseArt,house,x,FLOOR-h,w,h);
  }
+ ctx.restore();
  // Platforms use the same top plane as the simulation. Image overhang is clipped.
  function roof(x,y,w,hanging=false){
   ctx.save();ctx.beginPath();ctx.rect(x,y,w,hanging?22:900);ctx.clip();
@@ -53,7 +49,7 @@ export function drawWorld(ctx,run,images,width=900,height=520,{displayWidth=900,
  let frame=0;if(run.dashTime>0)frame=6;else if(!run.ground)frame=run.vy<0?4:5;else if(fx.land>.08)frame=7;else if(Math.abs(run.vx)>0)frame=[1,2,3,2][Math.floor(fx.stride??run.time*12)%4];
  const f=m.chog.frames[frame],scale=layout.characterHeight/m.chog.frames[0][3],fw=f[2]*scale,fh=f[3]*scale;
  // Soft contact shadow and tiny pose deformation keep the silhouette grounded.
- if(run.ground){ctx.save();ctx.fillStyle='rgba(49,27,44,.22)';ctx.beginPath();ctx.ellipse(run.x+14,run.y+36,21,3,0,0,Math.PI*2);ctx.fill();ctx.restore();}
+ if(run.ground){ctx.save();ctx.fillStyle='rgba(42,25,42,.30)';ctx.beginPath();ctx.ellipse(run.x+14,run.y+36,21,3,0,0,Math.PI*2);ctx.fill();ctx.restore();}
  const squash=!reducedMotion&&fx.land>0?Math.sin(fx.land/.16*Math.PI)*.08:0;
  const stretch=!reducedMotion&&fx.jump>0?Math.sin(fx.jump/.18*Math.PI)*.05:0;
  const breathe=!reducedMotion&&run.ground&&Math.abs(run.vx)===0?Math.sin((fx.clock??run.time)*2.8)*.012:0;

@@ -29,6 +29,7 @@ export function drawMischiefProps(ctx,s,images,{reducedMotion=false}={}){
  const guard=s.caretaker,eyeX=guard.x+14,eyeY=FLOOR-54;
  // Teal/amber/coral vision wedge plus a separate suspicion meter; never color alone.
  ctx.save();ctx.globalAlpha=.13;ctx.fillStyle=guard.mode==='chase'?'#fa755e':guard.suspicion>0?'#ffc969':'#a9e1cf';ctx.beginPath();ctx.moveTo(eyeX,eyeY);ctx.lineTo(eyeX+guard.facing*270,eyeY-105);ctx.lineTo(eyeX+guard.facing*270,FLOOR);ctx.closePath();ctx.fill();ctx.restore();
+ ctx.save();ctx.fillStyle='rgba(42,25,42,.26)';ctx.beginPath();ctx.ellipse(eyeX,FLOOR+2,28,4,0,0,Math.PI*2);ctx.fill();ctx.restore();
  ctx.save();ctx.translate(eyeX,FLOOR);ctx.scale(guard.facing,1);const stride=reducedMotion?0:Math.sin(s.time*(guard.mode==='chase'?16:7))*1.2;if(images.caretaker)ctx.drawImage(images.caretaker,-51,-101+stride,102,101);ctx.restore();
  const state=guard.mode==='chase'?'! CHASING':guard.suspicion>.05?'? NOTICING':guard.mode==='investigate'?'? INVESTIGATING':guard.mode==='search'?'? SEARCHING':'PATROLLING';label(ctx,state,eyeX,FLOOR-120,guard.mode==='chase'?'#ffc0a8':'#fff0c9',9);
  ctx.fillStyle='#35273b';ctx.beginPath();ctx.roundRect(eyeX-27,FLOOR-113,54,5,2);ctx.fill();ctx.fillStyle=guard.mode==='chase'?'#f58a70':'#ffd17b';ctx.fillRect(eyeX-27,FLOOR-113,54*guard.suspicion,5);
