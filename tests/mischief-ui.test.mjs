@@ -15,8 +15,8 @@ function setup({store,artLoader=async()=>({city:{width:1400,height:788},roof:{},
  return {app,doc,audio,events,map,advance,get:id=>nodes.get(id),step,storage};
 }
 
-test('live screen supports touch hold, safe banking, one save, replay, map pause, blur and resume',async()=>{const ui=setup();await ui.app.ready;const {app,get,step}=ui;assert.equal(get('play').disabled,false);assert.equal(get('title').textContent,'One More Thing.');get('play').click();assert(ui.doc.body.classList.contains('playing'));const d=driver(()=>app.run,step);d.go(430);
- get('interact').onpointerdown({preventDefault(){},pointerId:1});for(let i=0;i<100;i++){// Run frames while the captured pointer is held, without synthesizing a key release.
+test('live screen supports touch hold, safe banking, one save, replay, map pause, blur and resume',async()=>{const ui=setup();await ui.app.ready;const {app,get,step}=ui;assert.equal(get('play').disabled,false);assert.equal(get('title').textContent,'One More Thing.');get('play').click();assert(ui.doc.body.classList.contains('playing'));step();assert.equal(get('interact').disabled,false);assert.equal(get('action-label').textContent,'HOLD ACTION');assert.doesNotMatch(get('action-detail').textContent,/Hold E/);const d=driver(()=>app.run,step);d.go(430);assert.equal(get('action-label').textContent,'HOLD TO TAKE');assert.match(get('action-detail').textContent,/lift battery/);
+ get('interact').onpointerdown({preventDefault(){},pointerId:1});for(let i=0;i<20;i++)ui.advance();get('interact').onpointercancel();ui.advance();assert.deepEqual(app.run.loot,[]);get('interact').onpointerdown({preventDefault(){},pointerId:2});for(let i=0;i<100;i++){// Run frames while the captured pointer is held, without synthesizing a key release.
  ui.advance();}
  get('interact').onpointerup();assert.deepEqual(app.run.loot,['battery']);assert.equal(app.run.powered,false);
  // Continue through the regular keyboard path; an elapsed-frame clamp keeps focus changes bounded.

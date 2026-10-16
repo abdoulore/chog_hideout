@@ -58,3 +58,7 @@ No real browser or physical touch-device playtest was available in this environm
 ## First human playtest
 
 Ask the player to start without explaining an optimal route. Observe whether they discover the hold action, understand the battery tradeoff and caretaker warning, and intentionally bank a first item. Then see whether they start another attempt or turn back for a second theft before banking. Capture where they were confused, whether a catch felt fair, and what they tried next. If every attempt uses the same safe route, revise the interactions and level before adding more content.
+
+## Mobile action clarity fix — 16 October 2026
+
+The action button now stays visibly gold and enabled throughout active play, including when no object is close. Its idle label is HOLD ACTION with an instruction to move next to a treasure. Nearby it changes to HOLD TO TAKE, HOLD TO KNOCK, HOLD TO RESTORE or HOLD TO GO HOME, with a filling progress indicator. The touch action stays above the movement row and accounts for the bottom safe area. Intro and world prompts use ACTION; E remains a keyboard shortcut. Long-press context menus are suppressed on the controls. The existing captured-pointer test now verifies discoverable idle/nearby labels, cancellation before completion, release and a completed hold. Physical-device CSS/input validation remains unavailable in this environment.
