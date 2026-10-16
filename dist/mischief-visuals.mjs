@@ -1,6 +1,7 @@
+import {drawTorchBeam,drawTorchSource} from './torchlight.mjs';
 import {FLOOR} from './engine.mjs';
 import manifest from './asset-manifest.mjs';
-import {BLOCK,TREASURES,nearbyAction,canSee} from './mischief.mjs';
+import {BLOCK,TREASURES,nearbyAction} from './mischief.mjs';
 export const CARETAKER_URL='assets/burrows-caretaker-v1.webp';
 export function loadCaretaker(){return new Promise((resolve,reject)=>{const img=new Image(),timer=setTimeout(()=>reject(Error('Caretaker artwork timed out')),15000);img.onload=()=>{clearTimeout(timer);resolve(img);};img.onerror=()=>{clearTimeout(timer);reject(Error('Caretaker artwork unavailable'));};img.src=new URL(CARETAKER_URL,import.meta.url).href;});}
 function label(ctx,text,x,y,color='#fff0c8',size=10){ctx.save();ctx.font=`700 ${size}px system-ui`;ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='#2e243be6';ctx.strokeText(text,x,y);ctx.fillStyle=color;ctx.fillText(text,x,y);ctx.restore();}
@@ -27,10 +28,9 @@ export function drawMischiefProps(ctx,s,images,{reducedMotion=false}={}){
  const door=manifest.props.frames.door;ctx.drawImage(images.props,...door,52,FLOOR-109,115,109);label(ctx,s.loot.length?(s.controlMode==='gestures'?'HOME · TAP DOOR TO LEAVE':'HOME · HOLD ACTION TO LEAVE'):'YOUR WAY HOME',110,FLOOR+24,'#fff0bf',9);
  for(const n of s.noise){const age=s.time-n.time;if(age>1.2)continue;ctx.save();ctx.globalAlpha=(1-age/1.2)*.7;ctx.strokeStyle=n.kind==='bell'?'#ffb392':'#f8db94';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(n.x,n.y-15,18+age*80,12+age*35,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
  const guard=s.caretaker,eyeX=guard.x+14,eyeY=FLOOR-54;
- // Teal/amber/coral vision wedge plus a separate suspicion meter; never color alone.
- ctx.save();ctx.globalAlpha=.13;ctx.fillStyle=guard.mode==='chase'?'#fa755e':guard.suspicion>0?'#ffc969':'#a9e1cf';ctx.beginPath();ctx.moveTo(eyeX,eyeY);ctx.lineTo(eyeX+guard.facing*270,eyeY-105);ctx.lineTo(eyeX+guard.facing*270,FLOOR);ctx.closePath();ctx.fill();ctx.restore();
+ const torch=drawTorchBeam(ctx,s,{reducedMotion});
  ctx.save();ctx.fillStyle='rgba(42,25,42,.26)';ctx.beginPath();ctx.ellipse(eyeX,FLOOR+2,28,4,0,0,Math.PI*2);ctx.fill();ctx.restore();
- ctx.save();ctx.translate(eyeX,FLOOR);ctx.scale(guard.facing,1);const stride=reducedMotion?0:Math.sin(s.time*(guard.mode==='chase'?16:7))*1.2;if(images.caretaker)ctx.drawImage(images.caretaker,-51,-101+stride,102,101);ctx.restore();
+ ctx.save();ctx.translate(eyeX,FLOOR);ctx.scale(guard.facing,1);const stride=reducedMotion?0:Math.sin(s.time*(guard.mode==='chase'?16:7))*1.2;if(images.caretaker)ctx.drawImage(images.caretaker,-51,-101+stride,102,101);ctx.restore();drawTorchSource(ctx,torch);
  const state=guard.mode==='chase'?'! CHASING':guard.suspicion>.05?'? NOTICING':guard.mode==='investigate'?'? INVESTIGATING':guard.mode==='search'?'? SEARCHING':'PATROLLING';label(ctx,state,eyeX,FLOOR-120,guard.mode==='chase'?'#ffc0a8':'#fff0c9',9);
  ctx.fillStyle='#35273b';ctx.beginPath();ctx.roundRect(eyeX-27,FLOOR-113,54,5,2);ctx.fill();ctx.fillStyle=guard.mode==='chase'?'#f58a70':'#ffd17b';ctx.fillRect(eyeX-27,FLOOR-113,54*guard.suspicion,5);
  const a=nearbyAction(s);if(a){label(ctx,s.controlMode==='gestures'?'TAP · '+a.label.toUpperCase():a.id==='home'?'HOLD ACTION · LEAVE':'HOLD ACTION · '+a.label.toUpperCase(),s.x+14,s.y-76,'#fff3c9',10);if(s.actionTime>0){ctx.fillStyle='#33223a';ctx.fillRect(s.x-13,s.y-65,54,5);ctx.fillStyle='#ffe0a1';ctx.fillRect(s.x-13,s.y-65,54*Math.min(1,s.actionTime/a.hold),5);}}

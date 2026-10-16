@@ -21,3 +21,9 @@ The renderer uses OffscreenCanvas when available, with an ordinary detached canv
 The 58 existing automated checks pass, including both heists, gesture input and home saves. Native Canvas renders of home, canopy and depot views were compared at portrait and landscape dimensions. The renderer accepts a surface factory so native inspection exercises the same cached grading path.
 
 These are scene renders, not physical-phone or live-browser screenshots. Browser filter support, first-frame cost and the final impression on the user's display still require device review. This pass changes visual hierarchy; it does not claim final production art quality.
+
+## Caretaker torchlight — 16 October 2026
+
+The previous 13%-opacity attention wedge is replaced by a clearly outlined, graduated amber light beam originating at the illustrated lantern. The lamp has a bright cream core and warm halo, with a more visible pool near the source. Alert pursuit shifts the beam to coral while the existing suspicion meter and state labels remain visible. Ray segments clip the drawn beam against the shutter and marked planter. A fixed number of simple rays is used; this does not add image assets or full-screen filter passes. Reduced motion suppresses the lamp's small walking bob.
+
+This is a presentation change. Detection range, sight checks, suspicion, pursuit and collision are unchanged. As before, the light illustrates attention rather than serving as a pixel-perfect detection boundary. Native portrait/landscape scene renders were inspected; all 58 existing checks pass. Physical-phone brightness and live-browser appearance remain unverified.

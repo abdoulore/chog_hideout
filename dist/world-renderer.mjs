@@ -1,5 +1,5 @@
 import {drawDistantCity,sceneryImage,createSceneSurface} from './scene-depth.mjs';
-import {drawMischiefProps,drawMischiefCarry} from './mischief-visuals.mjs';
+import {drawMischiefProps,drawMischiefCarry} from './mischief-visuals.mjs?torch=1';
 import {FLOOR,groundSegments} from './engine.mjs';
 import manifest from './asset-manifest.mjs';
 import {drawHeistProps,drawCarriedSun} from './heist-visuals.mjs';
