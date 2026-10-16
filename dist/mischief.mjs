@@ -31,7 +31,7 @@ function perform(s,id){
  emit(s,'power','Battery returned. Lift running; street gate closed.');return;}
  take(s,id);
 }
-function drop(s){if(!s.loot.length)return;const id=s.loot.includes('music')?'music':s.loot.at(-1),item=s.items[id];s.loot=s.loot.filter(v=>v!==id);item.state='world';item.x=Math.max(200,Math.min(BLOCK.width-70,s.x+14+s.facing*38));item.y=s.y+34;
+function drop(s,requested=null){if(!s.loot.length)return;const id=requested&&s.loot.includes(requested)?requested:s.loot.includes('music')?'music':s.loot.at(-1),item=s.items[id];s.loot=s.loot.filter(v=>v!==id);item.state='world';item.x=Math.max(200,Math.min(BLOCK.width-70,s.x+14+s.facing*38));item.y=s.y+34;
  // Land on the nearest actual supporting top, so dropped loot remains recoverable.
  const tops=[FLOOR,...s.room.platforms.filter(p=>item.x>=p.x&&item.x<=p.x+p.w&&p.y>=s.y+25).map(p=>p.y)];item.y=Math.min(...tops);s.musicAt=s.time;emit(s,'drop',id==='music'?'Music box dropped. It will keep playing here.':item.name+' dropped. You can pick it up again.');}
 function guardStep(s,dt){const g=s.caretaker;g.visible=canSee(s);const close=Math.abs(s.x-g.x)<42&&Math.abs(s.y-g.y)<54;
@@ -54,7 +54,7 @@ export function stepMischief(s,input={},dt=STEP){if(s.status!=='playing')return 
  if(!input.interact)s.requireRelease=false;
  const wasLift=s.powered&&s.ground&&Math.abs(s.y+34-s.liftY)<.2&&s.x+28>BLOCK.lift.x&&s.x<BLOCK.lift.x+BLOCK.lift.w;
  const nextLift=320+65*Math.cos((s.time+dt)*1.15);if(s.powered){if(wasLift)s.y+=nextLift-s.liftY;s.liftY=nextLift;}s.room=room(s.powered,s.liftY);
- s.actionCooldown=Math.max(0,s.actionCooldown-dt);if(input.drop){drop(s);s.actionCooldown=.28;}
+ s.actionCooldown=Math.max(0,s.actionCooldown-dt);if(input.drop){drop(s,input.dropId);s.actionCooldown=.28;}
  const a=nearbyAction(s);if(input.interact&&!s.requireRelease&&a&&s.actionCooldown===0&&!input.jump&&!input.dash){if(s.action!==a.id){s.action=a.id;s.actionTime=0;}s.actionTime+=dt;stepRun(s,{...input,left:false,right:false},dt);if(s.actionTime>=a.hold){perform(s,a.id);s.requireRelease=true;s.action=null;s.actionTime=0;s.actionCooldown=.3;}}
  else{s.action=null;s.actionTime=0;stepRun(s,input,dt);}
  if(s.status!=='playing')return s;

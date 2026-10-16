@@ -32,7 +32,7 @@ Open **http://localhost:8080/mischief.html**, or enter from the illustrated home
 - **Flowerpot:** knock it from the canopy to draw the caretaker away.
 - **Caretaker:** patrols, investigates noises, fills a visible suspicion bar, then chases. A marked planter and shutter block sight; breaking sight lets pursuit expire. The caretaker stays on the street; the canopy is the safer route.
 
-Touch has movement, jump, dash, a contextual hold action, and drop. Keyboard: arrows/A D, Space, X/Shift, hold E, Q to drop, M for a paused map, Escape to pause. The prototype has no hard countdown. Highest banked haul is the primary record; time breaks ties for the same haul. Records and recovered treasures save on this browser. No wallet is needed.
+Touch defaults to a gesture trial: drag the lower left to move; tap the right to jump; swipe horizontally on the right to dash. Stop beside a glowing object and tap it to interact. Tap an item in the carried-loot row to drop that specific item. The pause menu contains the map, sound toggle, and a saved Buttons/Gestures option. Buttons retain the contextual hold action. Keyboard: arrows/A D, Space, X/Shift, hold E, Q to drop, M for a paused map, Escape to pause. The prototype has no hard countdown. Highest banked haul is the primary record; time breaks ties for the same haul. Records and recovered treasures save on this browser. No wallet is needed.
 
 See [implementation and test limits](docs/ONE_MORE_THING.md). Automated routes establish feasibility, not whether players find the game fun.
 

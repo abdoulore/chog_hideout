@@ -62,3 +62,17 @@ Ask the player to start without explaining an optimal route. Observe whether the
 ## Mobile action clarity fix — 16 October 2026
 
 The action button now stays visibly gold and enabled throughout active play, including when no object is close. Its idle label is HOLD ACTION with an instruction to move next to a treasure. Nearby it changes to HOLD TO TAKE, HOLD TO KNOCK, HOLD TO RESTORE or HOLD TO GO HOME, with a filling progress indicator. The touch action stays above the movement row and accounts for the bottom safe area. Intro and world prompts use ACTION; E remains a keyboard shortcut. Long-press context menus are suppressed on the controls. The existing captured-pointer test now verifies discoverable idle/nearby labels, cancellation before completion, release and a completed hold. Physical-device CSS/input validation remains unavailable in this environment.
+
+## Gesture trial — 16 October 2026
+
+The current touch default is Gestures. The previous button controls remain selectable in Pause and save to `chog-controls:v1`. Keyboard controls work in either mode. This change applies to One More Thing; the original Borrowed Sunshine mission retains its button layout.
+
+- Drag on the lower left half to move. The small thumb pad follows the initial touch position. A 9 CSS-pixel dead zone stops movement when the thumb recentres; release, cancellation, lost capture, blur, resize, mode change and pause clear held state.
+- Tap the right side to jump on release. A tap permits at most 12 pixels of travel and 220 ms of contact. There is no timer waiting to decide whether to jump after release.
+- Swipe horizontally on the right to dash once per contact. Threshold: 28 CSS pixels, horizontal movement more than 1.25 times vertical travel, within 260 ms. The swipe chooses dash direction even if the other thumb points the opposite way. A recognised swipe does not also jump. Vertical drags and long rests do neither.
+- A screen-space tap marker appears on the nearby actionable treasure, pot, socket or home door. It projects from the same gameplay camera. Tap while standing still to begin the existing timed interaction. Moving, jumping, dashing, dropping loot, leaving reach or pausing cancels an unfinished action. One tap never performs a second action automatically.
+- Tap a carried-loot icon to drop that exact item. The map, sound and control selector are inside Pause. Pause is the only permanent play-screen button; object markers and carried items are contextual.
+
+Added recognizer and controller checks cover two-pointer movement plus jump/dash, no jump on swipe, no delayed tap timers, directional dash priority, cancellation/reset, blocked preference storage, projected targets, tap-to-steal, tap-to-bank, targeted dropping, and cancelling a theft by moving away. Existing continuous full-haul feasibility routes and old button/keyboard flows remain covered.
+
+This is a trial for device playtesting. Tests validate event handling and simulation; no physical phone or live browser CSS/input validation was available. Tap-to-jump deliberately fires on release, so finger contact duration still contributes to perceived response time. Real-device jump-to-dash timing and thumb reach remain the acceptance gate before committing to these controls.
