@@ -9,7 +9,7 @@ The change addresses the stiff stop/start movement and largely reactive street p
 - Dash keeps its immediate 720 speed, 0.18-second duration and one-second cooldown. Opposite-direction swipes still override the other thumb.
 - A moving airborne player can catch a roof lip missed by up to 12 vertical units, within 18 units of its edge, near the jump apex. Low jumps and solid shutters cannot be bypassed.
 - Jump height, coyote time and buffered jumps remain intact. The original timed raids retain their physics profile.
-- Current jump gestures still fire on release so a swipe cannot accidentally jump. Variable-height jumping and new gesture bindings are outside this pass.
+- The subsequent 17 October control refinement maps upward swipes to jump immediately at the recognition threshold. Sideways swipes dash; one contact triggers one action. Variable-height jumping remains outside this pass.
 
 ## Presentation
 
