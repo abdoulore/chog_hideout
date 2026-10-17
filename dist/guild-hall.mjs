@@ -1,8 +1,8 @@
 import {nextGoal,latestImpact} from './guild-goals.mjs?v=1';
-import {GUILDS,PLAYERS,player,guild,loadTrial,saveTrial,freshTrial,standings,guildStandings,qualifierSquad,lockReason,lockSquads,closeReason,closeTrial,fillExamples,abandonActive,entryReason,usedAttempts,trialUrl,formatTime,LIMIT,compareRuns} from './guild-trial.mjs?v=1';
+import {GUILDS,PLAYERS,player,guild,loadTrial,saveTrial,standings,guildStandings,qualifierSquad,lockReason,closeReason,entryReason,usedAttempts,trialUrl,formatTime,LIMIT,compareRuns} from './guild-trial.mjs?v=1';
 function localStorageSafe(){try{return globalThis.localStorage;}catch{return null;}}
-export function mountGuildHall({doc=globalThis.document,storage=localStorageSafe(),events=globalThis.window}={}){
- const $=id=>doc.getElementById(id);let loaded=loadTrial(storage),state=loaded.state,blocked=!!loaded.error,view='players';
+export function mountGuildHall({doc=globalThis.document,storage=localStorageSafe(),events=globalThis.window,search=globalThis.location?.search||''}={}){
+ const $=id=>doc.getElementById(id);let loaded=loadTrial(storage),state=loaded.state,blocked=!!loaded.error,view=new URLSearchParams(search).get('board')==='guilds'?'guilds':'players';
  function notify(message){$('hall-notice').hidden=!message;$('hall-notice').textContent=message||'';}
  if(!blocked&&!saveTrial(storage,state)){blocked=true;notify('Browser saving is unavailable. Rehearsal runs cannot be recorded here; solo play is still available.');}else if(loaded.error)notify(loaded.error);
  $('player-seat').innerHTML=GUILDS.map(g=>`<optgroup label="${g.name}">${PLAYERS.filter(p=>p.guild===g.id).map(p=>`<option value="${p.id}">${p.name} · ${g.name}</option>`).join('')}</optgroup>`).join('');
@@ -32,8 +32,6 @@ export function mountGuildHall({doc=globalThis.document,storage=localStorageSafe
  $('entry-status').textContent=finished?'Final scores are locked. The trophy is a local rehearsal result.':why||'An attempt begins when you press Play inside the game.';
  const impact=latestImpact(state);$('recent-result').hidden=!impact;
  if(impact){$('recent-title').textContent=impact.title;$('recent-copy').textContent=impact.copy;}
- $('guild-cards').innerHTML=GUILDS.map(g=>{const roster=stage==='qualifiers'?qualifierSquad(state,g.id):state.rosters[g.id],members=standings(state,stage,g.id),team=board.find(b=>b.id===g.id),winner=finished&&team.rank===1;
- return `<article class="guild-card ${g.color==='teal'?'teal':''} ${current.guild===g.id?'selected':''}"><div class="guild-cover"><span class="guild-tag">EXAMPLE GUILD / ${current.guild===g.id?'YOUR SELECTED SEAT':'OPPOSITION'}</span><span class="guild-crest" aria-hidden="true">${g.mark}</span></div><div class="guild-body"><h3>${g.name}</h3><p class="guild-motto">${g.motto}</p><p class="guild-meta">4 rehearsal seats · Founding Chog not linked · Local roster</p><div class="roster-label"><span>${stage==='qualifiers'?'QUALIFIER POSITIONS':'LOCKED SQUAD'}</span><span>${roster.length} / 3 PLACES</span></div><ul class="member-list">${members.map(p=>`<li><span><strong>${p.id===current.id?'You as ':''}${p.name} ${roster.includes(p.id)?'<span class="squad-number">◆</span>':''}</strong><small>${stage==='qualifiers'?(roster.includes(p.id)?'Currently in squad position':p.best?'Outside the top three':'Awaiting an escape'):(roster.includes(p.id)?'Squad member':'Reserve · not scoring')}</small></span><span class="member-score">${p.best?`${p.best.value} / 6 · ${formatTime(p.best.ticks)}<small>${p.best.example?'Example result':'Played here · unverified'}</small>`:'—'}</span></li>`).join('')}</ul><div class="trophy-slot ${winner?'winner':''}"><b aria-hidden="true">${winner?'✦':'◇'}</b><span>${winner?(board.filter(b=>b.rank===1).length>1?'Shared rehearsal trophy':'Burrows rehearsal trophy'):'A place for your first trophy'}<small>${winner?(team.examples?'Includes example scores · no prize':'Local results · no prize'):'Earned when this rehearsal closes'}</small></span></div></div></article>`;}).join('');
  $('standings-title').textContent=finished?'The rehearsal results':stage==='qualifiers'?'Qualifier standings':'Squad final standings';
  $('view-players').classList.toggle('active',view==='players');$('view-guilds').classList.toggle('active',view==='guilds');$('view-players').setAttribute('aria-pressed',String(view==='players'));$('view-guilds').setAttribute('aria-pressed',String(view==='guilds'));
  if(view==='players'){
@@ -45,21 +43,12 @@ export function mountGuildHall({doc=globalThis.document,storage=localStorageSafe
   $('standings-content').innerHTML=board.map(g=>`<article class="guild-score-row"><span>${g.rank||'—'}</span><div><h3>${g.name}</h3><p>${stage==='qualifiers'?'Awaiting the squad final':g.qualified?'All three players banked a run':g.banked+' / 3 escapes · provisional'}</p>${g.examples?'<small>Includes example scores</small>':''}${g.qualified?`<p>${g.members.map(m=>m.player.name+' '+m.best.value).join(' + ')} = ${g.value} treasure</p>`:''}</div><div class="guild-total">${g.value} / 18<small>${g.banked?formatTime(g.ticks):'No final times'}</small></div></article>`).join('');
  }
  const reason=blocked?'Saving is unavailable.':finished?'Results are closed. Reset to rehearse again.':stage==='qualifiers'?lockReason(state):closeReason(state);
- $('advance-round').textContent=finished?'Rehearsal complete':stage==='qualifiers'?'Lock squads & start final →':'Close rehearsal & award trophy →';$('advance-round').disabled=!!reason;$('advance-reason').textContent=reason||(stage==='qualifiers'?'Both squads are ready. Locking ends qualifiers and starts fresh final scores.':'Both squads have three escapes. Close now, or keep improving your runs.');
- $('round-next').hidden=!!reason;$('round-next').textContent=stage==='qualifiers'?'Both squads are ready · open round controls →':'All six escapes are in · open results controls →';
- $('host-summary').textContent=finished?'Results closed':!reason?(stage==='qualifiers'?'Squads ready to lock':'Ready to award trophy'):'Test the whole flow';
- $('fill-examples').disabled=blocked||finished;$('abandon-run').hidden=!state.attempts.some(a=>a.status==='active');
+ $('round-next').hidden=!!reason;$('round-next').textContent=stage==='qualifiers'?'Both squads ready · open event management →':'All escapes are in · open event management →';
  }
- $('rehearsal-details').onclick=$('round-next').onclick=()=>{$('rehearsal-tools').open=true;};
  $('player-seat').onchange=e=>commit(s=>({...s,seat:player(e.target.value)?.id||s.seat}),'Rehearsal seat changed.');
  $('view-players').onclick=()=>{view='players';render();};$('view-guilds').onclick=()=>{view='guilds';render();};
- $('fill-examples').onclick=()=>commit(s=>fillExamples(s),'Empty seats now contain labelled example scores. Play your selected seat to contribute your own run.');
- $('abandon-run').onclick=()=>commit(abandonActive,'Unfinished attempt abandoned. It still counts towards the attempt limit.');
- $('advance-round').onclick=()=>commit(s=>s.phase==='qualifiers'?lockSquads(s):closeTrial(s),state.phase==='qualifiers'?'Squads locked. Final scores start from zero.':'Rehearsal complete. Results and the local trophy are ready.');
- $('reset-trial').onclick=()=>$('reset-dialog').showModal();
- $('confirm-reset').onclick=()=>{const next=freshTrial();if(!saveTrial(storage,next)){notify('Could not reset: browser saving is unavailable.');return;}state=next;blocked=false;$('reset-dialog').close();notify('Fresh rehearsal ready. Solo saves were not changed.');render();};
- function refresh(){const r=loadTrial(storage);if(r.error){blocked=true;notify(r.error);}else{state=r.state;blocked=false;}render();}
- events?.addEventListener?.('storage',refresh);render();
- return {get state(){return state;},render,destroy(){events?.removeEventListener?.('storage',refresh);}};
+ function refresh(){const r=loadTrial(storage);if(r.error){blocked=true;notify(r.error);}else{state=r.state;}render();}
+ events?.addEventListener?.('storage',refresh);events?.addEventListener?.('pageshow',refresh);render();
+ return {get state(){return state;},render,destroy(){events?.removeEventListener?.('storage',refresh);events?.removeEventListener?.('pageshow',refresh);}};
 }
 if(typeof document!=='undefined')mountGuildHall();

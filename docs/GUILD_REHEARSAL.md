@@ -4,9 +4,9 @@
 
 ## Try it
 
-Open `/guild.html` from the home navigation or mission card. Lantern Company and Copper Assembly are two fictional example guilds, each with four local player seats. Neither has a linked founding NFT. Select a seat, enter a qualifier, and press Play in the game to consume an attempt. A banked escape posts that seat's result. Return using Guild Hall & standings.
+Open `/guild.html` from the home navigation or mission card. Lantern Company and Copper Assembly are two fictional example guilds, each with four local player seats. Neither has a linked founding NFT. Open the tournament, select a seat, enter a qualifier, and press Play in the game to consume an attempt. A banked escape posts that seat's result. Return using Tournament & standings.
 
-To rehearse alone, play the selected seat and then open **Test the flow on your own**. **Fill empty seats with examples** supplies labelled fixture scores for the other seats, leaving the selected seat untouched. It preserves existing banked scores. It does not simulate real users or validate play. You can instead switch seats and play all runs yourself on the same browser.
+To rehearse alone, play the selected seat and then open **Rehearsal management**, followed by **Test the flow on your own**. **Fill empty seats with examples** supplies labelled fixture scores for the other seats, leaving the selected seat untouched. It preserves existing banked scores. It does not simulate real users or validate play. You can instead switch seats and play all runs yourself on the same browser.
 
 Once three players per guild have qualified, **Lock squads & start final** ends qualifying and selects the top three from each guild. Final scores start empty. Switch to any selected squad member, play final attempts, and compare player/guild boards. Fill other seats with example scores if desired. Both squads need three escapes before **Close rehearsal & award trophy** becomes available. Closing freezes entry and awards a local trophy, including joint winners on an exact team tie. Reset requires confirmation and affects only rehearsal data.
 
@@ -22,9 +22,9 @@ Once three players per guild have qualified, **Lock squads & start final** ends 
 
 ## Implementation
 
-`guild-trial.mjs` owns serialisable, game-independent round state and ranking. `guild-hall.mjs` renders headquarters, selection, boards and rehearsal organiser controls. `guild-session.mjs` connects explicit tournament URLs to the existing mission controller. Ordinary solo URLs never write rehearsal results. Real game runs still update their usual solo progression.
+`guild-trial.mjs` owns serialisable, game-independent round state and ranking. `guild-headquarters.mjs` renders headquarters, members and trophies; `guild-hall.mjs` renders the tournament entry, squad and standings; `guild-manage.mjs` owns rehearsal organiser controls. Headquarters and management share state handling through `guild-surface.mjs`. `guild-session.mjs` connects explicit tournament URLs to the existing mission controller. Ordinary solo URLs never write rehearsal results. Real game runs still update their usual solo progression.
 
-State uses `chog-guild-rehearsal:v1` in localStorage. It is browser-local, editable and unverified. Identity is a selected local seat, not an authenticated person. Cross-tab storage events refresh the hall; only one active local attempt is supported. Starting another abandons the previous attempt. Old event links, closed rounds, reserves and exhausted attempt budgets cannot start a recorded run through the normal UI. Score submission is one-time for an active attempt. Corrupt/blocked storage surfaces an error, and no successful save is claimed.
+State uses `chog-guild-rehearsal:v1` in localStorage. It is browser-local, editable and unverified. Identity is a selected local seat, not an authenticated person. Cross-tab storage events and browser-back `pageshow` events refresh each page; only one active local attempt is supported. Starting another abandons the previous attempt. Old event links, closed rounds, reserves and exhausted attempt budgets cannot start a recorded run through the normal UI. Score submission is one-time for an active attempt. Corrupt/blocked storage surfaces an error, and no successful save is claimed.
 
 Headquarters reuse the existing home and city illustrations with distinct brass/plum and copper/teal crests. No new downloaded art, fonts or external dependencies are added.
 
@@ -47,6 +47,16 @@ The platform should keep guild/event concepts separate from game simulation, whi
 
 The selected guild and player now lead the page, followed immediately by the challenge, personal best, position, attempts remaining and Play button. A derived objective explains the score/time required to beat the third-place cutoff or next better player. Example targets are labelled. Tied cutoffs explicitly request another run; no arbitrary squad guarantee is made.
 
-The selected guild's three squad slots and the opposing guild's status precede the full standings. A completed run recap compares standings immediately before and after that run; final recaps also show the guild haul change. Closed-event and reserve players receive a standings action instead of a dead Play button. Full headquarters, scoring rules and rehearsal controls live in collapsed panels. The local-rehearsal/no-prizes label stays visible, and the expanded controls explain the verification and ownership limits.
+The selected guild's three squad slots and the opposing guild's status precede the full standings. A completed run recap compares standings immediately before and after that run; final recaps also show the guild haul change. Closed-event and reserve players receive a standings action instead of a dead Play button. Headquarters and rehearsal controls now have separate routes; scoring rules remain expandable on the tournament page. The local-rehearsal/no-prizes label stays visible, and the expanded controls explain the verification and ownership limits.
 
 This pass changes presentation only. State keys, scoring, rosters, attempts and game physics remain compatible with existing rehearsal saves. Target/rank-change tests cover real score changes, examples, tied cutoffs and six-point ceilings. A fresh physical-phone or browser visual inspection remains unavailable.
+
+
+## Separate player destinations
+
+- `/guild.html`: selected guild headquarters, members, squad positions, trophy and one active-event link.
+- `/tournament.html`: entry, personal targets, squad progress, rivalry, standings and scoring rules. `?board=guilds#standings` opens the guild board directly.
+- `/event-manage.html`: local round controls, example filling, unfinished-attempt abandonment and confirmed reset. This is a separate rehearsal tool, not an authenticated organiser permission boundary.
+- `/mischief.html`: fullscreen game; recorded results return to tournament standings.
+
+The three guild routes share desktop links and mobile bottom navigation. The game keeps its own fullscreen controls. State keys and saved progress are unchanged. Route integration tests exercise the full event across all pages, browser-back refresh, deep links, seat switching and save failures.

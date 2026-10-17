@@ -127,6 +127,6 @@ The first playable district now has a painted home facade and matching treasure/
 
 ## Guild tournament rehearsal
 
-Open `/guild.html` (linked from the hideout). Two example guilds can run local qualifiers, lock three-player squads, compete with fresh final scores and close a rehearsal with a trophy. Play actual One More Thing runs or explicitly fill other seats with labelled example scores. Scoring prioritises banked treasure, then exact game ticks; all three squad members must finish. Ordinary solo play remains available.
+Open `/guild.html` for your guild headquarters (linked from the hideout), `/tournament.html` to compete, and `/event-manage.html` for local rehearsal controls. Two example guilds can run local qualifiers, lock three-player squads, compete with fresh final scores and close a rehearsal with a trophy. Play actual One More Thing runs or explicitly fill other seats with labelled example scores. Scoring prioritises banked treasure, then exact game ticks; all three squad members must finish. Ordinary solo play remains available.
 
 This is browser-local and unverified: no wallet connection, NFT founding, real membership, shared server standings or funded prize exists yet. See [the rehearsal guide](docs/GUILD_REHEARSAL.md) for the full test flow and implementation boundaries.
