@@ -124,3 +124,9 @@ One More Thing now uses quick acceleration, sharp braking, forgiving roof lips, 
 ### Painted district pass
 
 The first playable district now has a painted home facade and matching treasure/machinery art, substantial timber platforms, connected power hardware, clearer battery consequences and a quieter HUD. See [DISTRICT_ART.md](docs/DISTRICT_ART.md) for asset provenance, generation prompts, sizes and validation limits.
+
+## Guild tournament rehearsal
+
+Open `/guild.html` (linked from the hideout). Two example guilds can run local qualifiers, lock three-player squads, compete with fresh final scores and close a rehearsal with a trophy. Play actual One More Thing runs or explicitly fill other seats with labelled example scores. Scoring prioritises banked treasure, then exact game ticks; all three squad members must finish. Ordinary solo play remains available.
+
+This is browser-local and unverified: no wallet connection, NFT founding, real membership, shared server standings or funded prize exists yet. See [the rehearsal guide](docs/GUILD_REHEARSAL.md) for the full test flow and implementation boundaries.

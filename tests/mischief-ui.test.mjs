@@ -2,15 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {mountMischief} from '../dist/mischief-play.mjs';
+import {freshTrial,saveTrial,loadTrial,TRIAL_KEY} from '../dist/guild-trial.mjs';
 import {MISCHIEF_KEY} from '../dist/mischief-records.mjs';
 import {driver,batteryRoute,allTreasuresRoute} from './helpers/mischief-driver.mjs';
-function setup({store,artLoader=async()=>({city:{width:1400,height:788},roof:{},props:{},chog:{},sun:{},timber:{},shutter:{},caretaker:{}})}={}){
+function setup({store,search='',artLoader=async()=>({city:{width:1400,height:788},roof:{},props:{},chog:{},sun:{},timber:{},shutter:{},caretaker:{}})}={}){
  const nodes=new Map(),events=new Map(),map=new Map();let doc;
  const gradient=()=>({addColorStop(){}}),ctx=new Proxy({createLinearGradient:gradient,createRadialGradient:gradient},{get:(o,k)=>o[k]||(()=>{}),set:()=>true});
  function element(tag,attrs=''){const classes=new Set();return {tagName:tag.toUpperCase(),hidden:/\bhidden\b/.test(attrs),disabled:/\bdisabled\b/.test(attrs),textContent:'',value:0,style:{},classList:{toggle(k,on){const yes=on??!classes.has(k);yes?classes.add(k):classes.delete(k);},contains:k=>classes.has(k)},setAttribute(k,v){this[k]=v;},getContext:()=>ctx,getBoundingClientRect:()=>({width:360,height:720}),focus(){doc.activeElement=this;},setPointerCapture(){},click(){if(!this.disabled)this.onclick?.();}};}
  const html=fs.readFileSync(new URL('../dist/mischief.html',import.meta.url),'utf8');for(const m of html.matchAll(/<([a-z][a-z0-9]*)\b([^>]*\bid="([^"]+)"[^>]*)>/g))nodes.set(m[3],element(m[1],m[2]));
  const surface=prefix=>({addEventListener:(t,fn)=>events.set(prefix+t,fn),removeEventListener:t=>events.delete(prefix+t)});doc={...surface('doc:'),hidden:false,activeElement:null,getElementById:id=>{assert(nodes.has(id),id);return nodes.get(id);},body:element('body')};const audio={muted:false,plays:[],setMuted(v){this.muted=v;},pause(){},async unlock(){return true;},play(e){this.plays.push(e);}};
- const storage=store||{getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)},app=mountMischief({doc,events:surface(''),store:storage,raf:cb=>events.set('raf',cb),media:()=>({matches:true}),artLoader,audio});let clock=0;
+ const storage=store||{getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)},app=mountMischief({doc,events:surface(''),store:storage,raf:cb=>events.set('raf',cb),media:()=>({matches:true}),artLoader,audio,search});let clock=0;
  const key=k=>({key:k,repeat:false,preventDefault(){}});function advance(){clock+=1000/120+.0001;events.get('raf')(clock);}function step(command={}){for(const k of ['ArrowLeft','ArrowRight','e'])events.get('keyup')(key(k));for(const [id,k] of [['left','ArrowLeft'],['right','ArrowRight'],['jump',' '],['dash','x'],['interact','e'],['drop','q']])if(command[id])events.get('keydown')(key(k));advance();}
  return {app,doc,audio,events,map,advance,get:id=>nodes.get(id),step,storage};
 }
@@ -32,3 +33,16 @@ test('gesture trial moves with one thumb, swipes up to jump and sideways to dash
 test('tapping a nearby object performs one steal, tapping the door banks, and button mode persists',async()=>{const ui=setup();await ui.app.ready;ui.get('play').click();const d=driver(()=>ui.app.run,ui.step);d.go(430);ui.step();assert.equal(ui.get('world-action').hidden,false);assert.equal(ui.get('world-action-label').textContent,'TAKE');ui.get('world-action').click();for(let i=0;i<150;i++)ui.advance();assert.deepEqual(ui.app.run.loot,['battery']);assert.equal(ui.app.run.powered,false);d.go(110);ui.step();assert.equal(ui.get('world-action-label').textContent,'GO HOME');ui.get('world-action').click();for(let i=0;i<90;i++)ui.advance();assert.equal(ui.app.run.status,'won');assert.equal(ui.app.records.escapes,1);ui.get('control-mode').onchange({target:{value:'buttons'}});assert.equal(ui.app.controlMode,'buttons');assert.equal(ui.doc.body.classList.contains('gesture-mode'),false);const next=setup({store:ui.storage});await next.app.ready;assert.equal(next.app.controlMode,'buttons');ui.app.destroy();next.app.destroy();});
 
 test('tapping a carried item drops that exact item and moving away cancels an unfinished object action',async()=>{const ui=setup();await ui.app.ready;ui.get('play').click();const d=driver(()=>ui.app.run,ui.step);d.go(430);ui.step();ui.get('world-action').click();for(let i=0;i<15;i++)ui.advance();ui.step({left:true});for(let i=0;i<50;i++)ui.advance();assert.deepEqual(ui.app.run.loot,[]);const s=ui.app.run;s.loot=['sun','music'];s.items.sun.state='carried';s.items.music.state='carried';ui.step();assert.equal(ui.get('drop-sun').hidden,false);ui.get('drop-sun').click();ui.advance();assert.deepEqual(s.loot,['music']);assert.equal(s.items.sun.state,'world');assert.equal(s.items.music.state,'carried');ui.app.destroy();});
+
+
+test('a real game escape records exactly one qualifier and returns an attributed result',async()=>{
+ const map=new Map(),store={getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)};saveTrial(store,freshTrial('integrated-event'));
+ const ui=setup({store,search:'?trial=guild&event=integrated-event&seat=lantern-1&round=qualifiers'});await ui.app.ready;
+ assert.equal(loadTrial(store).state.attempts.length,0);assert.equal(ui.get('trial-return').hidden,false);ui.get('play').click();assert.equal(loadTrial(store).state.attempts.length,1);
+ batteryRoute(driver(()=>ui.app.run,ui.step));for(let i=0;i<100;i++)ui.step();const a=loadTrial(store).state.attempts[0];assert.equal(a.status,'banked');assert.equal(a.player,'lantern-1');assert.equal(a.value,1);assert.equal(a.ticks,Math.round(ui.app.run.time*120));assert.match(ui.get('trial-info').textContent,/Player rank 1/);assert.equal(loadTrial(store).state.attempts.length,1);ui.app.destroy();
+});
+test('retries and navigation abandon rehearsal attempts, while ordinary play never writes the event',async()=>{
+ const map=new Map(),store={getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)};saveTrial(store,freshTrial('integrated-event'));
+ const ui=setup({store,search:'?trial=guild&event=integrated-event&seat=lantern-1&round=qualifiers'});await ui.app.ready;ui.app.start();ui.step({right:true});ui.app.start();let attempts=loadTrial(store).state.attempts;assert.deepEqual(attempts.map(a=>a.status),['abandoned','active']);ui.events.get('pagehide')();assert.equal(loadTrial(store).state.attempts[1].status,'abandoned');ui.app.destroy();
+ const before=store.getItem(TRIAL_KEY),solo=setup({store});await solo.app.ready;solo.app.start();batteryRoute(driver(()=>solo.app.run,solo.step));solo.app.destroy();assert.equal(store.getItem(TRIAL_KEY),before);
+});

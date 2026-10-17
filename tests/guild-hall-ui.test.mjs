@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {mountGuildHall} from '../dist/guild-hall.mjs';
+import {TRIAL_KEY,loadTrial,beginAttempt,finishAttempt,saveTrial} from '../dist/guild-trial.mjs';
+function fixture(storage){const nodes=new Map(),events=new Map(),data=new Map();storage??={getItem:k=>data.get(k),setItem:(k,v)=>data.set(k,v)};const html=fs.readFileSync(new URL('../dist/guild.html',import.meta.url),'utf8');for(const m of html.matchAll(/\bid="([^"]+)"/g)){const classes=new Set();nodes.set(m[1],{hidden:false,disabled:false,textContent:'',innerHTML:'',value:'',classList:{toggle(k,v){v?classes.add(k):classes.delete(k);}},setAttribute(k,v){this[k]=v;},showModal(){this.open=true;},close(){this.open=false;}});}const doc={getElementById:id=>{assert(nodes.has(id),id);return nodes.get(id);}},surface={addEventListener:(k,v)=>events.set(k,v),removeEventListener:k=>events.delete(k)},app=mountGuildHall({doc,storage,events:surface});return {app,get:id=>nodes.get(id),events,storage};}
+function play(q,id,value=6,ticks=3000){const s=loadTrial(q.storage).state,r=beginAttempt(s,id,s.phase);saveTrial(q.storage,finishAttempt(r.state,r.attempt.id,{status:'banked',value,ticks}));q.events.get('storage')();}
+test('hall connects qualifiers, locked squads, final standings and a labelled trophy',()=>{
+ const q=fixture();assert.equal(q.get('advance-round').disabled,true);assert.match(q.get('enter-run').href,/trial=guild/);play(q,'lantern-1');q.get('fill-examples').onclick();assert.equal(q.get('advance-round').disabled,false);assert.match(q.get('guild-cards').innerHTML,/Example result/);q.get('advance-round').onclick();assert.equal(q.app.state.phase,'finals');assert.match(q.get('enter-run').href,/round=finals/);assert.equal(q.get('advance-round').disabled,true);
+ q.get('fill-examples').onclick();play(q,'lantern-1');assert.equal(q.get('advance-round').disabled,false);q.get('view-guilds').onclick();assert.match(q.get('standings-content').innerHTML,/Includes example scores/);q.get('advance-round').onclick();assert.equal(q.app.state.phase,'complete');assert.match(q.get('guild-cards').innerHTML,/Burrows rehearsal trophy/);assert.equal(q.get('enter-run')['aria-disabled'],'true');q.app.destroy();
+});
+test('switching seats changes entry attribution; reset is explicit and preserves solo storage',()=>{
+ const q=fixture();q.storage.setItem('chog-home:v1','keep me');q.get('player-seat').onchange({target:{value:'copper-2'}});assert.match(q.get('enter-run').href,/seat=copper-2/);const id=q.app.state.id;q.get('reset-trial').onclick();assert(q.get('reset-dialog').open);q.get('confirm-reset').onclick();assert.notEqual(q.app.state.id,id);assert.equal(q.storage.getItem('chog-home:v1'),'keep me');assert.equal(q.get('reset-dialog').open,false);q.app.destroy();
+});
+test('blocked persistence prevents entering a pretend recorded event',()=>{const q=fixture({getItem(){return null;},setItem(){throw Error();}});assert.equal(q.get('enter-run')['aria-disabled'],'true');assert.equal(q.get('advance-round').disabled,true);assert.match(q.get('hall-notice').textContent,/unavailable/);q.app.destroy();});
