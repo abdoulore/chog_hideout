@@ -1,3 +1,4 @@
+import {LOOP_GATE} from './loop-escape.mjs';
 import {drawDistrictCanopies,drawDistrictHome,drawDistrictPower,drawDistrictPlanter} from './district-scene.mjs';
 import {districtSprite} from './district-art.mjs';
 import {caretakerPose} from './caretaker-motion.mjs';
@@ -17,7 +18,15 @@ export function drawTreasure(ctx,id,x,y,size=1,images=null){if(images?.districtP
 export function drawMischiefProps(ctx,s,images,{reducedMotion=false}={}){
  const {gate:g,lift:l,cover}=BLOCK;
  drawDistrictHome(ctx,s,images,{reducedMotion});drawDistrictCanopies(ctx,s,images);drawDistrictPower(ctx,s,images,{reducedMotion});
- if(s.movementTrial){label(ctx,'HIGH PERCH',225,295,'#f5d99a',10);label(ctx,'DASH →',365,280,'#f5d99a',10);}
+ if(s.movementTrial&&!s.loopTrial){label(ctx,'HIGH PERCH',225,295,'#f5d99a',10);label(ctx,'DASH →',365,280,'#f5d99a',10);}
+ if(s.loopTrial){
+  const g=LOOP_GATE;ctx.save();ctx.strokeStyle='#5f4651';ctx.lineWidth=7;ctx.strokeRect(g.x-5,g.y-5,g.w+10,g.h+10);
+  if(s.loopGateClosed)ctx.drawImage(images.shutter,...manifest.shutter.frame,g.x,g.y,g.w,g.h);
+  else{ctx.fillStyle=s.loopAlarm?'#ffd18b':'#a4dbb6';ctx.fillRect(g.x,g.y,g.w,12);if(s.loopAlarm){ctx.strokeStyle='#f9ce8c';ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.strokeRect(g.x,g.y+13,g.w,g.h-13);}}
+  ctx.restore();label(ctx,s.loopGateClosed?'CLOSED · ↓':s.loopAlarm?'CLOSING · ↓':'ALARM SHUTTER',g.x+17,96,s.loopAlarm?'#ffd18b':'#d6ebcd',9);
+  label(ctx,s.loopAlarm?'← STREET HOME':'ROOFTOPS →',s.loopAlarm?1000:630,s.loopAlarm?442:286,'#ffe7a7',11);
+  if(s.loopAlarm){label(ctx,'↓ DROP TO STREET',1345,359,'#ffe7a7',11);if(s.items.music.state==='world')label(ctx,'ONE MORE? +2',900,325,'#edc1ff',11);}
+ }
  // The planter is a visible occluder, not a hidden collision wall.
  if(!drawDistrictPlanter(ctx,s,images)){
  const pot=ctx.createLinearGradient(cover.x,cover.y,cover.x,cover.y+cover.h);pot.addColorStop(0,'#b77258');pot.addColorStop(1,'#573448');ctx.fillStyle=pot;ctx.beginPath();ctx.roundRect(cover.x,cover.y+24,cover.w,cover.h-24,8);ctx.fill();ctx.strokeStyle='#e2ad79';ctx.lineWidth=4;ctx.stroke();

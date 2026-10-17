@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {loopEscape} from './helpers/loop-driver.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {mountMischief} from '../public/mischief-play.mjs';
@@ -12,7 +13,7 @@ function setup({store,search='',artLoader=async()=>({city:{width:1400,height:788
  const html=fs.readFileSync(new URL('../public/mischief.html',import.meta.url),'utf8');for(const m of html.matchAll(/<([a-z][a-z0-9]*)\b([^>]*\bid="([^"]+)"[^>]*)>/g))nodes.set(m[3],element(m[1],m[2]));
  const surface=prefix=>({addEventListener:(t,fn)=>events.set(prefix+t,fn),removeEventListener:t=>events.delete(prefix+t)});doc={...surface('doc:'),hidden:false,activeElement:null,getElementById:id=>{assert(nodes.has(id),id);return nodes.get(id);},body:element('body')};const audio={muted:false,plays:[],setMuted(v){this.muted=v;},pause(){},async unlock(){return true;},play(e){this.plays.push(e);}};
  const storage=store||{getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)},app=mountMischief({doc,events:surface(''),store:storage,raf:cb=>events.set('raf',cb),media:()=>({matches:true}),artLoader,audio,search});let clock=0;
- const key=k=>({key:k,repeat:false,preventDefault(){}});function advance(){clock+=1000/120+.0001;events.get('raf')(clock);}function step(command={}){for(const k of ['ArrowLeft','ArrowRight','e'])events.get('keyup')(key(k));for(const [id,k] of [['left','ArrowLeft'],['right','ArrowRight'],['jump',' '],['dash','x'],['interact','e'],['drop','q']])if(command[id])events.get('keydown')(key(k));advance();}
+ const key=k=>({key:k,repeat:false,preventDefault(){}});function advance(){clock+=1000/120+.0001;events.get('raf')(clock);}function step(command={}){for(const k of ['ArrowLeft','ArrowRight','e'])events.get('keyup')(key(k));for(const [id,k] of [['left','ArrowLeft'],['right','ArrowRight'],['jump',' '],['dash','x'],['interact','e'],['drop','q'],['down','ArrowDown']])if(command[id])events.get('keydown')(key(k));advance();}
  return {app,doc,audio,events,map,advance,get:id=>nodes.get(id),step,storage};
 }
 
@@ -64,4 +65,13 @@ test('swipe down, keyboard and alternate button all drop through platforms witho
  for(let i=0;i<100;i++)ui.advance();roof();ui.app.setControlMode('buttons');ui.advance();assert.equal(ui.get('down').hidden,false);assert.equal(ui.get('down').disabled,false);ui.get('down').onpointerdown({pointerId:2,preventDefault(){}});ui.advance();assert.equal(ui.app.run.platformDrops,3);assert.deepEqual(ui.app.run.loot,['music']);
  ui.app.pause();const y=ui.app.run.y;canvas.onpointerdown(e(3,270,550,300));canvas.onpointerup(e(3,270,590,350));ui.advance();assert.equal(ui.app.run.y,y);ui.app.destroy();
  const normal=setup();await normal.app.ready;assert.equal(normal.get('down').hidden,true);normal.app.destroy();
+});
+
+
+test('loop room plays through the real controller, explains its route and keeps results isolated',async()=>{
+ const map=new Map(),store={getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)};saveTrial(store,freshTrial('loop-event'));const saved=store.getItem(TRIAL_KEY);
+ const ui=setup({store,search:'?route=loop&trial=guild&event=loop-event&seat=lantern-1&round=qualifiers'});await ui.app.ready;
+ assert.equal(ui.get('title').textContent,'The Sunloop.');assert.equal(ui.get('loop-trial-panel').hidden,false);assert.equal(ui.get('jump-trial-panel').hidden,true);assert.equal(ui.app.run.room.doubleJump,true);assert.match(ui.get('map-note-roofs').textContent,/Drop to the street/);
+ ui.app.start();loopEscape(()=>ui.app.run,ui.step,{music:true});for(let i=0;i<100;i++)ui.step();assert.equal(ui.app.run.status,'won');assert.equal(ui.get('title').textContent,'One more, and out.');assert.equal(ui.get('haul-value').textContent,'5 / 5');assert.match(ui.get('records').textContent,/Loop escape playtest/);assert.equal(store.getItem(TRIAL_KEY),saved);assert.equal(map.has(MISCHIEF_KEY),false);
+ ui.app.start();assert.equal(ui.app.run.loopAlarm,false);assert.equal(ui.app.run.loopGateClosed,false);assert.deepEqual(ui.app.run.loot,[]);ui.app.destroy();
 });

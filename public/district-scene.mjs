@@ -23,7 +23,7 @@ export function drawDistrictHome(ctx,s,images,{reducedMotion=false}={}){
  const frame=districtAssets.districtHome.frame,w=308,h=w*frame[3]/frame[2];
  ctx.fillStyle='#2d1d3540';ctx.beginPath();ctx.ellipse(110,FLOOR+2,146,9,0,0,Math.PI*2);ctx.fill();
  districtSprite(ctx,images,'home',110-w/2,FLOOR-h,w,h);
- const available=s.loot.length>0,banking=s.action==='home'?s.actionTime/.45:s.status==='won'?1:0;
+ const available=s.loot.length>0&&(!s.loopTrial||s.loot.includes('sun')),banking=s.action==='home'?s.actionTime/.45:s.status==='won'?1:0;
  if(banking>0){
   const scale=w/frame[2],dx=110-w/2+(322-frame[0])*scale,dy=FLOOR-h+(244-frame[1])*scale,dw=160*scale,dh=256*scale,open=Math.min(1,banking);
   ctx.save();ctx.beginPath();ctx.moveTo(dx,dy+dh);ctx.lineTo(dx,dy+dw/2);ctx.bezierCurveTo(dx,dy-dw*.15,dx+dw,dy-dw*.15,dx+dw,dy+dw/2);ctx.lineTo(dx+dw,dy+dh);ctx.closePath();ctx.clip();
@@ -56,6 +56,6 @@ export function drawDistrictPower(ctx,s,images,{reducedMotion=false}={}){
  for(const x of [l.x+12,l.x+l.w-12]){line(ctx,[[x,249],[x,platformY]],'#4e3d40',2.8);line(ctx,[[x-1,249],[x-1,platformY]],'#c4a47c',.9);}
  timber(ctx,images,l.x-3,platformY,l.w+6,21);line(ctx,[[l.x,platformY],[l.x+l.w,platformY]],'#f7d394',3);for(const x of [l.x+8,l.x+l.w-8])pin(ctx,x,platformY+9);
  lamp(ctx,1146,208,s.powered,5);
- if(Math.abs(s.x-1090)<175&&!s.powered){ctx.save();ctx.font='600 10px system-ui';ctx.textAlign='center';ctx.fillStyle='#322738';ctx.beginPath();ctx.roundRect(1041,151,120,19,5);ctx.fill();ctx.fillStyle='#f4d5a5';ctx.fillText('Return battery to power',1101,164);ctx.restore();}
+ if(Math.abs(s.x-1090)<175&&!s.powered&&!s.loopTrial){ctx.save();ctx.font='600 10px system-ui';ctx.textAlign='center';ctx.fillStyle='#322738';ctx.beginPath();ctx.roundRect(1041,151,120,19,5);ctx.fill();ctx.fillStyle='#f4d5a5';ctx.fillText('Return battery to power',1101,164);ctx.restore();}
 }
 export function drawDistrictPlanter(ctx,s,images){const b=BLOCK.cover;ctx.fillStyle='#2d223c44';ctx.beginPath();ctx.ellipse(b.x+b.w/2,FLOOR+1,45,5,0,0,Math.PI*2);ctx.fill();return districtSprite(ctx,images,'planter',b.x-4,b.y-3,b.w+8,b.h+3);}
