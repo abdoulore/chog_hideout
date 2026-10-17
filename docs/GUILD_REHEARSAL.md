@@ -8,7 +8,7 @@ Open `/guild.html` from the home navigation or mission card. Lantern Company and
 
 To rehearse alone, play the selected seat and then open **Test the flow on your own**. **Fill empty seats with examples** supplies labelled fixture scores for the other seats, leaving the selected seat untouched. It preserves existing banked scores. It does not simulate real users or validate play. You can instead switch seats and play all runs yourself on the same browser.
 
-Once three players per guild have qualified, **Lock squads & start final** ends qualifying and selects the top three from each guild. Final scores start empty. Switch to any selected squad member, play final attempts, and compare player/guild boards. Fill other seats with example scores if desired. Both squads need three escapes before **Close rehearsal & award trophy** becomes available. Closing freezes entry and awards a local illustrated trophy, including joint winners on an exact team tie. Reset requires confirmation and affects only rehearsal data.
+Once three players per guild have qualified, **Lock squads & start final** ends qualifying and selects the top three from each guild. Final scores start empty. Switch to any selected squad member, play final attempts, and compare player/guild boards. Fill other seats with example scores if desired. Both squads need three escapes before **Close rehearsal & award trophy** becomes available. Closing freezes entry and awards a local trophy, including joint winners on an exact team tie. Reset requires confirmation and affects only rehearsal data.
 
 ## Scoring
 
@@ -41,3 +41,12 @@ No supported browser-control skill was available. DOM mocks check interactions a
 3. Lock real-event rules, roster and prize beneficiaries. Add confirmed funding and reviewed payouts only after this competition path works.
 
 The platform should keep guild/event concepts separate from game simulation, while shipping only Hideout as the first supported game. No external-game integration, guild founding, invitations, verified leaderboard or prize distribution is claimed by this rehearsal.
+
+
+## Player-first hall refinement
+
+The selected guild and player now lead the page, followed immediately by the challenge, personal best, position, attempts remaining and Play button. A derived objective explains the score/time required to beat the third-place cutoff or next better player. Example targets are labelled. Tied cutoffs explicitly request another run; no arbitrary squad guarantee is made.
+
+The selected guild's three squad slots and the opposing guild's status precede the full standings. A completed run recap compares standings immediately before and after that run; final recaps also show the guild haul change. Closed-event and reserve players receive a standings action instead of a dead Play button. Full headquarters, scoring rules and rehearsal controls live in collapsed panels. The local-rehearsal/no-prizes label stays visible, and the expanded controls explain the verification and ownership limits.
+
+This pass changes presentation only. State keys, scoring, rosters, attempts and game physics remain compatible with existing rehearsal saves. Target/rank-change tests cover real score changes, examples, tied cutoffs and six-point ceilings. A fresh physical-phone or browser visual inspection remains unavailable.
