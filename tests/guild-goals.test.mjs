@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {freshTrial,beginAttempt,finishAttempt,fillExamples,lockSquads} from '../dist/guild-trial.mjs';
-import {nextGoal,latestImpact} from '../dist/guild-goals.mjs';
+import {freshTrial,beginAttempt,finishAttempt,fillExamples,lockSquads} from '../public/guild-trial.mjs';
+import {nextGoal,latestImpact} from '../public/guild-goals.mjs';
 function bank(s,id,value,ticks){const r=beginAttempt(s,id,s.phase);return finishAttempt(r.state,r.attempt.id,{status:'banked',value,ticks});}
 test('an open place has no invented opponent target; a full field uses the actual cutoff',()=>{
  let s=freshTrial('goals');assert.equal(nextGoal(s).target,undefined);s=fillExamples(s);const g=nextGoal(s);assert.deepEqual(g.target,{value:1,ticks:4440});assert.match(g.copy,/under 37.000s/);assert.match(g.copy,/example score/);s=bank(s,'lantern-1',1,4800);assert.match(nextGoal(s).title,/squad place/);

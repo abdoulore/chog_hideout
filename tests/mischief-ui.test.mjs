@@ -1,15 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {mountMischief} from '../dist/mischief-play.mjs';
-import {freshTrial,saveTrial,loadTrial,TRIAL_KEY} from '../dist/guild-trial.mjs';
-import {MISCHIEF_KEY} from '../dist/mischief-records.mjs';
+import {mountMischief} from '../public/mischief-play.mjs';
+import {freshTrial,saveTrial,loadTrial,TRIAL_KEY} from '../public/guild-trial.mjs';
+import {MISCHIEF_KEY} from '../public/mischief-records.mjs';
 import {driver,batteryRoute,allTreasuresRoute} from './helpers/mischief-driver.mjs';
 function setup({store,search='',artLoader=async()=>({city:{width:1400,height:788},roof:{},props:{},chog:{},sun:{},timber:{},shutter:{},caretaker:{}})}={}){
  const nodes=new Map(),events=new Map(),map=new Map();let doc;
  const gradient=()=>({addColorStop(){}}),ctx=new Proxy({createLinearGradient:gradient,createRadialGradient:gradient},{get:(o,k)=>o[k]||(()=>{}),set:()=>true});
  function element(tag,attrs=''){const classes=new Set();return {tagName:tag.toUpperCase(),hidden:/\bhidden\b/.test(attrs),disabled:/\bdisabled\b/.test(attrs),textContent:'',value:0,style:{},classList:{toggle(k,on){const yes=on??!classes.has(k);yes?classes.add(k):classes.delete(k);},contains:k=>classes.has(k)},setAttribute(k,v){this[k]=v;},getContext:()=>ctx,getBoundingClientRect:()=>({width:360,height:720}),focus(){doc.activeElement=this;},setPointerCapture(){},click(){if(!this.disabled)this.onclick?.();}};}
- const html=fs.readFileSync(new URL('../dist/mischief.html',import.meta.url),'utf8');for(const m of html.matchAll(/<([a-z][a-z0-9]*)\b([^>]*\bid="([^"]+)"[^>]*)>/g))nodes.set(m[3],element(m[1],m[2]));
+ const html=fs.readFileSync(new URL('../public/mischief.html',import.meta.url),'utf8');for(const m of html.matchAll(/<([a-z][a-z0-9]*)\b([^>]*\bid="([^"]+)"[^>]*)>/g))nodes.set(m[3],element(m[1],m[2]));
  const surface=prefix=>({addEventListener:(t,fn)=>events.set(prefix+t,fn),removeEventListener:t=>events.delete(prefix+t)});doc={...surface('doc:'),hidden:false,activeElement:null,getElementById:id=>{assert(nodes.has(id),id);return nodes.get(id);},body:element('body')};const audio={muted:false,plays:[],setMuted(v){this.muted=v;},pause(){},async unlock(){return true;},play(e){this.plays.push(e);}};
  const storage=store||{getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)},app=mountMischief({doc,events:surface(''),store:storage,raf:cb=>events.set('raf',cb),media:()=>({matches:true}),artLoader,audio,search});let clock=0;
  const key=k=>({key:k,repeat:false,preventDefault(){}});function advance(){clock+=1000/120+.0001;events.get('raf')(clock);}function step(command={}){for(const k of ['ArrowLeft','ArrowRight','e'])events.get('keyup')(key(k));for(const [id,k] of [['left','ArrowLeft'],['right','ArrowRight'],['jump',' '],['dash','x'],['interact','e'],['drop','q']])if(command[id])events.get('keydown')(key(k));advance();}

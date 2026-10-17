@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readHome,saveHomeName,keepsakes,HOME_KEY,DEFAULT_NAME} from '../dist/home-model.mjs';
-import {emptyRecords,readRecords,recordFinish,writeRecords,RECORD_KEY} from '../dist/heist-records.mjs';
-import {newHeist,stepHeist} from '../dist/heist.mjs';
+import {readHome,saveHomeName,keepsakes,HOME_KEY,DEFAULT_NAME} from '../public/home-model.mjs';
+import {emptyRecords,readRecords,recordFinish,writeRecords,RECORD_KEY} from '../public/heist-records.mjs';
+import {newHeist,stepHeist} from '../public/heist.mjs';
 import {controlHeist} from './helpers/heist-controller.mjs';
 const store=()=>{const m=new Map();return {getItem:k=>m.get(k),setItem:(k,v)=>m.set(k,v)};};
 

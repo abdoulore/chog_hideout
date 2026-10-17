@@ -10,17 +10,21 @@ The chosen production art direction is **Rooftop Mischief**. Its illustrated wor
 
 ## Run locally
 
-Requires Node.js 20 or newer. No dependencies or installation step are needed.
+Requires Node.js 22.13 or newer. The games remain ordinary browser assets; live guild membership uses a Vinext Worker and D1.
 
 ```bash
+npm ci
 npm run dev
 ```
 
-Open **http://localhost:8080** for your illustrated guest hideout. The home remembers the recovered Pocket Sun, earned keepsakes, hideout name and personal records on this browser. The original lab is preserved at `/lab.html`. Alternatively, serve `dist/` with a static HTTP server. The files in `dist/` are the editable, buildless application source.
+Use the local URL printed by Vinext. For the game alone, `npm run solo` serves `public/` at **http://localhost:8080** without live guild APIs. Game files are edited in `public/`; `dist/` is generated production output. The existing localStorage records and game URLs are unchanged.
 
 ```bash
 npm test
+npm run build
 ```
+
+Live guilds are at `/guild.html`; the original local guild demonstration is at `/rehearsal.html`. See [Live guilds](docs/LIVE_GUILDS.md) for authentication, database setup, verification and access limitations.
 
 ## One More Thing — current gameplay prototype
 
@@ -88,22 +92,22 @@ The unfair crossings have been shortened and given at least 200 world units of c
 
 | Path | Purpose |
 | --- | --- |
-| `dist/engine.mjs` | Movement, collision, room data, and Dojo combat rules |
-| `dist/app.mjs` | Rendering, controls, menus, editor, replay, and local progress |
-| `dist/index.html` | Redirect to the illustrated home |
-| `dist/home.html` / `dist/home.mjs` / `dist/home.css` | Illustrated guest home |
-| `dist/home-model.mjs` / `dist/home-scene.mjs` | Saved home state and scene composition |
-| `dist/lab.html` / `dist/style.css` | Original playtest interface |
+| `public/engine.mjs` | Movement, collision, room data, and Dojo combat rules |
+| `public/app.mjs` | Rendering, controls, menus, editor, replay, and local progress |
+| `public/index.html` | Redirect to the illustrated home |
+| `public/home.html` / `public/home.mjs` / `public/home.css` | Illustrated guest home |
+| `public/home-model.mjs` / `public/home-scene.mjs` | Saved home state and scene composition |
+| `public/lab.html` / `public/style.css` | Original playtest interface |
 | `tests/` | Automated checks |
-| `dist/mischief.html` / `dist/mischief-play.mjs` / `dist/mischief.css` | Current rooftop heist UI and controls |
-| `dist/mischief.mjs` / `dist/mischief-records.mjs` / `dist/mischief-visuals.mjs` | Reactive job, local banking, caretaker and object presentation |
-| `dist/play.html` / `dist/play.mjs` / `dist/play.css` | Illustrated full-screen game |
-| `dist/world-renderer.mjs` / `dist/assets/` | Layered scene and optimized raster assets |
-| `dist/heist.mjs` / `dist/heist-records.mjs` | Two-phase mission, checkpoint and versioned local records |
-| `dist/heist-visuals.mjs` | Mechanism states, Sun and home restoration |
+| `public/mischief.html` / `public/mischief-play.mjs` / `public/mischief.css` | Current rooftop heist UI and controls |
+| `public/mischief.mjs` / `public/mischief-records.mjs` / `public/mischief-visuals.mjs` | Reactive job, local banking, caretaker and object presentation |
+| `public/play.html` / `public/play.mjs` / `public/play.css` | Illustrated full-screen game |
+| `public/world-renderer.mjs` / `public/assets/` | Layered scene and optimized raster assets |
+| `public/heist.mjs` / `public/heist-records.mjs` | Two-phase mission, checkpoint and versioned local records |
+| `public/heist-visuals.mjs` | Mechanism states, Sun and home restoration |
 | `docs/HEIST_SLICE.md` | Implemented mission, validation and limits |
-| `dist/renderer-lab.html` / `dist/renderer-lab.mjs` | Technical renderer comparison |
-| `dist/art.mjs` | Code-drawn mascot reference |
+| `public/renderer-lab.html` / `public/renderer-lab.mjs` | Technical renderer comparison |
+| `public/art.mjs` | Code-drawn mascot reference |
 | `docs/MOVEMENT_SLICE.md` | Tuning changes, verification, and remaining validation |
 | `docs/WORLD_AND_ART_BIBLE.md` | Proposed universe, art rules, and production plan |
 | `docs/art-direction/rooftop-mischief.jpg` | Selected concept image |
@@ -127,6 +131,6 @@ The first playable district now has a painted home facade and matching treasure/
 
 ## Guild tournament rehearsal
 
-Open `/guild.html` for your guild headquarters (linked from the hideout), `/tournament.html` to compete, and `/event-manage.html` for local rehearsal controls. Two example guilds can run local qualifiers, lock three-player squads, compete with fresh final scores and close a rehearsal with a trophy. Play actual One More Thing runs or explicitly fill other seats with labelled example scores. Scoring prioritises banked treasure, then exact game ticks; all three squad members must finish. Ordinary solo play remains available.
+Open `/rehearsal.html` for the fictional rehearsal guild headquarters, `/tournament.html` to compete, and `/event-manage.html` for local rehearsal controls. Two example guilds can run local qualifiers, lock three-player squads, compete with fresh final scores and close a rehearsal with a trophy. Play actual One More Thing runs or explicitly fill other seats with labelled example scores. Scoring prioritises banked treasure, then exact game ticks; all three squad members must finish. Ordinary solo play remains available.
 
 This is browser-local and unverified: no wallet connection, NFT founding, real membership, shared server standings or funded prize exists yet. See [the rehearsal guide](docs/GUILD_REHEARSAL.md) for the full test flow and implementation boundaries.

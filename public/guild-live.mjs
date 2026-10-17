@@ -1,0 +1,48 @@
+export function inviteCode(value,origin){try{const u=new URL(value,origin);if(u.origin!==origin||u.pathname!=='/guild.html')return null;const code=new URLSearchParams(u.hash.slice(1)).get('invite');return /^[a-f0-9]{48}$/.test(code||'')?code:null;}catch{return null;}}
+export function mountLiveGuild({doc=globalThis.document,win=globalThis.window,fetcher=globalThis.fetch}={}){
+ const $=id=>doc.getElementById(id),providers=new Map();let state=null,busy=false;
+ const code=()=>inviteCode(win.location.href,win.location.origin);
+ function notify(message){$('live-notice').hidden=!message;$('live-notice').textContent=message||'';}
+ async function api(action,body){const response=await fetcher('/api/guild/'+action+(action==='state'&&code()?'?invite='+encodeURIComponent(code()):''),body===undefined?{credentials:'same-origin',cache:'no-store'}:{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});let data;try{data=await response.json();}catch{throw Error('The guild service is unavailable. Your solo game is still ready.');}if(!response.ok){const e=Error(data.error||'Please try again.');e.status=response.status;throw e;}return data;}
+ function visibility(id,visible){$(id).hidden=!visible;}
+ function render(){
+  const signed=!!state?.signedIn,g=state?.guild,verified=!!state?.wallet?.verified;
+  visibility('account-panel',!signed);visibility('guild-panel',!!g);visibility('empty-panel',signed&&!g&&!state?.invitation);visibility('holder-section',signed);visibility('invitation-panel',!!state?.invitation);
+  $('sign-in').href='/signin-with-chatgpt?return_to='+encodeURIComponent('/guild.html'+(win.location.hash||''));
+  $('page-title').textContent=g?'Your people. Your place.':'A little trouble. Better together.';
+  if(g){$('live-guild-name').textContent=g.name;$('live-motto').textContent=g.motto;$('live-role').textContent=g.isMaster?'GUILD MASTER':'CREW MEMBER';$('founding-token').textContent='Founded by Chog Genesis · Token ID '+g.tokenId;$('member-count').textContent=g.memberCount+' / 50 members';
+   $('live-members').replaceChildren(...g.members.map(m=>{const li=doc.createElement('li'),name=doc.createElement('strong'),role=doc.createElement('small');name.textContent=m.alias+(m.isYou?' · you':'');role.textContent=m.isMaster?'Guild master':'Member';li.append(name,role);return li;}));
+  }
+  visibility('master-panel',!!g?.isMaster);$('make-invite').disabled=!verified;$('revoke-invite').disabled=!verified;
+  if(g?.isMaster&&!verified)$('holder-section').open=true;
+  $('wallet-state').textContent=state?.wallet?(verified?'Verified holder wallet: ':'Linked wallet · sign again to manage: ')+state.wallet.address:'A wallet is only needed to found or claim a guild.';
+  $('verify-wallet').textContent=verified?'Refresh wallet verification':'Verify holder wallet';
+  visibility('disconnect-wallet',verified);visibility('unlink-wallet',!!state?.wallet&&!g);visibility('found-form',verified&&!g);
+  if(state?.invitation){$('invite-name').textContent=state.invitation.name;$('invite-motto').textContent=state.invitation.motto;$('invite-state').textContent=g?(g.id===state.invitation.guildId?'You already belong to this guild.':'Leave your current guild before joining this one.'):'Choose your player name. No wallet needed.';visibility('join-form',signed&&!g);}
+  if(state?.invitationError||state?.ownershipError)notify(state.invitationError||state.ownershipError);
+ }
+ async function refresh(){try{state=await api('state');notify('');render();}catch(e){if(e.status===401){state={signedIn:false};render();notify('');}else{notify(e.message);}}}
+ async function act(fn){if(busy)return;busy=true;doc.querySelectorAll('button').forEach(b=>b.disabled=true);try{await fn();}catch(e){notify(e.code===4001?'You cancelled. You can keep playing or join a guild without a wallet.':e.message||'The wallet request could not be completed.');}finally{busy=false;doc.querySelectorAll('button').forEach(b=>b.disabled=false);if(state)render();}}
+ function announce(event){const d=event.detail;if(!d?.provider?.request||typeof d.info?.uuid!=='string')return;providers.set(d.info.uuid,{provider:d.provider,name:String(d.info.name||'Wallet').slice(0,60)});renderProviders();}
+ function renderProviders(){const selected=$('wallet-choice').value;$('wallet-choice').replaceChildren(...Array.from(providers,([id,p])=>{const option=doc.createElement('option');option.value=id;option.textContent=p.name;return option;}));if(providers.has(selected))$('wallet-choice').value=selected;visibility('wallet-label',providers.size>0);visibility('wallet-choice',providers.size>0);$('wallet-help').textContent=providers.size?'Only a message signature is requested. Standard wallet accounts are supported; contract wallets are not yet supported.':'No wallet detected in this browser. To claim guild-master rights, copy this page and open it inside your wallet’s browser, then sign in with the same player account. You can join and play here without doing that.';}
+ async function verify(){const selected=providers.get($('wallet-choice').value);if(!selected)throw Error('Open this page inside your wallet’s browser to verify ownership. Joining and playing do not require a wallet.');const p=selected.provider;notify('Choose the wallet account you want to verify.');const accounts=await p.request({method:'eth_requestAccounts'});const address=accounts?.[0];if(!address)throw Error('No wallet account selected.');
+  const chainId=await p.request({method:'eth_chainId'});if(parseInt(chainId,16)!==143){try{await p.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x8f'}]});}catch(e){if(e.code!==4902)throw e;await p.request({method:'wallet_addEthereumChain',params:[{chainId:'0x8f',chainName:'Monad',nativeCurrency:{name:'MON',symbol:'MON',decimals:18},rpcUrls:['https://rpc.monad.xyz'],blockExplorerUrls:['https://monadscan.com']}]});}if(parseInt(await p.request({method:'eth_chainId'}),16)!==143)throw Error('Select Monad in your wallet and try again.');}
+  const challenge=await api('challenge',{address});notify('Review the message in your wallet. It verifies ownership only and makes no transfer.');const hex='0x'+Array.from(new TextEncoder().encode(challenge.message),n=>n.toString(16).padStart(2,'0')).join('');const signature=await p.request({method:'personal_sign',params:[hex,address]});await api('verify',{nonce:challenge.nonce,signature});await refresh();notify('Wallet verified. You can now found or claim a guild.');
+ }
+ $('verify-wallet').onclick=()=>act(verify);
+ $('join-form').onsubmit=e=>{e.preventDefault();act(async()=>{await api('join',{code:code(),alias:$('join-alias').value});win.history.replaceState(null,'','/guild.html');await refresh();notify('You’re in. Welcome to your crew.');});};
+ $('found-form').onsubmit=e=>{e.preventDefault();act(async()=>{await api('create',{name:$('guild-name-input').value,motto:$('guild-motto-input').value,alias:$('found-alias').value,tokenId:$('token-id').value.trim()});await refresh();notify('Your guild is founded. Create an invitation for your crew.');});};
+ $('claim-guild').onclick=()=>act(async()=>{await api('claim',{alias:$('found-alias').value,tokenId:$('token-id').value.trim()});await refresh();notify('Current ownership verified. Your guild is ready.');});
+ $('make-invite').onclick=()=>act(async()=>{const i=await api('invite',{guildId:state.guild.id});$('invite-url').value=i.url;$('invite-expiry').textContent='Expires '+new Date(i.expires).toLocaleString()+'. This replaces earlier invitations.';visibility('invite-output',true);notify('Invitation ready. Share it with the people you want in your guild.');});
+ $('revoke-invite').onclick=()=>act(async()=>{await api('revoke',{guildId:state.guild.id});visibility('invite-output',false);$('invite-url').value='';notify('The invitation has been revoked. Existing members stay.');});
+ async function copy(value,input){try{await win.navigator.clipboard.writeText(value);notify('Copied.');}catch{if(input){input.focus();input.select();notify('Select and copy the highlighted link.');}else notify('Copy this address from your browser: '+value);}}
+ $('copy-invite').onclick=()=>copy($('invite-url').value,$('invite-url'));$('copy-page').onclick=()=>copy(win.location.href);
+ $('leave-guild').onclick=()=>$('leave-dialog').showModal();$('confirm-leave').onclick=()=>act(async()=>{await api('leave',{});$('leave-dialog').close();visibility('invite-output',false);$('invite-url').value='';await refresh();notify('You left the guild. Your solo progress is unchanged.');});
+ $('disconnect-wallet').onclick=()=>act(async()=>{await api('disconnect',{});await refresh();notify('Wallet verification ended. Your crew membership is unchanged.');});
+ $('unlink-wallet').onclick=()=>act(async()=>{await api('unlink',{});await refresh();notify('Wallet unlinked.');});
+ $('open-invite-form').onsubmit=e=>{e.preventDefault();const c=inviteCode($('invite-input').value.trim(),win.location.origin);if(!c){notify('Paste a Chog Hideout invitation from this site.');return;}win.location.hash='invite='+c;};
+ win.addEventListener('eip6963:announceProvider',announce);win.dispatchEvent(new Event('eip6963:requestProvider'));if(win.ethereum?.request&&!providers.size)providers.set('injected',{provider:win.ethereum,name:'Browser wallet'});renderProviders();
+ win.addEventListener('pageshow',refresh);win.addEventListener('hashchange',refresh);const ready=refresh();
+ return {ready,refresh,destroy(){win.removeEventListener('eip6963:announceProvider',announce);win.removeEventListener('pageshow',refresh);win.removeEventListener('hashchange',refresh);}};
+}
+if(typeof document!=='undefined')mountLiveGuild();

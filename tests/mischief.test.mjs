@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {newMischief,stepMischief,nearbyAction,canSee,lootValue,BLOCK} from '../dist/mischief.mjs';
-import {readJob,bankJob,writeJob,emptyJob,MISCHIEF_KEY} from '../dist/mischief-records.mjs';
-import {readHome,keepsakes} from '../dist/home-model.mjs';
-import {sceneLayout} from '../dist/scene-layout.mjs';
+import {newMischief,stepMischief,nearbyAction,canSee,lootValue,BLOCK} from '../public/mischief.mjs';
+import {readJob,bankJob,writeJob,emptyJob,MISCHIEF_KEY} from '../public/mischief-records.mjs';
+import {readHome,keepsakes} from '../public/home-model.mjs';
+import {sceneLayout} from '../public/scene-layout.mjs';
 import {driver,batteryRoute,allTreasuresRoute} from './helpers/mischief-driver.mjs';
 const tick=(s,input={},seconds=1/120)=>stepMischief(s,input,seconds);
 const drive=s=>driver(()=>s,input=>tick(s,input));

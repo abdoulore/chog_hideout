@@ -4,7 +4,7 @@
 
 ## Try it
 
-Open `/guild.html` from the home navigation or mission card. Lantern Company and Copper Assembly are two fictional example guilds, each with four local player seats. Neither has a linked founding NFT. Open the tournament, select a seat, enter a qualifier, and press Play in the game to consume an attempt. A banked escape posts that seat's result. Return using Tournament & standings.
+Open `/rehearsal.html` from the live guild page’s rehearsal link. Lantern Company and Copper Assembly are two fictional example guilds, each with four local player seats. Neither has a linked founding NFT. Open the tournament, select a seat, enter a qualifier, and press Play in the game to consume an attempt. A banked escape posts that seat's result. Return using Tournament & standings.
 
 To rehearse alone, play the selected seat and then open **Rehearsal management**, followed by **Test the flow on your own**. **Fill empty seats with examples** supplies labelled fixture scores for the other seats, leaving the selected seat untouched. It preserves existing banked scores. It does not simulate real users or validate play. You can instead switch seats and play all runs yourself on the same browser.
 
@@ -54,7 +54,7 @@ This pass changes presentation only. State keys, scoring, rosters, attempts and 
 
 ## Separate player destinations
 
-- `/guild.html`: selected guild headquarters, members, squad positions, trophy and one active-event link.
+- `/rehearsal.html`: selected fictional guild headquarters, members, squad positions, trophy and one active-event link.
 - `/tournament.html`: entry, personal targets, squad progress, rivalry, standings and scoring rules. `?board=guilds#standings` opens the guild board directly.
 - `/event-manage.html`: local round controls, example filling, unfinished-attempt abandonment and confirmed reset. This is a separate rehearsal tool, not an authenticated organiser permission boundary.
 - `/mischief.html`: fullscreen game; recorded results return to tournament standings.
@@ -66,3 +66,5 @@ The three guild routes share desktop links and mobile bottom navigation. The gam
 `menu-polish.css` is loaded last by all eight menu-bearing pages. It sets cream headings, brighter warm-grey supporting text, restrained title sizes and opaque reading panels. Guild and tournament art is masked toward the right and capped at 22% opacity (18% on mobile). Mobile pages use one solid destination bar; the hideout's Play action now sits in the normal flow above the room artwork. Gameplay canvas and gesture styling are unchanged.
 
 Seventeen existing UI/controller checks pass. All eight pages' local assets, links, anchors and IDs were checked. Calculated contrast is 9.60:1 for supporting text on the base panel and at least 4.70:1 for that text over the card's brightest possible artwork composite. These calculations do not establish whole-page accessibility. No browser or physical-phone visual verification was available for this pass.
+
+The live membership milestone now occupies `/guild.html`. See [LIVE_GUILDS.md](LIVE_GUILDS.md); real memberships never write to this rehearsal state.

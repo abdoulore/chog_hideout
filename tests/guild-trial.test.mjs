@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {freshTrial,beginAttempt,finishAttempt,fillExamples,lockSquads,closeTrial,lockReason,closeReason,standings,guildStandings,bestRun,entryReason,usedAttempts,loadTrial,saveTrial,TRIAL_KEY,PLAYERS} from '../dist/guild-trial.mjs';
-import {createGuildSession} from '../dist/guild-session.mjs';
+import {freshTrial,beginAttempt,finishAttempt,fillExamples,lockSquads,closeTrial,lockReason,closeReason,standings,guildStandings,bestRun,entryReason,usedAttempts,loadTrial,saveTrial,TRIAL_KEY,PLAYERS} from '../public/guild-trial.mjs';
+import {createGuildSession} from '../public/guild-session.mjs';
 function bank(s,id,value,ticks,stage=s.phase){const r=beginAttempt(s,id,stage);return finishAttempt(r.state,r.attempt.id,{status:'banked',value,ticks});}
 function store(s){const map=new Map([[TRIAL_KEY,JSON.stringify(s)]]);return {getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)};}
 function qualified(){return fillExamples(bank(freshTrial('event'),'lantern-1',6,3600));}

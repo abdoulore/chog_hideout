@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {mountGuildHall} from '../dist/guild-hall.mjs';
-import {mountHeadquarters} from '../dist/guild-headquarters.mjs';
-import {mountGuildManagement} from '../dist/guild-manage.mjs';
-import {loadTrial,beginAttempt,finishAttempt,saveTrial} from '../dist/guild-trial.mjs';
-const routes={hq:['guild.html',mountHeadquarters],event:['tournament.html',mountGuildHall],manage:['event-manage.html',mountGuildManagement]};
+import {mountGuildHall} from '../public/guild-hall.mjs';
+import {mountHeadquarters} from '../public/guild-headquarters.mjs';
+import {mountGuildManagement} from '../public/guild-manage.mjs';
+import {loadTrial,beginAttempt,finishAttempt,saveTrial} from '../public/guild-trial.mjs';
+const routes={hq:['rehearsal.html',mountHeadquarters],event:['tournament.html',mountGuildHall],manage:['event-manage.html',mountGuildManagement]};
 function memory(){const data=new Map();return {getItem:k=>data.get(k),setItem:(k,v)=>data.set(k,v)};}
 function fixture(route='event',storage=memory(),search=''){
- const nodes=new Map(),events=new Map(),[file,mount]=routes[route],html=fs.readFileSync(new URL('../dist/'+file,import.meta.url),'utf8');
+ const nodes=new Map(),events=new Map(),[file,mount]=routes[route],html=fs.readFileSync(new URL('../public/'+file,import.meta.url),'utf8');
  for(const m of html.matchAll(/\bid="([^"]+)"/g)){const classes=new Set();nodes.set(m[1],{hidden:false,disabled:false,textContent:'',innerHTML:'',value:'',classList:{toggle(k,v){v?classes.add(k):classes.delete(k);}},setAttribute(k,v){this[k]=v;},showModal(){this.open=true;},close(){this.open=false;}});}
  const doc={getElementById:id=>{assert(nodes.has(id),'Missing '+id+' on '+file);return nodes.get(id);}},surface={addEventListener:(k,v)=>events.set(k,v),removeEventListener:k=>events.delete(k)},app=mount({doc,storage,events:surface,search});
  return {app,get:id=>nodes.get(id),events,storage,html,back(){events.get('pageshow')();}};
@@ -44,6 +44,6 @@ test('tournament shows cutoff targets, real rank changes and deep-linked guild s
  [q,manage,deep].forEach(q=>q.app.destroy());
 });
 test('navigation sends game results to competition and keeps management on its own route',()=>{
- const game=fs.readFileSync(new URL('../dist/mischief.html',import.meta.url),'utf8');assert.match(game,/href="tournament.html#standings"/);
+ const game=fs.readFileSync(new URL('../public/mischief.html',import.meta.url),'utf8');assert.match(game,/href="tournament.html#standings"/);
  for(const [route] of Object.entries(routes)){const q=fixture(route);assert.match(q.html,/aria-label="Mobile navigation"/);assert.match(q.html,/href="event-manage.html"/);if(route!=='manage')assert.doesNotMatch(q.html,/id="reset-dialog"|id="fill-examples"/);q.app.destroy();}
 });

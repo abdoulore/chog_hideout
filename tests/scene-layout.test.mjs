@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {sceneLayout,sceneCamera,cameraBiasFor} from '../dist/scene-layout.mjs';
-import {newHeist,HEIST} from '../dist/heist.mjs';
+import {sceneLayout,sceneCamera,cameraBiasFor} from '../public/scene-layout.mjs';
+import {newHeist,HEIST} from '../public/heist.mjs';
 
 test('portrait framing preserves gap plus 80 units of landing on entry and escape',()=>{
  for(const [display,height] of [[320,1500],[360,1575],[412,1605],[500,1440]])for(const phase of ['entry','escape']){

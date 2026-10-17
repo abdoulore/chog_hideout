@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {newRun,stepRun,MOVEMENT_ROOM,FLOOR,STEP} from '../dist/engine.mjs';
-import {newMischief,stepMischief,landingTarget} from '../dist/mischief.mjs';
-import {chogPose} from '../dist/chog-motion.mjs';
-import {createFeedback,snapshot} from '../dist/feedback.mjs';
+import {newRun,stepRun,MOVEMENT_ROOM,FLOOR,STEP} from '../public/engine.mjs';
+import {newMischief,stepMischief,landingTarget} from '../public/mischief.mjs';
+import {chogPose} from '../public/chog-motion.mjs';
+import {createFeedback,snapshot} from '../public/feedback.mjs';
 const advance=(s,input,n)=>{for(let i=0;i<n;i++)stepMischief(s,input);};
 
 test('starts respond in the first step, reach speed quickly, brake within five units and reverse promptly',()=>{

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 test('UI smoke: navigation, editor gating, rematch, feedback, and local persistence',async()=>{
- const html=fs.readFileSync(new URL('../dist/lab.html',import.meta.url),'utf8');
+ const html=fs.readFileSync(new URL('../public/lab.html',import.meta.url),'utf8');
  const nodes=new Map(),events=new Map(),timers=new Map(),storage=new Map();let timerId=0;
  const context=new Proxy({},{get:(_,key)=>key==='measureText'?()=>({width:20}):()=>{},set:()=>true});
  function element(tag='div',attrs=''){
@@ -16,7 +16,7 @@ test('UI smoke: navigation, editor gating, rematch, feedback, and local persiste
  for(const m of html.matchAll(/<button\b([^>]*data-vote="[^"]+"[^>]*)>/g))votes.push(element('button',m[1]));
  globalThis.document={hidden:false,activeElement:null,getElementById:id=>{assert(nodes.has(id),`missing ID ${id}`);return nodes.get(id);},querySelector:()=>element('a'),querySelectorAll:q=>q==='[data-tab]'?tabButtons:q==='[data-vote]'?votes:q==='.panel'?['hideout','dojo','compare'].map(id=>nodes.get(id)):[],createElement:element,createTextNode:s=>s,addEventListener:(t,cb)=>events.set('document:'+t,cb)};
  globalThis.window={addEventListener:(t,cb)=>events.set(t,cb)};globalThis.localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)};globalThis.matchMedia=()=>({matches:true});globalThis.requestAnimationFrame=cb=>{events.set('raf',cb);};globalThis.setTimeout=cb=>{timers.set(++timerId,cb);return timerId;};globalThis.clearTimeout=id=>timers.delete(id);
- await import('../dist/app.mjs');const get=id=>nodes.get(id);
+ await import('../public/app.mjs');const get=id=>nodes.get(id);
  assert.equal(get('room-buttons').children.length,3);
  get('edit-toggle').click();assert.equal(get('editor').hidden,false);assert.equal(get('save-room').disabled,true);
  get('clear-room').click();assert.equal(get('trap-count').textContent,'0 / 5 traps');

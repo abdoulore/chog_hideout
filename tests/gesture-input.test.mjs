@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createGestureInput,readControlMode,saveControlMode,GESTURE_KEY} from '../dist/gesture-input.mjs';
-import {newMischief,nearbyAction} from '../dist/mischief.mjs';
-import {projectTarget} from '../dist/mischief-target.mjs';
+import {createGestureInput,readControlMode,saveControlMode,GESTURE_KEY} from '../public/gesture-input.mjs';
+import {newMischief,nearbyAction} from '../public/mischief.mjs';
+import {projectTarget} from '../public/mischief-target.mjs';
 function fixture(){const events=[],bounds=()=>({left:10,top:20,width:360,height:720}),g=createGestureInput({bounds,onMove:v=>events.push(['move',v]),onJump:()=>events.push(['jump']),onDash:v=>events.push(['dash',v])});const e=(id,x,y,t)=>({pointerId:id,clientX:x+10,clientY:y+20,timeStamp:t,pointerType:'touch',preventDefault(){},currentTarget:{setPointerCapture(){}}});return {g,e,events};}
 
 test('upward swipe jumps before release; continued motion and release cannot also dash',()=>{const {g,e,events}=fixture();g.down(e(1,260,600,0));g.move(e(1,267,580,25));assert.deepEqual(events,[]);g.move(e(1,270,575,45));assert.deepEqual(events,[['jump']]);g.move(e(1,320,570,70));g.up(e(1,330,570,90));assert.deepEqual(events,[['jump']]);});

@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createFeedback,snapshot} from '../dist/feedback.mjs';
-import {newRun,stepRun,MOVEMENT_ROOM} from '../dist/engine.mjs';
-import {createSound} from '../dist/sound.mjs';
-import {newMischief} from '../dist/mischief.mjs';
+import {createFeedback,snapshot} from '../public/feedback.mjs';
+import {newRun,stepRun,MOVEMENT_ROOM} from '../public/engine.mjs';
+import {createSound} from '../public/sound.mjs';
+import {newMischief} from '../public/mischief.mjs';
 
 test('feedback follows actual jump, dash, landing, pickup and terminal transitions once',()=>{
  const f=createFeedback({random:()=>.5}),s=newRun(MOVEMENT_ROOM);let before=snapshot(s);stepRun(s,{jump:true});assert.deepEqual(f.observe(before,s),['jump']);

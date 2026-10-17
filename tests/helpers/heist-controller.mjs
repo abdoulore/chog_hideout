@@ -1,5 +1,5 @@
 // Scripted feasibility probe; this does not measure human completion or touch feel.
-import {HEIST} from '../../dist/heist.mjs';
+import {HEIST} from '../../public/heist.mjs';
 export function controlHeist(s,{low=2210,high=1980}={}){
  const left=s.phase==='escape';let jump=false,dash=false;
  if(s.ground){

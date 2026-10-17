@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {ROOMS,newRun,stepRun,STEP,simulateFight,cameraFrame,MOVEMENT_ROOM} from '../dist/engine.mjs';
+import {ROOMS,newRun,stepRun,STEP,simulateFight,cameraFrame,MOVEMENT_ROOM} from '../public/engine.mjs';
 
 test('all authored rooms can be completed with the published movement rules',()=>{
  for(const room of [...ROOMS,MOVEMENT_ROOM]){const s=newRun(room);for(let i=0;i<12000&&s.status==='playing';i++){const near=room.spikes.some(slot=>slot*50-s.x>15&&slot*50-s.x<80);const nearGap=room.gaps.some(g=>g.x-s.x>15&&g.x-s.x<45);const dash=room.gaps.some(g=>g.w>200&&s.x>g.x+5&&s.x<g.x+150&&!s.ground&&s.y<400)&&s.dashCooldown===0;stepRun(s,{right:true,jump:s.ground&&(near||nearGap),dash},STEP);}assert.equal(s.status,'won',room.name);assert(s.coins>0);}
