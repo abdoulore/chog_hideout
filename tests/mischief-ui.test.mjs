@@ -46,3 +46,13 @@ test('retries and navigation abandon rehearsal attempts, while ordinary play nev
  const ui=setup({store,search:'?trial=guild&event=integrated-event&seat=lantern-1&round=qualifiers'});await ui.app.ready;ui.app.start();ui.step({right:true});ui.app.start();let attempts=loadTrial(store).state.attempts;assert.deepEqual(attempts.map(a=>a.status),['abandoned','active']);ui.events.get('pagehide')();assert.equal(loadTrial(store).state.attempts[1].status,'abandoned');ui.app.destroy();
  const before=store.getItem(TRIAL_KEY),solo=setup({store});await solo.app.ready;solo.app.start();batteryRoute(driver(()=>solo.app.run,solo.step));solo.app.destroy();assert.equal(store.getItem(TRIAL_KEY),before);
 });
+
+test('double-jump playtest accepts two distinct upward swipes and cannot write personal or tournament results',async()=>{
+ const map=new Map(),store={getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)};saveTrial(store,freshTrial('jump-event'));const original=store.getItem(TRIAL_KEY);
+ const ui=setup({store,search:'?movement=double&trial=guild&event=jump-event&seat=lantern-1&round=qualifiers'});await ui.app.ready;assert.equal(ui.get('jump-trial-panel').hidden,false);assert.match(ui.get('jump-trial-switch').href,/movement=single/);ui.app.start();
+ const canvas=ui.get('canvas'),e=(id,x,y,t)=>({pointerId:id,clientX:x,clientY:y,timeStamp:t,pointerType:'touch',preventDefault(){},currentTarget:canvas});
+ canvas.onpointerdown(e(1,270,630,0));canvas.onpointermove(e(1,270,600,40));ui.advance();canvas.onpointerup(e(1,270,590,60));for(let i=0;i<25;i++)ui.advance();
+ canvas.onpointerdown(e(2,270,630,220));canvas.onpointermove(e(2,270,600,260));ui.advance();canvas.onpointerup(e(2,270,590,280));assert.equal(ui.app.run.airJumps,1);assert.match(ui.get('jump-trial-status').textContent,/USED/);
+ for(let i=0;i<120;i++)ui.advance();assert.equal(ui.app.run.airJumpUsed,false);ui.app.start();batteryRoute(driver(()=>ui.app.run,ui.step));for(let i=0;i<100;i++)ui.step();assert.equal(ui.app.run.status,'won');assert.equal(map.has(MISCHIEF_KEY),false);assert.equal(store.getItem(TRIAL_KEY),original);assert.equal(ui.get('return-home').hidden,true);assert.match(ui.get('records').textContent,/No records/);ui.app.destroy();
+ const single=setup({search:'?movement=single'});await single.app.ready;assert.equal(single.app.run.room.doubleJump,false);assert(single.app.run.room.platforms.some(p=>p.x===190));assert.match(single.get('jump-trial-switch').href,/movement=double/);single.app.destroy();
+});

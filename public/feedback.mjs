@@ -1,5 +1,5 @@
 // Presentation-only feedback. The movement simulation never reads this state.
-export const snapshot=s=>({x:s.x,y:s.y,vx:s.vx,facing:s.facing,loot:[...(s.loot||[])],ground:s.ground,vy:s.vy,dashes:s.dashes,collected:[...s.collected],status:s.status,phase:s.phase,guardMode:s.caretaker?.mode});
+export const snapshot=s=>({x:s.x,y:s.y,vx:s.vx,facing:s.facing,loot:[...(s.loot||[])],ground:s.ground,vy:s.vy,airJumps:s.airJumps||0,dashes:s.dashes,collected:[...s.collected],status:s.status,phase:s.phase,guardMode:s.caretaker?.mode});
 export function createFeedback({reducedMotion=false,random=Math.random}={}){
  const state={particles:[],clock:0,land:0,jump:0,dash:0,impact:0,victory:0,pickup:0,stride:0,turn:0,brake:0,pluck:0,landStrength:1,alert:0};let footDistance=0;
  function burst(x,y,count,color,speed=65){if(reducedMotion)return;for(let i=0;i<count;i++){const angle=random()*Math.PI*2,v=speed*(.4+random()*.6);state.particles.push({x,y,vx:Math.cos(angle)*v,vy:Math.sin(angle)*v-25,age:0,life:.28+random()*.35,size:1.5+random()*2,color});}state.particles=state.particles.slice(-100);}
@@ -10,7 +10,8 @@ export function createFeedback({reducedMotion=false,random=Math.random}={}){
    for(const id of s.loot||[])if(!(before.loot||[]).includes(id)){state.pluck=.35;state.pickup=.5;burst(x,y-40,14,id==='battery'?'#a8e4dc':id==='music'?'#ecc0f7':'#ffe4a0',75);sounds.push('take-'+id);}
    if(s.caretaker?.mode==='chase'&&before.guardMode!=='chase'&&s.status==='playing'){state.alert=1.1;sounds.push('spotted');}
   }
-  if(s.vy<0&&before.vy>=0){state.jump=.18;burst(x,y,7,'#efd8ad',55);sounds.push('jump');}
+  if((s.airJumps||0)>(before.airJumps||0)){state.jump=.18;burst(x,y,11,'#e8c2ff',75);sounds.push('jump');}
+  else if(s.vy<0&&before.vy>=0){state.jump=.18;burst(x,y,7,'#efd8ad',55);sounds.push('jump');}
   if(!before.ground&&s.ground){state.land=.16;state.landStrength=s.room.mischief?Math.max(.35,Math.min(1.4,Math.abs(before.vy)/550)):1;burst(x,y,Math.round(8*state.landStrength),'#eed0a1',55+state.landStrength*30);
    const platform=s.room.platforms?.find(p=>s.x+28>p.x&&s.x<p.x+p.w&&Math.abs(y-p.y)<3);
    const material=platform?.kind==='lift'?'metal':platform?'wood':'stone';sounds.push(s.room.mischief?'land-'+material+(state.landStrength>1.1?'-heavy':''):'land');footDistance=0;}

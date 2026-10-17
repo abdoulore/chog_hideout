@@ -51,3 +51,11 @@ body:not(.playing) .gesture-stick,body:not(.playing) .gesture-hint{visibility:hi
 .trial-badge{position:absolute;z-index:2;left:17px;right:17px;top:132px;font-size:9px;letter-spacing:.6px;color:#ffe4ae;text-shadow:0 1px 4px #24152e;pointer-events:none}
 .game-menu-page .menu-card .trial-info{font:12px/1.65 system-ui,sans-serif;color:#edcfa6;background:#20182588;border:1px solid #edc88d40;border-radius:8px;padding:12px;margin:18px 0 0}
 .game-menu-page .menu-card .trial-return{display:flex;align-items:center;justify-content:center;min-height:46px;margin-top:12px;color:#f7d99f;border:1px solid #edc88d50;border-radius:8px;font-size:13px;text-decoration:none}
+
+/* Optional movement comparison; uses the existing menu palette. */
+.jump-trial-panel{margin:18px 0;padding:16px;border:1px solid #b18c6166;border-radius:16px;background:#25192fea;text-align:left;color:#f5e6c9;}
+.jump-trial-panel p{font-size:14px;line-height:1.55;color:#e2d4df;margin:8px 0 12px;}
+.jump-trial-panel a{display:block;padding:9px 0;color:#f3cb8e;font-size:14px;}
+.jump-trial-status{position:absolute;z-index:5;left:50%;bottom:190px;transform:translateX(-50%);padding:7px 12px;border:1px solid #c8a16d88;border-radius:20px;background:#25192fec;color:#f5dfb3;font-size:11px;font-weight:700;white-space:nowrap;pointer-events:none;}
+body:not(.playing) .jump-trial-status{display:none;}
+@media(max-height:550px){.jump-trial-status{bottom:118px;}}

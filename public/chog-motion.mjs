@@ -14,5 +14,6 @@ export function chogPose(s,fx={},reducedMotion=false){
  if(s.action&&s.actionTime>0){const tug=Math.sin(Math.min(1,s.actionTime/.45)*Math.PI);pose.frame=0;pose.angle=-.11*tug;pose.x=-5*tug;pose.sy-=.07*tug;}
  if(fx.pluck>0){const p=Math.sin(fx.pluck/.35*Math.PI);pose.angle-=p*.08;pose.y-=p*4;}
  if(!moving&&s.ground&&!s.action)pose.sy+=Math.sin((fx.clock??s.time)*2.8)*.012;
+ if(s.airJumpFX>0&&!s.ground){pose.angle+=Math.PI*2*(1-s.airJumpFX/.32);pose.sx*=.92;pose.sy*=.92;}
  return pose;
 }

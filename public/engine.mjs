@@ -1,6 +1,6 @@
 import {runVelocity,assistLedge} from './movement-feel.mjs';
 export const W=900,H=520,FLOOR=460,STEP=1/120;
-export const MOVE={speed:265,jump:555,gravity:1500,dashSpeed:720,dashDuration:.18,dashCooldown:1,coyote:.12,jumpBuffer:.14};
+export const MOVE={speed:265,jump:555,airJump:440,gravity:1500,dashSpeed:720,dashDuration:.18,dashCooldown:1,coyote:.12,jumpBuffer:.14};
 export const ROOMS=[
  {id:'v3-0',width:2200,name:'The warm-up',hint:'Jump the traps. Dash with Shift or X. Reach the flag.',spikes:[6,12,19,20,30,37],gaps:[{x:1150,w:130}],platforms:[{x:820,y:370,w:180,h:16}],orbs:[{x:325,y:355},{x:625,y:355},{x:975,y:355},{x:1560,y:355},{x:1880,y:355}]},
  {id:'v3-1',width:3800,name:'Mind the gap',hint:'Jump first, then dash in the air to cross the wide gaps.',spikes:[6,13,14,29,36,46,59,67],gaps:[{x:1000,w:220},{x:2500,w:220}],platforms:[{x:1570,y:370,w:150,h:16},{x:2950,y:370,w:150,h:16}],orbs:[{x:325,y:355},{x:700,y:355},{x:1440,y:355},{x:1830,y:355},{x:2330,y:355},{x:2800,y:355},{x:3380,y:355}]},
@@ -9,12 +9,14 @@ export const ROOMS=[
 export const MOVEMENT_ROOM={id:'movement-v3',width:2850,name:'The Burrows',spikes:[8,19,35,46,50],gaps:[{x:1250,w:220}],platforms:[{x:580,y:370,w:180,h:16},{x:2050,y:370,w:160,h:16}],orbs:[{x:425,y:355},{x:690,y:330},{x:975,y:355},{x:1530,y:430},{x:1775,y:355},{x:2150,y:330},{x:2325,y:355},{x:2525,y:355}]};
 export function groundSegments(room){let x=0,out=[];for(const gap of room.gaps||[]){out.push({x,y:FLOOR,w:gap.x-x,h:120});x=gap.x+gap.w;}out.push({x,y:FLOOR,w:(room.width||W)-x,h:120});return out;}
 export function cameraFrame(s,displayWidth=900){const zoom=displayWidth<600?1.5:1.05;const viewWidth=W/zoom;return {zoom,x:Math.max(0,Math.min((s.room.width||W)-viewWidth,s.x-viewWidth*.28)),y:FLOOR*(1-1/zoom)};}
-export function newRun(room){return {room,x:55,y:FLOOR-34,vx:0,vy:0,facing:1,ground:true,coyote:MOVE.coyote,jumpBuffer:0,dashTime:0,dashCooldown:0,dashes:0,time:0,status:'playing',deathReason:'',coins:0,collected:[],trail:[],sample:0};}
+export function newRun(room){return {room,x:55,y:FLOOR-34,vx:0,vy:0,facing:1,ground:true,coyote:MOVE.coyote,jumpBuffer:0,airJumpUsed:false,airJumps:0,jumpHeld:false,airJumpFX:0,dashTime:0,dashCooldown:0,dashes:0,time:0,status:'playing',deathReason:'',coins:0,collected:[],trail:[],sample:0};}
 export const spikeBounds=slot=>({x:slot*50+10,y:FLOOR-23,w:30,h:23});
 export function overlap(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
 export function stepRun(s,input,dt=STEP){
  if(s.status!=='playing')return s;
- s.time+=dt;s.jumpBuffer=Math.max(0,s.jumpBuffer-dt);if(input.jump)s.jumpBuffer=MOVE.jumpBuffer;
+ s.time+=dt;const jumpPressed=input.jump&&(!s.room.doubleJump||!s.jumpHeld);s.jumpHeld=!!input.jump;
+ s.airJumpFX=Math.max(0,(s.airJumpFX||0)-dt);
+ s.jumpBuffer=Math.max(0,s.jumpBuffer-dt);if(jumpPressed)s.jumpBuffer=MOVE.jumpBuffer;
  s.coyote=s.ground?MOVE.coyote:Math.max(0,s.coyote-dt);
  const wasDashing=s.dashTime>0;s.dashCooldown=Math.max(0,s.dashCooldown-dt);s.dashTime=Math.max(0,s.dashTime-dt);if(s.room.mischief)s.ledgeCatch=Math.max(0,(s.ledgeCatch||0)-dt);
  const direction=(input.right?1:0)-(input.left?1:0);if(direction&&s.dashTime===0)s.facing=direction;
@@ -22,6 +24,11 @@ export function stepRun(s,input,dt=STEP){
  if(s.room.mischief&&wasDashing&&s.dashTime===0)s.vx=Math.sign(s.vx)*Math.min(Math.abs(s.vx),MOVE.speed);
  s.vx=s.dashTime>0?s.facing*MOVE.dashSpeed:s.room.mischief?runVelocity(s,direction,MOVE.speed,dt):direction*MOVE.speed;
  if(s.jumpBuffer>0&&s.coyote>0){s.vy=-MOVE.jump;s.ground=false;s.coyote=0;s.jumpBuffer=0;}
+ else if(s.room.doubleJump&&jumpPressed&&!s.ground&&!s.airJumpUsed){
+  s.vy=-MOVE.airJump;s.airJumpUsed=true;s.airJumps++;s.airJumpFX=.32;s.jumpBuffer=0;
+  // A deliberate air jump cancels a dash, but never refreshes its cooldown.
+  s.dashTime=0;s.vx=Math.sign(s.vx)*Math.min(Math.abs(s.vx),MOVE.speed);
+ }
  const oldBottom=s.y+34,oldX=s.x,oldY=s.y;if(s.dashTime===0)s.vy+=MOVE.gravity*dt;s.x=Math.max(8,Math.min((s.room.width||W)-36,s.x+s.vx*dt));// Resolve solid walls horizontally before integrating vertical movement.
  for(const p of s.room.solids||[]){if(s.y+34>p.y&&s.y<p.y+p.h&&s.x+28>p.x&&s.x<p.x+p.w){
   if(oldX+28<=p.x){s.x=p.x-28;s.vx=0;}else if(oldX>=p.x+p.w){s.x=p.x+p.w;s.vx=0;}
@@ -33,6 +40,7 @@ export function stepRun(s,input,dt=STEP){
   if(s.vy>=0&&oldBottom<=p.y+.1&&s.y+34>=p.y&&s.x+28>p.x&&s.x<p.x+p.w){s.y=p.y-34;s.vy=0;s.ground=true;}
  }
  if(s.room.mischief)assistLedge(s,oldBottom,direction);
+ if(s.ground){s.airJumpUsed=false;s.airJumpFX=0;}
  for(const slot of s.room.spikes){if(overlap({x:s.x+5,y:s.y+4,w:18,h:30},spikeBounds(slot))){s.status='dead';s.deathReason='spikes';break;}}
  if(s.y>H+50){s.status='dead';s.deathReason='gap';}
  s.room.orbs.forEach((o,i)=>{if(!s.collected.includes(i)&&Math.hypot(s.x+14-o.x,s.y+17-o.y)<30){s.collected.push(i);s.coins++;}});

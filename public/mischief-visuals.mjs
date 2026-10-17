@@ -17,6 +17,7 @@ export function drawTreasure(ctx,id,x,y,size=1,images=null){if(images?.districtP
 export function drawMischiefProps(ctx,s,images,{reducedMotion=false}={}){
  const {gate:g,lift:l,cover}=BLOCK;
  drawDistrictHome(ctx,s,images,{reducedMotion});drawDistrictCanopies(ctx,s,images);drawDistrictPower(ctx,s,images,{reducedMotion});
+ if(s.movementTrial){label(ctx,'HIGH PERCH',225,295,'#f5d99a',10);label(ctx,'DASH →',365,280,'#f5d99a',10);}
  // The planter is a visible occluder, not a hidden collision wall.
  if(!drawDistrictPlanter(ctx,s,images)){
  const pot=ctx.createLinearGradient(cover.x,cover.y,cover.x,cover.y+cover.h);pot.addColorStop(0,'#b77258');pot.addColorStop(1,'#573448');ctx.fillStyle=pot;ctx.beginPath();ctx.roundRect(cover.x,cover.y+24,cover.w,cover.h-24,8);ctx.fill();ctx.strokeStyle='#e2ad79';ctx.lineWidth=4;ctx.stroke();
