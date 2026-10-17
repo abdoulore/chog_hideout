@@ -1,4 +1,4 @@
-import {runVelocity,assistLedge} from './movement-feel.mjs';
+import {runVelocity,assistLedge,platformKey,ignoringPlatform} from './movement-feel.mjs';
 export const W=900,H=520,FLOOR=460,STEP=1/120;
 export const MOVE={speed:265,jump:555,airJump:440,gravity:1500,dashSpeed:720,dashDuration:.18,dashCooldown:1,coyote:.12,jumpBuffer:.14};
 export const ROOMS=[
@@ -9,11 +9,18 @@ export const ROOMS=[
 export const MOVEMENT_ROOM={id:'movement-v3',width:2850,name:'The Burrows',spikes:[8,19,35,46,50],gaps:[{x:1250,w:220}],platforms:[{x:580,y:370,w:180,h:16},{x:2050,y:370,w:160,h:16}],orbs:[{x:425,y:355},{x:690,y:330},{x:975,y:355},{x:1530,y:430},{x:1775,y:355},{x:2150,y:330},{x:2325,y:355},{x:2525,y:355}]};
 export function groundSegments(room){let x=0,out=[];for(const gap of room.gaps||[]){out.push({x,y:FLOOR,w:gap.x-x,h:120});x=gap.x+gap.w;}out.push({x,y:FLOOR,w:(room.width||W)-x,h:120});return out;}
 export function cameraFrame(s,displayWidth=900){const zoom=displayWidth<600?1.5:1.05;const viewWidth=W/zoom;return {zoom,x:Math.max(0,Math.min((s.room.width||W)-viewWidth,s.x-viewWidth*.28)),y:FLOOR*(1-1/zoom)};}
-export function newRun(room){return {room,x:55,y:FLOOR-34,vx:0,vy:0,facing:1,ground:true,coyote:MOVE.coyote,jumpBuffer:0,airJumpUsed:false,airJumps:0,jumpHeld:false,airJumpFX:0,dashTime:0,dashCooldown:0,dashes:0,time:0,status:'playing',deathReason:'',coins:0,collected:[],trail:[],sample:0};}
+export function newRun(room){return {room,x:55,y:FLOOR-34,vx:0,vy:0,facing:1,ground:true,coyote:MOVE.coyote,jumpBuffer:0,airJumpUsed:false,airJumps:0,jumpHeld:false,airJumpFX:0,downHeld:false,dropThrough:[],dropThroughTime:0,platformDrops:0,dashTime:0,dashCooldown:0,dashes:0,time:0,status:'playing',deathReason:'',coins:0,collected:[],trail:[],sample:0};}
 export const spikeBounds=slot=>({x:slot*50+10,y:FLOOR-23,w:30,h:23});
 export function overlap(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
+const supportingPlatforms=s=>s.room.platformDrop&&s.ground?s.room.platforms.filter(p=>p.dropThrough!==false&&Math.abs(s.y+34-p.y)<.25&&s.x+28>p.x&&s.x<p.x+p.w):[];
+export const canDropPlatform=s=>supportingPlatforms(s).length>0;
 export function stepRun(s,input,dt=STEP){
  if(s.status!=='playing')return s;
+ s.dropThroughTime=Math.max(0,(s.dropThroughTime||0)-dt);
+ s.dropThrough=(s.dropThrough||[]).filter(key=>{const p=s.room.platforms.find(p=>platformKey(p)===key);return s.dropThroughTime>0&&p&&s.y<=p.y+p.h+2;});
+ const downPressed=input.down&&!s.downHeld;s.downHeld=!!input.down;
+ const supports=downPressed&&!input.jump&&!input.dash?supportingPlatforms(s):[];
+ if(supports.length){s.dropThrough=supports.map(platformKey);s.dropThroughTime=.45;s.platformDrops++;s.ground=false;s.coyote=0;s.jumpBuffer=0;s.ledgeCatch=0;s.airJumpFX=0;s.vy=90;s.dashTime=0;s.vx=Math.sign(s.vx)*Math.min(Math.abs(s.vx),MOVE.speed);}
  s.time+=dt;const jumpPressed=input.jump&&(!s.room.doubleJump||!s.jumpHeld);s.jumpHeld=!!input.jump;
  s.airJumpFX=Math.max(0,(s.airJumpFX||0)-dt);
  s.jumpBuffer=Math.max(0,s.jumpBuffer-dt);if(jumpPressed)s.jumpBuffer=MOVE.jumpBuffer;
@@ -36,7 +43,7 @@ export function stepRun(s,input,dt=STEP){
  if(s.dashTime===0)s.y+=s.vy*dt;s.ground=false;
  for(const p of s.room.solids||[]){if(s.vy<0&&oldY>=p.y+p.h&&s.y<p.y+p.h&&s.x+28>p.x&&s.x<p.x+p.w){s.y=p.y+p.h;s.vy=0;}}
 
- for(const p of [...s.room.platforms,...groundSegments(s.room),...(s.room.solids||[])]){
+ for(const p of [...s.room.platforms.filter(p=>!ignoringPlatform(s,p)),...groundSegments(s.room),...(s.room.solids||[])]){
   if(s.vy>=0&&oldBottom<=p.y+.1&&s.y+34>=p.y&&s.x+28>p.x&&s.x<p.x+p.w){s.y=p.y-34;s.vy=0;s.ground=true;}
  }
  if(s.room.mischief)assistLedge(s,oldBottom,direction);

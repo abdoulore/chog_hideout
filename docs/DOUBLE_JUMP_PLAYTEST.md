@@ -20,12 +20,28 @@ if a tournament query is appended. Links are available from Home and Pause.
   single jump. The existing x300/y385 roof remains the slower accessible route.
   Jump + dash from the perch reaches the canopy while preserving the air jump.
 
+## Platform drops (both comparison modes)
+
+Swipe down on the right to drop through the roof or lift you are standing on.
+Keyboard: Down Arrow or S. Button mode: the compact DOWN button in the action row.
+A contextual hint appears on a supporting platform. The button is disabled
+when no platform supports you. Solid street and shutter tops stay solid.
+
+Only the supporting platform is temporarily ignored; lower roofs still catch
+the player. Ledge assistance cannot pull the player back onto that platform.
+One swipe/press causes one drop, so holding down does not skip successive roofs.
+Dropping cancels an active dash and buffered jump without refreshing cooldown.
+The unused air jump remains available for recovery. Downward swipes in midair
+do not accelerate falling. Loot dropping remains a separate action (Q or loot tap).
+
 ## What is verified
 
 Automated simulation checks reachability, one-use limit, landing reset, coyote
 recovery, dash cooldown and feedback. UI tests exercise two actual gesture
 sequences and prove comparison runs cannot alter personal/tournament records.
 The existing complete three-treasure route remains covered by regression tests.
+Platform-drop tests cover lower landings, moving lifts, solid shutters, ledge
+assistance, held inputs, and the actual gesture/keyboard/button controller paths.
 
 ## Decision still to make on a phone
 

@@ -59,3 +59,8 @@ body:not(.playing) .gesture-stick,body:not(.playing) .gesture-hint{visibility:hi
 .jump-trial-status{position:absolute;z-index:5;left:50%;bottom:190px;transform:translateX(-50%);padding:7px 12px;border:1px solid #c8a16d88;border-radius:20px;background:#25192fec;color:#f5dfb3;font-size:11px;font-weight:700;white-space:nowrap;pointer-events:none;}
 body:not(.playing) .jump-trial-status{display:none;}
 @media(max-height:550px){.jump-trial-status{bottom:118px;}}
+
+/* Alternate platform control shares the action row without covering other buttons. */
+.platform-down{flex-shrink:0;width:48px;min-height:55px;border:1px solid #f8d7b688;border-radius:12px;background:#35213fea;color:#ffe5b3;font-size:24px;touch-action:none;user-select:none;-webkit-user-select:none;}
+.platform-down small{display:block;font-size:8px;letter-spacing:1px;}
+.platform-down:disabled{opacity:.4;cursor:default;}

@@ -56,3 +56,12 @@ test('double-jump playtest accepts two distinct upward swipes and cannot write p
  for(let i=0;i<120;i++)ui.advance();assert.equal(ui.app.run.airJumpUsed,false);ui.app.start();batteryRoute(driver(()=>ui.app.run,ui.step));for(let i=0;i<100;i++)ui.step();assert.equal(ui.app.run.status,'won');assert.equal(map.has(MISCHIEF_KEY),false);assert.equal(store.getItem(TRIAL_KEY),original);assert.equal(ui.get('return-home').hidden,true);assert.match(ui.get('records').textContent,/No records/);ui.app.destroy();
  const single=setup({search:'?movement=single'});await single.app.ready;assert.equal(single.app.run.room.doubleJump,false);assert(single.app.run.room.platforms.some(p=>p.x===190));assert.match(single.get('jump-trial-switch').href,/movement=double/);single.app.destroy();
 });
+
+test('swipe down, keyboard and alternate button all drop through platforms without dropping carried loot',async()=>{
+ const ui=setup({search:'?movement=double'});await ui.app.ready;ui.app.start();const roof=()=>Object.assign(ui.app.run,{x:340,y:351,ground:true,vx:0,vy:0,downHeld:false,dropThrough:[],loot:['music']});roof();ui.advance();assert.equal(ui.get('gesture-down-status').hidden,false);
+ const canvas=ui.get('canvas'),e=(id,x,y,t)=>({pointerId:id,clientX:x,clientY:y,timeStamp:t,pointerType:'touch',preventDefault(){},currentTarget:canvas});canvas.onpointerdown(e(1,270,550,0));canvas.onpointermove(e(1,270,585,50));ui.advance();canvas.onpointerup(e(1,270,600,80));assert.equal(ui.app.run.platformDrops,1);assert.deepEqual(ui.app.run.loot,['music']);assert(!ui.app.run.ground);assert.equal(ui.get('gesture-down-status').hidden,true);
+ for(let i=0;i<100;i++)ui.advance();roof();ui.advance();ui.events.get('keydown')({key:'ArrowDown',repeat:false,preventDefault(){}});ui.advance();assert.equal(ui.app.run.platformDrops,2);
+ for(let i=0;i<100;i++)ui.advance();roof();ui.app.setControlMode('buttons');ui.advance();assert.equal(ui.get('down').hidden,false);assert.equal(ui.get('down').disabled,false);ui.get('down').onpointerdown({pointerId:2,preventDefault(){}});ui.advance();assert.equal(ui.app.run.platformDrops,3);assert.deepEqual(ui.app.run.loot,['music']);
+ ui.app.pause();const y=ui.app.run.y;canvas.onpointerdown(e(3,270,550,300));canvas.onpointerup(e(3,270,590,350));ui.advance();assert.equal(ui.app.run.y,y);ui.app.destroy();
+ const normal=setup();await normal.app.ready;assert.equal(normal.get('down').hidden,true);normal.app.destroy();
+});
