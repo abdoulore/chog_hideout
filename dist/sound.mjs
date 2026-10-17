@@ -1,6 +1,6 @@
 // Original synthesized effects: no network audio, autoplay, or third-party files.
 export function createSound({getContext=()=>{const Audio=globalThis.AudioContext||globalThis.webkitAudioContext;return Audio?new Audio():null;}}={}){
- let ctx=null,master=null,muted=false,active=false,available=true,suspendTask=Promise.resolve();const voices=new Set();let sparkle=0;
+ let ctx=null,master=null,muted=false,active=false,available=true,suspendTask=Promise.resolve();const voices=new Set();let sparkle=0,priorityUntil=0;
  function silence(){for(const node of voices){try{node.stop();}catch{}}voices.clear();}
  function gain(){if(master&&ctx)master.gain.setTargetAtTime(muted||!active?0:.38,ctx.currentTime,.015);}
  function tone(freq,at,duration,volume=.2,type='sine',end=freq){
@@ -13,6 +13,18 @@ export function createSound({getContext=()=>{const Audio=globalThis.AudioContext
   setMuted(value){muted=!!value;if(muted)silence();gain();},
   pause(){active=false;silence();gain();if(ctx?.state==='running')suspendTask=Promise.resolve(ctx.suspend?.()).catch(()=>{});},
   play(event){if(!ctx||!available||muted||!active||ctx.state!=='running')return;const t=ctx.currentTime;
+   // Keep incidental footsteps/music out of the recognition cue's first beat.
+   if(['step','music','spark'].includes(event)&&t<priorityUntil)return;
+   if(event==='spotted'||event==='hurt'){silence();priorityUntil=t+.65;}
+   if(event.startsWith('land-')){const heavy=event.endsWith('-heavy'),v=heavy?1:.65;
+    if(event.includes('stone')){noise(.10,.15*v,1100);tone(150,t,.09,.11*v,'sine',75);}
+    if(event.includes('wood')){noise(.065,.08*v,800);tone(210,t,.11,.16*v,'triangle',115);tone(380,t+.012,.07,.045*v,'sine',240);}
+    if(event.includes('metal')){noise(.055,.06*v,1800);tone(290,t,.19,.12*v,'sine',260);tone(730,t+.012,.15,.055*v);}
+   }
+   if(event==='take-battery'){noise(.065,.11,1700);tone(185,t,.16,.14,'triangle',110);[660,990].forEach((f,i)=>tone(f,t+.05+i*.07,.22,.085));}
+   if(event==='take-sun')[523.25,783.99,1046.5].forEach((f,i)=>{tone(f,t+i*.065,.48,.11);tone(f*2,t+i*.065,.22,.025);});
+   if(event==='take-music')[659.25,830.61,987.77].forEach((f,i)=>tone(f,t+i*.075,.3,.10));
+   if(event==='spotted'){tone(294,t,.12,.21,'triangle',392);tone(587,t+.13,.3,.19,'triangle',440);noise(.08,.07,2000);}
    if(event==='step')noise(.045,.055,650);
    if(event==='jump'){tone(240,t,.13,.12,'sine',540);noise(.08,.035,1400);}
    if(event==='land'){noise(.09,.12,750);tone(115,t,.07,.07,'sine',75);}

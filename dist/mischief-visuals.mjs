@@ -31,6 +31,8 @@ export function drawMischiefProps(ctx,s,images,{reducedMotion=false}={}){
  const torch=drawTorchBeam(ctx,s,{reducedMotion});
  ctx.save();ctx.fillStyle='rgba(42,25,42,.26)';ctx.beginPath();ctx.ellipse(eyeX,FLOOR+2,28,4,0,0,Math.PI*2);ctx.fill();ctx.restore();
  const guardPose=caretakerPose(s,reducedMotion);ctx.save();ctx.translate(eyeX,FLOOR+guardPose.bob);ctx.scale(guard.facing,1);ctx.rotate(guardPose.angle);if(images.caretaker)ctx.drawImage(images.caretaker,-51,-101,102,101);ctx.restore();drawTorchSource(ctx,torch);
+ // A single expanding badge marks recognition, with a steady equivalent for reduced motion.
+ if(guard.mode==='chase'&&guard.notice>0){const t=1-guard.notice/.55;ctx.save();ctx.translate(eyeX,FLOOR-151);const scale=reducedMotion?1:1+Math.sin(t*Math.PI)*.16;ctx.scale(scale,scale);ctx.fillStyle='#ffcf95';ctx.strokeStyle='#572e42';ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,17,0,Math.PI*2);ctx.fill();ctx.stroke();label(ctx,'!',0,7,'#fff6dd',26);ctx.restore();}
  const state=guard.mode==='chase'?(guard.notice>0?'! GET READY':guard.roofWatch?'! BLOCKING YOUR ESCAPE':'! CHASING'):guard.suspicion>.05?'? NOTICING':guard.mode==='investigate'?(guard.notice>0?'? HEARD SOMETHING':'? INVESTIGATING'):guard.mode==='search'?'? SEARCHING':'';if(state)label(ctx,state,eyeX,FLOOR-120,guard.mode==='chase'?'#ffc0a8':'#fff0c9',9);
  if(state){ctx.fillStyle='#35273b';ctx.beginPath();ctx.roundRect(eyeX-27,FLOOR-113,54,5,2);ctx.fill();ctx.fillStyle=guard.mode==='chase'?'#f58a70':'#ffd17b';ctx.fillRect(eyeX-27,FLOOR-113,54*guard.suspicion,5);}
  const a=nearbyAction(s);if(a&&s.controlMode!=='gestures'){label(ctx,s.controlMode==='gestures'?'TAP · '+a.label.toUpperCase():a.id==='home'?'HOLD ACTION · LEAVE':'HOLD ACTION · '+a.label.toUpperCase(),s.x+14,s.y-76,'#fff3c9',10);if(s.actionTime>0){ctx.fillStyle='#33223a';ctx.fillRect(s.x-13,s.y-65,54,5);ctx.fillStyle='#ffe0a1';ctx.fillRect(s.x-13,s.y-65,54*Math.min(1,s.actionTime/a.hold),5);}}
@@ -41,6 +43,7 @@ export function drawMischiefCarry(ctx,s,images,{reducedMotion=false}={}){
   const t=fx&&!reducedMotion?1-fx.time/.32:1,ease=1-(1-t)**3;
   const x=fx?fx.x+(endX-fx.x)*ease:endX,y=fx?fx.y+(endY-fx.y)*ease-Math.sin(t*Math.PI)*35:endY;
   const bob=reducedMotion||fx?0:Math.sin(s.time*7-i)*1.5;
+  if(fx){ctx.save();ctx.globalAlpha=reducedMotion?.5:(1-t)*.65;const color=id==='battery'?'#a8e4dc':id==='music'?'#ecc0f7':'#ffe4a0';ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y-15,reducedMotion?25:18+t*27,0,Math.PI*2);ctx.stroke();ctx.restore();}
   drawTreasure(ctx,id,x,y+bob,fx?1-.5*ease:.5,images);
  });
 }

@@ -42,3 +42,11 @@ Native Canvas renders inspect the production drawing code at phone and wide size
 ## Phone playtest
 
 Use the opening safe street and first canopy to run, reverse, jump and dash. Then steal one item and return. On a second attempt, deliberately attract the caretaker, take a roof and watch his landing choice; break sight and leave the playing music box as bait. Judge whether turns feel prompt, ledges feel fair, the warning is understandable, and a second approach is appealing. More scenery or collectibles should wait for that feedback.
+
+## Sound and feedback refinement — 17 October 2026
+
+One More Thing now uses separate stone, timber and lift-metal landing cues. Fall speed scales the landing squash, dust and sound weight without changing physics. Battery, Pocket Sun and music box each have one pickup signature and a brief matching collection ring. The original generic pickup callback is removed from the mission controller to avoid duplicate cues.
+
+Entering caretaker chase plays a two-note recognition cue once, stops existing audio voices and suppresses incidental footsteps/music for 650 ms. A warm screen-edge warning lasts 1.1 seconds, and a clear exclamation badge appears during the existing 550 ms caretaker reaction window. Neither cue changes detection timing or pauses gameplay. Reduced motion keeps the warning steady and suppresses particle motion; mute, pause and unavailable audio remain supported.
+
+Event, audio lifecycle and controller checks cover material landings, one cue per pickup/recognition, priority, reduced motion, mute and pause. Actual speaker balance and phone presentation require device listening/playtesting; these are synthesized effects, with no added audio downloads.
