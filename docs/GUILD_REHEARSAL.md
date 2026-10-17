@@ -60,3 +60,9 @@ This pass changes presentation only. State keys, scoring, rosters, attempts and 
 - `/mischief.html`: fullscreen game; recorded results return to tournament standings.
 
 The three guild routes share desktop links and mobile bottom navigation. The game keeps its own fullscreen controls. State keys and saved progress are unchanged. Route integration tests exercise the full event across all pages, browser-back refresh, deep links, seat switching and save failures.
+
+## Menu readability pass
+
+`menu-polish.css` is loaded last by all eight menu-bearing pages. It sets cream headings, brighter warm-grey supporting text, restrained title sizes and opaque reading panels. Guild and tournament art is masked toward the right and capped at 22% opacity (18% on mobile). Mobile pages use one solid destination bar; the hideout's Play action now sits in the normal flow above the room artwork. Gameplay canvas and gesture styling are unchanged.
+
+Seventeen existing UI/controller checks pass. All eight pages' local assets, links, anchors and IDs were checked. Calculated contrast is 9.60:1 for supporting text on the base panel and at least 4.70:1 for that text over the card's brightest possible artwork composite. These calculations do not establish whole-page accessibility. No browser or physical-phone visual verification was available for this pass.
