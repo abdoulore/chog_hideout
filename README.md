@@ -120,3 +120,7 @@ Official project: https://www.chog.xyz/ · Hackathon: https://chogathon.chog.xyz
 ### Movement and pursuit pass
 
 One More Thing now uses quick acceleration, sharp braking, forgiving roof lips, animated turns/landings and visible treasure plucks. The caretaker telegraphs pursuit and leads visible jumps; a dropped music box can redirect him after sight is broken. Gesture controls are unchanged. The 65 automated checks include both complete treasure routes and new movement/pursuit cases. See [MOVEMENT_FEEL.md](docs/MOVEMENT_FEEL.md) for scope and verification limits.
+
+### Painted district pass
+
+The first playable district now has a painted home facade and matching treasure/machinery art, substantial timber platforms, connected power hardware, clearer battery consequences and a quieter HUD. See [DISTRICT_ART.md](docs/DISTRICT_ART.md) for asset provenance, generation prompts, sizes and validation limits.

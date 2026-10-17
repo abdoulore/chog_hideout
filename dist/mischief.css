@@ -29,3 +29,17 @@ body:not(.playing) .gesture-stick,body:not(.playing) .gesture-hint{visibility:hi
 @media(orientation:landscape) and (max-height:560px){.gesture-mode .gesture-stick{left:80px;top:calc(100% - 70px);width:76px;height:76px}.gesture-mode .gesture-hint{right:45px;bottom:29px;gap:8px}.gesture-stick small{font-size:7px;top:calc(100% + 6px)}.control-help{font-size:10px;line-height:1.5;margin:4px 0}.pause-actions{margin-top:6px;gap:4px 14px}.pause-actions .quiet-button{min-height:31px;padding:4px;font-size:10px}.control-setting{font-size:11px;margin-top:0}.control-setting select{min-height:33px;padding:6px 10px}.gesture-mode .haul{top:83px;padding:5px 8px;min-width:220px}.carried-loot button{width:40px;height:34px;font-size:20px}.overlay{overflow-y:auto;justify-content:safe center;padding:35px 20px}.overlay h1{font-size:30px}.overlay>p{font-size:11px;max-width:540px}.map-panel{z-index:5}}
 
 .hud-actions>#pause{width:44px;height:44px;font-size:23px}.carried-loot button{height:44px;min-height:44px}.control-setting select{touch-action:manipulation}.world-action:focus-visible{outline:3px solid #fff1c9;outline-offset:6px}
+
+/* Painted district: restrained metal-and-glass HUD, clear touch targets. */
+.haul{align-items:center;border-color:#e6bf7738;background:linear-gradient(115deg,#291e31da,#352635bd);box-shadow:0 6px 18px #21152c22,inset 0 1px #ffe5b30b;border-radius:14px;backdrop-filter:blur(8px)}
+.haul.has-loot #haul-items{display:none}.haul> b{font-weight:650;letter-spacing:1px;font-variant-numeric:tabular-nums;color:#ffe0a3;padding:0 4px}
+.carried-loot{gap:7px}.carried-loot button{display:grid;place-items:center;width:44px;min-width:44px;border-radius:10px;border:1px solid #c8a36c50;background:linear-gradient(145deg,#7654404d,#281d32a3);box-shadow:inset 0 1px #ffe5b320,0 2px 5px #160e201c;color:#ffdf94;font-size:27px}
+.loot-art{display:block;background-repeat:no-repeat;pointer-events:none;filter:drop-shadow(0 2px 2px #160f25a0)}
+.gesture-mode .world-action:not([hidden]){border-width:1px;background:#271d2c29;box-shadow:0 0 0 4px #ffe6af16,0 0 20px #ffce7020,inset 0 0 12px #fff0ba14}
+.world-action>small{position:absolute;top:calc(100% + 21px);left:50%;transform:translateX(-50%);width:150px;font-size:10px;line-height:1.45;font-weight:600;color:#fff0d0;text-shadow:0 1px 4px #24172d,0 0 8px #24172d;padding:4px 7px;border-radius:6px;background:#291f32cc;pointer-events:none}
+.world-action>small:empty{display:none}.world-action>span{background:#342439e8;border:1px solid #d8ad6b50;border-radius:5px;padding:3px 8px}
+.hud-actions>#pause{border-radius:13px;background:linear-gradient(145deg,#493342aa,#251d32a6);border-color:#d6b88366;box-shadow:inset 0 1px #fff0c51c,0 3px 12px #20162826}
+.gesture-mode .gesture-stick{border-color:#e2cda83d;background:radial-gradient(circle at 35% 25%,#aa80992b,#291d3422);box-shadow:inset 0 1px #fff0d30c}.gesture-stick>span{background:linear-gradient(145deg,#dfc5a735,#7e577d26);border-color:#f4d8a54d}
+.notice{border-color:#d4ab705c;background:linear-gradient(130deg,#3a293bf0,#211a2fef);box-shadow:0 8px 30px #17102033;border-radius:10px}
+@media(max-width:500px){.gesture-mode .haul{min-height:43px;padding:5px 8px}.gesture-mode .haul.has-loot{min-height:54px}.world-action>small{font-size:9px;width:140px}.playing .place strong{font-size:19px;letter-spacing:-.2px}}
+@media(prefers-reduced-motion:reduce){.haul{backdrop-filter:none}}

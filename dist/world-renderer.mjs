@@ -1,6 +1,6 @@
 import {chogPose} from './chog-motion.mjs';
-import {drawDistantCity,sceneryImage,createSceneSurface} from './scene-depth.mjs';
-import {drawMischiefProps,drawMischiefCarry} from './mischief-visuals.mjs?motion=1';
+import {drawDistantCity,sceneryImage,createSceneSurface} from './scene-depth.mjs?district=2';
+import {drawMischiefProps,drawMischiefCarry} from './mischief-visuals.mjs?district=2';
 import {FLOOR,groundSegments} from './engine.mjs?motion=1';
 import manifest from './asset-manifest.mjs';
 import {drawHeistProps,drawCarriedSun} from './heist-visuals.mjs';
@@ -23,9 +23,9 @@ export function drawWorld(ctx,run,images,width=900,height=520,{displayWidth=900,
  drawDistantCity(ctx,run,images,width,height,layout,{createSurface});
  const fx=feedback||{};const shake=!reducedMotion&&fx.impact?Math.sin(fx.clock*85)*fx.impact*7:0;
  ctx.save();ctx.translate(shake,groundY-FLOOR*cam.zoom);ctx.scale(cam.zoom,cam.zoom);ctx.translate(-cam.x,0);
- const house=m.props.frames.house,houseArt=sceneryImage(images.props,'houses',createSurface);ctx.save();ctx.globalAlpha=.70;
+ const house=m.props.frames.house,houseArt=sceneryImage(images.props,'houses',createSurface);ctx.save();ctx.globalAlpha=run.room.mischief?.48:.70;
  for(const [x,w] of [[run.room.heist?-32:-170,325],[555,290],[1995,290]]){
-  const h=w*house[3]/house[2];sprite(ctx,houseArt,house,x,FLOOR-h,w,h);
+  if(run.room.mischief&&images.districtHome&&x===-32)continue;const h=w*house[3]/house[2];sprite(ctx,houseArt,house,x,FLOOR-h,w,h);
  }
  ctx.restore();
  // Platforms use the same top plane as the simulation. Image overhang is clipped.
@@ -38,7 +38,7 @@ export function drawWorld(ctx,run,images,width=900,height=520,{displayWidth=900,
   if(!hanging){ctx.strokeStyle='rgba(240,181,105,.20)';ctx.lineWidth=7;for(let tx=x+45;tx<x+w;tx+=170){ctx.beginPath();ctx.moveTo(tx,y+69);ctx.lineTo(tx-9,y+160);ctx.stroke();}}
  }
  for(const p of groundSegments(run.room))roof(p.x,p.y,p.w);
- for(const p of run.room.platforms)if(!p.kind)roof(p.x,p.y,p.w,true);
+ for(const p of run.room.platforms)if(!p.kind&&!run.room.mischief)roof(p.x,p.y,p.w,true);
  // Safe landing is indicated with a few warm edge glints rather than a neon strip.
  for(const gap of run.room.gaps||[]){if(run.room.heist&&run.phase==='entry')continue;ctx.fillStyle='rgba(255,221,151,.8)';for(let i=0;i<4;i++)ctx.fillRect(gap.x+gap.w+8+i*20,FLOOR,9,2);}
  const gem=m.props.frames.gem;
@@ -49,9 +49,9 @@ export function drawWorld(ctx,run,images,width=900,height=520,{displayWidth=900,
  // Frames share an illustration scale; each pose is anchored by its visible feet.
  const pose=chogPose(run,fx,reducedMotion),f=m.chog.frames[pose.frame],scale=layout.characterHeight/m.chog.frames[0][3],fw=f[2]*scale,fh=f[3]*scale;
  if(run.ground){ctx.save();ctx.fillStyle='rgba(42,25,42,.30)';ctx.beginPath();ctx.ellipse(run.x+14,run.y+36,21,3,0,0,Math.PI*2);ctx.fill();ctx.restore();}
- ctx.save();ctx.translate(run.x+14+pose.x*run.facing,run.y+34+pose.y);ctx.scale(run.facing,1);ctx.rotate(pose.angle);ctx.scale(pose.sx,pose.sy);
+ const bankFade=run.room.mischief&&run.status==='won'&&!reducedMotion?Math.max(0,Math.min(1,((fx.victory||0)-.3)/.5)):1;const actorX=run.status==='won'&&run.room.mischief?run.x+(96-run.x)*(1-bankFade):run.x;ctx.save();ctx.globalAlpha=bankFade;ctx.translate(actorX+14+pose.x*run.facing,run.y+34+pose.y);ctx.scale(run.facing,1);ctx.rotate(pose.angle);ctx.scale(pose.sx,pose.sy);
  if(run.dashTime>0&&!reducedMotion){ctx.globalAlpha=.17;sprite(ctx,images.chog,f,-fw/2-33,-fh,fw,fh);ctx.globalAlpha=.30;sprite(ctx,images.chog,f,-fw/2-17,-fh,fw,fh);ctx.globalAlpha=1;}
- sprite(ctx,images.chog,f,-fw/2,-fh,fw,fh);ctx.restore();if(run.room.mischief)drawMischiefCarry(ctx,run,images,{reducedMotion});else if(run.room.heist)drawCarriedSun(ctx,run,images);
+ sprite(ctx,images.chog,f,-fw/2,-fh,fw,fh);ctx.restore();ctx.save();ctx.globalAlpha=bankFade;if(run.room.mischief)drawMischiefCarry(ctx,run,images,{reducedMotion});else if(run.room.heist)drawCarriedSun(ctx,run,images);ctx.restore();
  if(!reducedMotion)for(const p of fx.particles||[]){ctx.globalAlpha=Math.max(0,1-p.age/p.life);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.size*(1-p.age/p.life*.4),0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;
  // The doorway responds to a clean escape with a warm, restrained glow.
  if(fx.victory>0){ctx.save();ctx.globalAlpha=fx.victory*.24;ctx.fillStyle='#ffe4a0';ctx.beginPath();ctx.ellipse(run.room.heist?100:run.room.width-78,FLOOR-48,70,90,0,0,Math.PI*2);ctx.fill();ctx.restore();}ctx.restore();
