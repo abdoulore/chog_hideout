@@ -5,7 +5,7 @@ export const BLOCK={width:1720,home:110,gate:{x:570,y:330,w:42,h:130},lift:{x:10
 export const TREASURES={battery:{id:'battery',name:'Lift battery',x:444,y:460,value:1,hold:.45},sun:{id:'sun',name:'Pocket Sun',x:1335,y:460,value:3,hold:.65},music:{id:'music',name:'Music box',x:1460,y:310,value:2,hold:.55}};
 const roofs=[{x:300,y:385,w:160,h:12},{x:500,y:310,w:185,h:12},{x:730,y:310,w:210,h:12},{x:1240,y:310,w:330,h:12}];
 function room(powered=true,liftY=385,movementTrial=null){return {id:JOB_ID,movementTrial,platformDrop:!!movementTrial,doubleJump:movementTrial==='double',heist:true,mischief:true,name:'One More Thing',width:BLOCK.width,gaps:[],spikes:[],orbs:[],platforms:[...roofs,...(movementTrial?[{x:190,y:310,w:70,h:12}]:[]),...(powered?[{x:BLOCK.lift.x,y:liftY,w:BLOCK.lift.w,h:12,kind:'lift'}]:[])],solids:powered?[{...BLOCK.gate,kind:'shutter'}]:[]};}
-export function newMischief({movementTrial=null,loopTrial=false}={}){if(loopTrial)movementTrial='double';movementTrial=['single','double'].includes(movementTrial)?movementTrial:null;const s=Object.assign(newRun(room(true,385,movementTrial)),{movementTrial},{phase:'sneak',jobId:JOB_ID,loot:[],items:Object.fromEntries(Object.entries(TREASURES).map(([id,t])=>[id,{...t,state:'world'}])),powered:true,liftY:385,pot:'ready',potTime:0,noise:[],noiseId:0,musicAt:0,action:null,actionTime:0,actionCooldown:0,requireRelease:false,alerted:false,catches:0,eventId:0,event:null,banked:false,caretaker:{x:1190,y:FLOOR-34,facing:1,mode:'patrol',suspicion:0,target:1510,lastSeen:null,search:0,heard:0,wait:0,visible:false,notice:0,roofWatch:false,walk:0,moving:false}});if(loopTrial){prepareLoop(s);s.room=loopRoom(s.room,s);}return s;}
+export function newMischief({movementTrial=null,loopTrial=false,extendedLoop=false}={}){if(loopTrial)movementTrial='double';movementTrial=['single','double'].includes(movementTrial)?movementTrial:null;const s=Object.assign(newRun(room(true,385,movementTrial)),{movementTrial},{phase:'sneak',jobId:JOB_ID,loot:[],items:Object.fromEntries(Object.entries(TREASURES).map(([id,t])=>[id,{...t,state:'world'}])),powered:true,liftY:385,pot:'ready',potTime:0,noise:[],noiseId:0,musicAt:0,action:null,actionTime:0,actionCooldown:0,requireRelease:false,alerted:false,catches:0,eventId:0,event:null,banked:false,caretaker:{x:1190,y:FLOOR-34,facing:1,mode:'patrol',suspicion:0,target:1510,lastSeen:null,search:0,heard:0,wait:0,visible:false,notice:0,roofWatch:false,walk:0,moving:false}});if(loopTrial){prepareLoop(s,extendedLoop);s.room=loopRoom(s.room,s);}return s;}
 function emit(s,type,text){s.event={id:++s.eventId,type,text};}
 function noise(s,x,y,radius,kind){s.noise.push({id:++s.noiseId,x,y,radius,kind,time:s.time});s.noise=s.noise.slice(-8);}
 export function lootValue(s){return s.loot.reduce((n,id)=>n+TREASURES[id].value,0);}
@@ -32,14 +32,14 @@ function perform(s,id){
  emit(s,'power','Battery returned. Lift running; street gate closed.');return;}
  take(s,id);
 }
-function drop(s,requested=null){if(!s.loot.length)return;const id=requested&&s.loot.includes(requested)?requested:s.loot.includes('music')?'music':s.loot.at(-1),item=s.items[id];s.loot=s.loot.filter(v=>v!==id);item.state='world';item.x=Math.max(200,Math.min(BLOCK.width-70,s.x+14+s.facing*38));item.y=s.y+34;
+function drop(s,requested=null){if(!s.loot.length)return;const id=requested&&s.loot.includes(requested)?requested:s.loot.includes('music')?'music':s.loot.at(-1),item=s.items[id];s.loot=s.loot.filter(v=>v!==id);item.state='world';item.x=Math.max(200,Math.min(s.room.width-70,s.x+14+s.facing*38));item.y=s.y+34;
  // Land on the nearest actual supporting top, so dropped loot remains recoverable.
  const tops=[FLOOR,...s.room.platforms.filter(p=>item.x>=p.x&&item.x<=p.x+p.w&&p.y>=s.y+25).map(p=>p.y)];item.y=Math.min(...tops);s.musicAt=s.time;emit(s,'drop',id==='music'?'Music box dropped. It will keep playing here.':item.name+' dropped. You can pick it up again.');}
 // Predict only from a visible position/velocity. Never track the player through cover.
 export function landingTarget(s){
  const height=Math.max(0,FLOOR-(s.y+34));
  const flight=Math.max(0,Math.min(.75,(-s.vy+Math.sqrt(s.vy*s.vy+3000*height))/1500));
- return Math.max(s.powered?640:260,Math.min(BLOCK.width-90,s.x+s.vx*flight));
+ return Math.max(s.powered?640:260,Math.min(s.room.width-90,s.x+s.vx*flight));
 }
 function guardStep(s,dt){
  const g=s.caretaker,oldX=g.x;g.visible=canSee(s);g.notice=Math.max(0,(g.notice||0)-dt);
@@ -59,7 +59,7 @@ function guardStep(s,dt){
   if(!g.visible&&g.search<2.6&&lure){g.heard=lure.id;g.mode='investigate';g.target=lure.x;g.wait=1.6;g.roofWatch=false;g.notice=.35;emit(s,'heard','He followed the music. Make your move.');}
  }else{
   const heard=s.noise.filter(n=>n.id>g.heard&&s.time-n.time<1.5&&Math.hypot(g.x-n.x,g.y-n.y)<n.radius).at(-1);
-  if(heard&&!g.visible){g.heard=heard.id;g.mode='investigate';g.target=s.loopTrial&&heard.kind==='bell'?1000:heard.x;g.wait=s.loopTrial&&heard.kind==='bell'?3.2:1.6;g.notice=.35;g.roofWatch=false;emit(s,'heard','The caretaker heard '+(heard.kind==='music'?'the music.':heard.kind==='pot'?'the crash.':'a noise.'));}
+  if(heard&&!g.visible){g.heard=heard.id;g.mode='investigate';g.target=s.loopTrial&&heard.kind==='bell'?1000:heard.x;g.wait=s.loopTrial&&heard.kind==='bell'?(s.loopExtended?8:3.2):1.6;g.notice=.35;g.roofWatch=false;emit(s,'heard','The caretaker heard '+(heard.kind==='music'?'the music.':heard.kind==='pot'?'the crash.':'a noise.'));}
  }
  if(g.mode==='patrol'&&Math.abs(g.x-g.target)<8){g.target=g.target===BLOCK.patrol.max?BLOCK.patrol.min:BLOCK.patrol.max;g.wait=.65;}
  if((g.mode==='investigate'||g.mode==='search')&&Math.abs(g.x-g.target)<10){if(s.loopTrial&&s.loopAlarm&&g.target===1000)g.facing=1;g.wait-=dt;if(g.wait<=0){g.mode='patrol';g.roofWatch=false;g.target=g.x<1100?BLOCK.patrol.max:BLOCK.patrol.min;}}

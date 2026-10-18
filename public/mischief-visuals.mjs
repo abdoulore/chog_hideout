@@ -1,4 +1,4 @@
-import {LOOP_GATE} from './loop-escape.mjs';
+import {loopGate} from './loop-escape.mjs';
 import {drawDistrictCanopies,drawDistrictHome,drawDistrictPower,drawDistrictPlanter} from './district-scene.mjs';
 import {districtSprite} from './district-art.mjs';
 import {caretakerPose} from './caretaker-motion.mjs';
@@ -20,12 +20,17 @@ export function drawMischiefProps(ctx,s,images,{reducedMotion=false}={}){
  drawDistrictHome(ctx,s,images,{reducedMotion});drawDistrictCanopies(ctx,s,images);drawDistrictPower(ctx,s,images,{reducedMotion});
  if(s.movementTrial&&!s.loopTrial){label(ctx,'HIGH PERCH',225,295,'#f5d99a',10);label(ctx,'DASH →',365,280,'#f5d99a',10);}
  if(s.loopTrial){
-  const g=LOOP_GATE;ctx.save();ctx.strokeStyle='#5f4651';ctx.lineWidth=7;ctx.strokeRect(g.x-5,g.y-5,g.w+10,g.h+10);
+  const g=loopGate(s);ctx.save();ctx.strokeStyle='#5f4651';ctx.lineWidth=7;ctx.strokeRect(g.x-5,g.y-5,g.w+10,g.h+10);
   if(s.loopGateClosed)ctx.drawImage(images.shutter,...manifest.shutter.frame,g.x,g.y,g.w,g.h);
   else{ctx.fillStyle=s.loopAlarm?'#ffd18b':'#a4dbb6';ctx.fillRect(g.x,g.y,g.w,12);if(s.loopAlarm){ctx.strokeStyle='#f9ce8c';ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.strokeRect(g.x,g.y+13,g.w,g.h-13);}}
   ctx.restore();label(ctx,s.loopGateClosed?'CLOSED · ↓':s.loopAlarm?'CLOSING · ↓':'ALARM SHUTTER',g.x+17,260,s.loopAlarm?'#ffd18b':'#d6ebcd',9);
   label(ctx,s.loopAlarm?'← STREET HOME':'ROOFTOPS →',s.loopAlarm?1000:630,s.loopAlarm?442:286,'#ffe7a7',11);
-  if(s.loopAlarm){label(ctx,'↓ DROP TO STREET',1345,359,'#ffe7a7',11);if(s.items.music.state==='world')label(ctx,'ONE MORE? +2',900,325,'#edc1ff',11);}
+  if(s.loopAlarm){label(ctx,'↓ DROP TO STREET',s.loopExtended?2380:1345,359,'#ffe7a7',11);if(s.items.music.state==='world')label(ctx,'ONE MORE? +2',900,325,'#edc1ff',11);}
+ }
+ if(s.loopExtended){
+  label(ctx,'DEPOT WING',1900,215,'#f5dfb8',12);
+  if(!s.loopAlarm){label(ctx,'HIGH ROAD →',1715,225,'#f5dfb8',10);label(ctx,'LOW LEDGE →',1690,365,'#d8dfc3',10);}
+  else{label(ctx,'← HOME',2110,435,'#ffe7a7',11);label(ctx,'← JUNCTION',1630,435,'#ffe7a7',11);}
  }
  // The planter is a visible occluder, not a hidden collision wall.
  if(!drawDistrictPlanter(ctx,s,images)){

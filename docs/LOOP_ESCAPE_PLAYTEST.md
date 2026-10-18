@@ -1,6 +1,8 @@
 # The Sunloop: escape-route experiment
 
-Play `/mischief.html?route=loop`. Compare with `/mischief.html?movement=double`.
+The original compact experiment is now `/mischief.html?route=loop&layout=short`.
+The default `/mischief.html?route=loop` uses the expanded depot described in
+`DEPOT_LEVEL.md`. This document describes the compact reference. Compare with `/mischief.html?movement=double`.
 The normal room and both movement comparisons remain available. This separate
 playtest enables double jump and platform drop. No personal records, keepsakes,
 guild attempts or leaderboard scores are written.

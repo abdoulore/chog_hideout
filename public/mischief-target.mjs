@@ -10,6 +10,8 @@ export function guardScreenDirection(run,{width,height,displayWidth,cameraBias})
  return px<24?-1:px>displayWidth-24?1:0;
 }
 export function captureExplanation(run){
+ if(run.deathReason==='spikes')return 'You landed on a marked spike trap. Jump before the warning sign, or use the ledges above. Dashing does not protect you from spikes.';
+ if(run.deathReason==='gap')return 'You missed the landing. Save the air jump for recovery and use dash to cross the wider gap.';
  if(run.capture?.cause==='drop')return 'You dropped within the caretaker’s reach. Check below before swiping down, or jump and dash past him first.';
  if(run.capture?.cause==='air')return 'Your jump passed too close to the caretaker. Take off earlier to clear his reach.';
  if(run.capture?.cause==='street')return 'The caretaker caught you at street level. Cross above him, or break sight behind the planter before moving.';
