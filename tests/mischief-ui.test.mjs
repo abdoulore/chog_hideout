@@ -86,3 +86,9 @@ test('capture screen reports the actual street capture and reset clears it',asyn
 test('default Sunloop opens the depot level, completes through the controller and offers the compact comparison',async()=>{
  const ui=setup({search:'?route=loop'});await ui.app.ready;assert.equal(ui.app.run.loopExtended,true);assert.equal(ui.app.run.room.width,2660);assert.match(ui.get('message').textContent,/service walk/);assert.match(ui.get('loop-layout-switch').href,/layout=short/);ui.app.start();depotEscape(()=>ui.app.run,ui.step,{music:true});for(let i=0;i<100;i++)ui.step();assert.equal(ui.app.run.status,'won');assert.equal(ui.get('haul-value').textContent,'5 / 5');assert.equal(ui.map.has(MISCHIEF_KEY),false);ui.app.openMap();assert.equal(ui.get('map-panel').hidden,false);ui.app.destroy();
 });
+
+test('Sunloop results compare separate haul goals across retries without saving records',async()=>{
+ const ui=setup({search:'?route=loop'});await ui.app.ready;assert.equal(ui.get('loop-goals').hidden,false);
+ ui.app.start();depotEscape(()=>ui.app.run,ui.step);for(let i=0;i<100;i++)ui.step();assert.match(ui.get('message').textContent,/First time set/);assert.match(ui.get('message').textContent,/Next goal:.*music/);
+ ui.app.start();depotEscape(()=>ui.app.run,ui.step,{music:true});for(let i=0;i<100;i++)ui.step();assert.match(ui.get('message').textContent,/First time set/);assert.match(ui.get('records').textContent,/Sun only: [\d.]+s.*Sun \+ music: [\d.]+s/);assert.equal(ui.map.has(MISCHIEF_KEY),false);ui.app.destroy();
+});
