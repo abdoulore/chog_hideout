@@ -66,3 +66,15 @@ test('recognition stops earlier voices and briefly suppresses incidental music a
  const {ctx,calls}=fakeAudio(),s=createSound({getContext:()=>ctx});await s.unlock();s.play('music');const stops=calls.filter(c=>c[0]==='stop').length;s.play('spotted');assert(calls.filter(c=>c[0]==='stop').length>stops);const starts=calls.filter(c=>c[0]==='start').length;
  s.play('music');s.play('step');assert.equal(calls.filter(c=>c[0]==='start').length,starts);ctx.currentTime+=.7;s.play('step');assert(calls.filter(c=>c[0]==='start').length>starts);
 });
+
+test('dash readiness is a single recovery cue and never fires after capture',()=>{
+ const f=createFeedback({reducedMotion:true}),s=newMischief();s.dashCooldown=0;
+ assert.deepEqual(f.observe({...snapshot(s),dashCooldown:.001},s),['dash-ready']);assert.equal(f.state.dashReady,.35);
+ assert.deepEqual(f.observe(snapshot(s),s),[]);f.update(.4);assert.equal(f.state.dashReady,0);
+ s.status='dead';assert.deepEqual(f.observe({...snapshot(s),dashCooldown:.001},s),[]);
+});
+test('escape sound clears active music and protects its final beat from incidental cues',async()=>{
+ const {ctx,calls}=fakeAudio(),s=createSound({getContext:()=>ctx});await s.unlock();s.play('music');const stops=calls.filter(c=>c[0]==='stop').length;s.play('win');assert(calls.filter(c=>c[0]==='stop').length>stops);
+ const starts=calls.filter(c=>c[0]==='start').length;s.play('music');s.play('dash-ready');assert.equal(calls.filter(c=>c[0]==='start').length,starts);
+ ctx.currentTime+=1;s.play('air-jump');s.play('dash-ready');assert(calls.filter(c=>c[0]==='start').length>starts);
+});

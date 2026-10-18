@@ -69,3 +69,5 @@ body:not(.playing) .jump-trial-status{display:none;}
 @media(max-width:500px){.guard-direction.from-left{left:17px;}}
 
 .loop-goals{padding:18px 0;border-top:1px solid #e8c99438;text-align:left}.loop-goals>strong{color:#f4d59c;font-size:14px}.loop-goals>div{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0}.loop-goals span{font-size:13px;line-height:1.5;color:#d3c7d5}.loop-goals b{display:block;color:#fff0d4;margin-bottom:5px;font-size:15px}.loop-goals small{font-size:12px;color:#bfb0c5}.is-paused .loop-goals{display:none}
+
+#dash.just-ready{box-shadow:0 0 0 2px #edddff99,0 0 20px #c99aee55}#gesture-dash-status.just-ready{color:#fff0cf;text-shadow:0 0 10px #e6c4ff80}

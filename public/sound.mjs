@@ -14,8 +14,8 @@ export function createSound({getContext=()=>{const Audio=globalThis.AudioContext
   pause(){active=false;silence();gain();if(ctx?.state==='running')suspendTask=Promise.resolve(ctx.suspend?.()).catch(()=>{});},
   play(event){if(!ctx||!available||muted||!active||ctx.state!=='running')return;const t=ctx.currentTime;
    // Keep incidental footsteps/music out of the recognition cue's first beat.
-   if(['step','music','spark'].includes(event)&&t<priorityUntil)return;
-   if(event==='spotted'||event==='hurt'){silence();priorityUntil=t+.65;}
+   if(['step','music','spark','dash-ready'].includes(event)&&t<priorityUntil)return;
+   if(event==='spotted'||event==='hurt'||event==='win'){silence();priorityUntil=t+(event==='win'?.9:.65);}
    if(event.startsWith('land-')){const heavy=event.endsWith('-heavy'),v=heavy?1:.65;
     if(event.includes('stone')){noise(.10,.15*v,1100);tone(150,t,.09,.11*v,'sine',75);}
     if(event.includes('wood')){noise(.065,.08*v,800);tone(210,t,.11,.16*v,'triangle',115);tone(380,t+.012,.07,.045*v,'sine',240);}
@@ -26,6 +26,8 @@ export function createSound({getContext=()=>{const Audio=globalThis.AudioContext
    if(event==='take-music')[659.25,830.61,987.77].forEach((f,i)=>tone(f,t+i*.075,.3,.10));
    if(event==='spotted'){tone(294,t,.12,.21,'triangle',392);tone(587,t+.13,.3,.19,'triangle',440);noise(.08,.07,2000);}
    if(event==='step')noise(.045,.055,650);
+   if(event==='air-jump'){tone(460,t,.16,.10,'sine',880);tone(920,t+.025,.18,.035);noise(.07,.025,1800);}
+   if(event==='dash-ready'){tone(880,t,.10,.035);tone(1320,t+.04,.13,.025);}
    if(event==='jump'){tone(240,t,.13,.12,'sine',540);noise(.08,.035,1400);}
    if(event==='land'){noise(.09,.12,750);tone(115,t,.07,.07,'sine',75);}
    if(event==='dash'){noise(.18,.18,2400);tone(420,t,.16,.065,'triangle',140);}
@@ -35,7 +37,7 @@ export function createSound({getContext=()=>{const Audio=globalThis.AudioContext
    if(event==='alarm')[440,554,440].forEach((f,i)=>tone(f,t+i*.15,.25,.11,'triangle'));
    if(event==='pickup')[392,523.25,783.99].forEach((f,i)=>tone(f,t+i*.085,.35,.13));
    if(event==='hurt'){tone(180,t,.2,.15,'triangle',65);noise(.14,.12,950);}
-   if(event==='win')[523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f,t+i*.095,.5,.15));
+   if(event==='win'){[261.63,392].forEach(f=>tone(f,t,.65,.055));[523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f,t+i*.095,.5,.12));}
   }
  };
 }

@@ -54,7 +54,7 @@ export function drawWorld(ctx,run,images,width=900,height=520,{displayWidth=900,
  sprite(ctx,images.chog,f,-fw/2,-fh,fw,fh);ctx.restore();ctx.save();ctx.globalAlpha=bankFade;if(run.room.mischief)drawMischiefCarry(ctx,run,images,{reducedMotion});else if(run.room.heist)drawCarriedSun(ctx,run,images);ctx.restore();
  if(!reducedMotion)for(const p of fx.particles||[]){ctx.globalAlpha=Math.max(0,1-p.age/p.life);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.size*(1-p.age/p.life*.4),0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;
  // The doorway responds to a clean escape with a warm, restrained glow.
- if(fx.victory>0){ctx.save();ctx.globalAlpha=fx.victory*.24;ctx.fillStyle='#ffe4a0';ctx.beginPath();ctx.ellipse(run.room.heist?100:run.room.width-78,FLOOR-48,70,90,0,0,Math.PI*2);ctx.fill();ctx.restore();}ctx.restore();
+ if(fx.victory>0){ctx.save();ctx.globalAlpha=fx.victory*.24;ctx.fillStyle='#ffe4a0';ctx.beginPath();ctx.ellipse(run.room.mischief?110:run.room.heist?100:run.room.width-78,FLOOR-48,70,90,0,0,Math.PI*2);ctx.fill();ctx.restore();}ctx.restore();
  // A quiet foreground shade gives glass controls contrast without covering the route.
  const shade=ctx.createLinearGradient(0,height*.79,0,height);shade.addColorStop(0,'rgba(32,20,42,0)');shade.addColorStop(1,'rgba(27,19,37,.78)');ctx.fillStyle=shade;ctx.fillRect(0,height*.79,width,height*.21);
 }

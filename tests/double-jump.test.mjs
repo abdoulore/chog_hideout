@@ -23,5 +23,5 @@ test('high perch is physically reachable with a timed air jump but not a street 
  const d=newMischief({movementTrial:'double'});d.x=230;d.y=276;d.ground=true;tick(d,{right:true,jump:true});tick(d,{right:true},20);tick(d,{right:true,dash:true});let crossed=false;for(let i=0;i<100;i++){tick(d,{right:true});if(d.ground&&d.x>500&&d.y+34===310)crossed=true;}assert(crossed,'jump + dash crosses from the perch to the canopy');assert.equal(d.airJumps,0,'dash crossing preserves air jump');
 });
 test('air jump during ascent produces one feedback event; reduced motion suppresses the flip',()=>{
- const s=newMischief({movementTrial:'double'});tick(s,{jump:true});tick(s,{},20);const before=snapshot(s);tick(s,{jump:true});const fx=createFeedback({random:()=>.5});assert.deepEqual(fx.observe(before,s),['jump']);assert(fx.state.particles.length>0);tick(s,{},10);assert(Math.abs(chogPose(s).angle)>1);assert.equal(chogPose(s,{},true).angle,0);
+ const s=newMischief({movementTrial:'double'});tick(s,{jump:true});tick(s,{},20);const before=snapshot(s);tick(s,{jump:true});const fx=createFeedback({random:()=>.5});assert.deepEqual(fx.observe(before,s),['air-jump']);assert(fx.state.particles.length>0);tick(s,{},10);assert(Math.abs(chogPose(s).angle)>1);assert.equal(chogPose(s,{},true).angle,0);
 });
