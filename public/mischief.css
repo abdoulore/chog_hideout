@@ -64,3 +64,6 @@ body:not(.playing) .jump-trial-status{display:none;}
 .platform-down{flex-shrink:0;width:48px;min-height:55px;border:1px solid #f8d7b688;border-radius:12px;background:#35213fea;color:#ffe5b3;font-size:24px;touch-action:none;user-select:none;-webkit-user-select:none;}
 .platform-down small{display:block;font-size:8px;letter-spacing:1px;}
 .platform-down:disabled{opacity:.4;cursor:default;}
+
+.guard-direction.from-left{left:20px;right:auto;}
+@media(max-width:500px){.guard-direction.from-left{left:17px;}}

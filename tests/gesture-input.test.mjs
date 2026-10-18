@@ -16,3 +16,9 @@ test('dragging and jumping work with separate thumbs; cancel, lost capture and r
 test('taps, downward drags, slow swipes and long rests do not trigger actions',()=>{const {g,e,events}=fixture();g.down(e(1,280,600,0));g.move(e(1,283,660,50));g.up(e(1,283,660,90));g.down(e(2,280,600,200));g.move(e(2,320,600,600));g.up(e(2,320,600,650));g.down(e(3,280,600,800));g.up(e(3,280,600,1200));g.down(e(4,280,600,1300));g.up(e(4,281,601,1350));g.down(e(5,280,600,1400));g.move(e(5,280,570,1800));g.up(e(5,280,565,1850));assert.deepEqual(events,[]);});
 
 test('button preference tolerates blocked storage; nearby object targets follow the gameplay camera',()=>{const map=new Map(),storage={getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)};assert.equal(readControlMode(storage),'gestures');assert(saveControlMode(storage,'buttons'));assert.equal(map.get(GESTURE_KEY),'buttons');assert.equal(readControlMode(storage),'buttons');assert.equal(readControlMode({getItem(){throw Error();}}),'gestures');assert.equal(saveControlMode({setItem(){throw Error();}},'buttons'),false);const s=newMischief();s.x=430;const a=nearbyAction(s);assert.equal(a.id,'battery');for(const [displayWidth,displayHeight,width,height] of [[360,720,900,1800],[800,450,900,506]]){const target=projectTarget(s,a,{width,height,displayWidth,displayHeight,cameraBias:.2});assert(target.x>20&&target.x<displayWidth-20);assert(target.y>120&&target.y<displayHeight);assert.equal(target.label,'TAKE');}});
+
+
+test('a resting thumb can begin a fresh swipe without lifting, and the stroke still fires once',()=>{
+ const {g,e,events}=fixture();g.down(e(1,270,600,0));g.move(e(1,271,598,900));assert.deepEqual(events,[]);g.move(e(1,273,570,940));assert.deepEqual(events,[['jump']]);g.move(e(1,320,560,960));g.up(e(1,330,550,980));assert.deepEqual(events,[['jump']]);
+ g.down(e(2,270,600,1100));g.move(e(2,271,601,2000));g.cancel(e(2,271,601,2010));g.move(e(2,310,600,2050));assert.deepEqual(events,[['jump']]);
+});

@@ -1,5 +1,5 @@
 import test from 'node:test';
-import {loopEscape} from './helpers/loop-driver.mjs';
+import {loopEscape,approachSun} from './helpers/loop-driver.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {mountMischief} from '../public/mischief-play.mjs';
@@ -74,4 +74,9 @@ test('loop room plays through the real controller, explains its route and keeps 
  assert.equal(ui.get('title').textContent,'The Sunloop.');assert.equal(ui.get('loop-trial-panel').hidden,false);assert.equal(ui.get('jump-trial-panel').hidden,true);assert.equal(ui.app.run.room.doubleJump,true);assert.match(ui.get('map-note-roofs').textContent,/Drop to the street/);
  ui.app.start();loopEscape(()=>ui.app.run,ui.step,{music:true});for(let i=0;i<100;i++)ui.step();assert.equal(ui.app.run.status,'won');assert.equal(ui.get('title').textContent,'One more, and out.');assert.equal(ui.get('haul-value').textContent,'5 / 5');assert.match(ui.get('records').textContent,/Loop escape playtest/);assert.equal(store.getItem(TRIAL_KEY),saved);assert.equal(map.has(MISCHIEF_KEY),false);
  ui.app.start();assert.equal(ui.app.run.loopAlarm,false);assert.equal(ui.app.run.loopGateClosed,false);assert.deepEqual(ui.app.run.loot,[]);ui.app.destroy();
+});
+
+
+test('capture screen reports the actual street capture and reset clears it',async()=>{
+ const ui=setup({search:'?route=loop'});await ui.app.ready;ui.app.start();const d=approachSun(()=>ui.app.run,ui.step);ui.step({down:true});d.wait(.5);for(let i=0;i<400&&ui.app.run.status==='playing';i++)ui.step({left:true});assert.equal(ui.app.run.status,'dead');assert.equal(ui.app.run.capture.cause,'street');for(let i=0;i<100;i++)ui.step();assert.match(ui.get('message').textContent,/street level/);assert.equal(ui.get('guard-direction').hidden,true);ui.app.start();assert.equal(ui.app.run.capture,undefined);ui.app.destroy();
 });

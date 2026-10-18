@@ -13,7 +13,10 @@ export function createGestureInput({bounds,enabled=()=>true,onMove=()=>{},onJump
  if(accepted){e.preventDefault?.();e.currentTarget?.setPointerCapture?.(e.pointerId);}
  }
  function motion(e){if(!enabled()){reset();return;}if(move?.id===e.pointerId){e.preventDefault?.();updateMove(e);return;}if(action?.id!==e.pointerId)return;e.preventDefault?.();const p=point(e),dx=p.x-action.x,dy=p.y-action.y;// Lock the first clear direction. Slight diagonals are allowed; ambiguous ones wait.
- if(action.fired||time(e)-action.t>320)return;
+ if(action.fired)return;
+ // A resting thumb can start a fresh stroke without lifting. Re-anchor after
+ // inactivity; a slow drift or the first late event alone never triggers an action.
+ if(time(e)-action.t>320){action.x=p.x;action.y=p.y;action.t=time(e);return;}
  if(-dy>=24&&-dy>Math.abs(dx)*1.15){action.fired=true;onJump();}
  else if(onDown&&dy>=28&&dy>Math.abs(dx)*1.15){action.fired=true;onDown();}
  else if(Math.abs(dx)>=28&&Math.abs(dx)>Math.abs(dy)*1.15){action.fired=true;onDash(Math.sign(dx));}}

@@ -70,7 +70,7 @@ function guardStep(s,dt){
  g.x=Math.max(s.powered?620:240,Math.min(BLOCK.width-70,g.x));
  g.moving=Math.abs(g.x-oldX)>.001;g.walk=(g.walk||0)+Math.abs(g.x-oldX)/65*Math.PI*2;
  const close=Math.abs(s.x-g.x)<42&&Math.abs(s.y-g.y)<54;
- if(close&&g.mode==='chase'&&g.suspicion>.75&&g.notice===0){s.status='dead';s.deathReason='caught';s.catches++;emit(s,'caught','Caught with your paws full. Another route?');}
+ if(close&&g.mode==='chase'&&g.suspicion>.75&&g.notice===0){s.status='dead';s.deathReason='caught';s.capture={cause:s.dropThroughTime>0?'drop':s.ground?'street':'air',x:s.x,y:s.y,guardX:g.x};s.catches++;emit(s,'caught','Caught with your paws full. Another route?');}
 }
 
 export function stepMischief(s,input={},dt=STEP){if(s.status!=='playing')return s;

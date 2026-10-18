@@ -23,7 +23,7 @@ export function drawMischiefProps(ctx,s,images,{reducedMotion=false}={}){
   const g=LOOP_GATE;ctx.save();ctx.strokeStyle='#5f4651';ctx.lineWidth=7;ctx.strokeRect(g.x-5,g.y-5,g.w+10,g.h+10);
   if(s.loopGateClosed)ctx.drawImage(images.shutter,...manifest.shutter.frame,g.x,g.y,g.w,g.h);
   else{ctx.fillStyle=s.loopAlarm?'#ffd18b':'#a4dbb6';ctx.fillRect(g.x,g.y,g.w,12);if(s.loopAlarm){ctx.strokeStyle='#f9ce8c';ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.strokeRect(g.x,g.y+13,g.w,g.h-13);}}
-  ctx.restore();label(ctx,s.loopGateClosed?'CLOSED · ↓':s.loopAlarm?'CLOSING · ↓':'ALARM SHUTTER',g.x+17,96,s.loopAlarm?'#ffd18b':'#d6ebcd',9);
+  ctx.restore();label(ctx,s.loopGateClosed?'CLOSED · ↓':s.loopAlarm?'CLOSING · ↓':'ALARM SHUTTER',g.x+17,260,s.loopAlarm?'#ffd18b':'#d6ebcd',9);
   label(ctx,s.loopAlarm?'← STREET HOME':'ROOFTOPS →',s.loopAlarm?1000:630,s.loopAlarm?442:286,'#ffe7a7',11);
   if(s.loopAlarm){label(ctx,'↓ DROP TO STREET',1345,359,'#ffe7a7',11);if(s.items.music.state==='world')label(ctx,'ONE MORE? +2',900,325,'#edc1ff',11);}
  }
@@ -38,6 +38,7 @@ export function drawMischiefProps(ctx,s,images,{reducedMotion=false}={}){
  if(!images.districtHome){const door=manifest.props.frames.door;ctx.drawImage(images.props,...door,52,FLOOR-109,115,109);}
  for(const n of s.noise){const age=s.time-n.time;if(age>1.2)continue;ctx.save();ctx.globalAlpha=(1-age/1.2)*.7;ctx.strokeStyle=n.kind==='bell'?'#ffb392':'#f8db94';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(n.x,n.y-15,18+age*80,12+age*35,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
  const guard=s.caretaker,eyeX=guard.x+14,eyeY=FLOOR-54;
+ if(s.capture&&s.status==='dead'){ctx.save();ctx.strokeStyle='#ffddae';ctx.lineWidth=2.5;ctx.setLineDash([4,4]);ctx.beginPath();ctx.ellipse(s.x+14,s.y+17,27,34,0,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(s.x+14,s.y+17);ctx.lineTo(eyeX,FLOOR-24);ctx.stroke();ctx.restore();}
  const torch=drawTorchBeam(ctx,s,{reducedMotion});
  ctx.save();ctx.fillStyle='rgba(42,25,42,.26)';ctx.beginPath();ctx.ellipse(eyeX,FLOOR+2,28,4,0,0,Math.PI*2);ctx.fill();ctx.restore();
  const guardPose=caretakerPose(s,reducedMotion);ctx.save();ctx.translate(eyeX,FLOOR+guardPose.bob);ctx.scale(guard.facing,1);ctx.rotate(guardPose.angle);if(images.caretaker)ctx.drawImage(images.caretaker,-51,-101,102,101);ctx.restore();drawTorchSource(ctx,torch);
