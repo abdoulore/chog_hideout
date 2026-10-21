@@ -13,7 +13,7 @@ export function mountHome({doc=globalThis.document,storage=browserStorage(),even
   $('story-copy').textContent=job.escapes?'You made it home with '+job.lastHaul.map(id=>TREASURES[id].name.toLowerCase()).join(' and ')+'. The caretaker will be looking. There is always one more thing.':'A caretaker, three temptations, and two ways through the block. Take something and come home. Only you decide when you have enough.';
   $('hook-caption').textContent=hasSun?'Your Pocket Sun':'An empty hook';
   $('scene-caption').textContent=hasSun?'Afternoon, back where it belongs.':'A little room for a little trouble.';
-  $('start-heist').textContent=job.escapes?'One more job →':'Find some trouble →';
+  $('start-heist').textContent='Enter the Sun Vault →';
   $('job-best').textContent=job.bestValue+' / 6';$('job-escapes').textContent=String(job.escapes);$('job-time').textContent=job.bestTime===null?'—':job.bestTime.toFixed(1)+'s';
   for(const id of ['battery','sun','music']){$('haul-'+id).classList.toggle('earned',job.treasures.includes(id));$('haul-'+id+'-state').textContent=job.treasures.includes(id)?'BROUGHT HOME':'STILL OUT THERE';}
   $('clean-best').textContent=fmt(r.bestClean);$('escape-best').textContent=fmt(r.bestEscape);$('spark-best').textContent=r.bestSparks+' / 8';

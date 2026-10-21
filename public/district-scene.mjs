@@ -37,10 +37,10 @@ export function drawDistrictHome(ctx,s,images,{reducedMotion=false}={}){
 export function drawDistrictPower(ctx,s,images,{reducedMotion=false}={}){
  const {gate:g,lift:l}=BLOCK;
  // A physical conduit joins the battery socket, gate relay and lift motor.
- const wire=[[465,FLOOR-18],[481,FLOOR-18],[481,351],[590,351],[590,355],[960,355],[960,244],[1088,244]];
+ const wire=s.vaultMission?[[1500,310],[1500,350],[1180,350],[1180,244],[1088,244]]:[[465,FLOOR-18],[481,FLOOR-18],[481,351],[590,351],[590,355],[960,355],[960,244],[1088,244]];
  line(ctx,wire,'#3a2c38',7);line(ctx,wire,'#99734f',4);line(ctx,wire,'#ddb17a',1);
  for(const x of [493,687,935]){ctx.fillStyle='#5b4a48';ctx.fillRect(x,348,7,12);pin(ctx,x+3,352);}
- const socket=ctx.createLinearGradient(422,416,466,460);socket.addColorStop(0,'#a77a51');socket.addColorStop(.4,'#57434a');socket.addColorStop(1,'#312736');ctx.fillStyle=socket;ctx.strokeStyle='#c89965';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(422,416,44,44,6);ctx.fill();ctx.stroke();ctx.fillStyle='#243840';ctx.beginPath();ctx.roundRect(428,421,32,33,4);ctx.fill();for(const x of [432,453]){ctx.fillStyle='#ddb474';ctx.fillRect(x,424,3,10);}lamp(ctx,470,440,s.powered,3);
+ if(!s.vaultMission){const socket=ctx.createLinearGradient(422,416,466,460);socket.addColorStop(0,'#a77a51');socket.addColorStop(.4,'#57434a');socket.addColorStop(1,'#312736');ctx.fillStyle=socket;ctx.strokeStyle='#c89965';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(422,416,44,44,6);ctx.fill();ctx.stroke();ctx.fillStyle='#243840';ctx.beginPath();ctx.roundRect(428,421,32,33,4);ctx.fill();for(const x of [432,453]){ctx.fillStyle='#ddb474';ctx.fillRect(x,424,3,10);}lamp(ctx,470,440,s.powered,3);}
  // The gate is hung from the canopy with a real rolled-up shutter when open.
  for(const x of [g.x-10,g.x+g.w]){ctx.fillStyle='#56424c';ctx.fillRect(x,g.y,10,g.h);ctx.fillStyle='#b17c58';ctx.fillRect(x,g.y,3,g.h);pin(ctx,x+5,g.y+12);}
  if(s.powered)ctx.drawImage(images.shutter,...manifest.shutter.frame,g.x,g.y,g.w,g.h);

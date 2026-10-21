@@ -1,3 +1,4 @@
+import {vaultEscape} from './helpers/vault-driver.mjs';
 import {depotEscape} from './helpers/depot-driver.mjs';
 import test from 'node:test';
 import {loopEscape,approachSun} from './helpers/loop-driver.mjs';
@@ -92,3 +93,7 @@ test('Sunloop results compare separate haul goals across retries without saving 
  ui.app.start();depotEscape(()=>ui.app.run,ui.step);for(let i=0;i<100;i++)ui.step();assert.match(ui.get('message').textContent,/First time set/);assert.match(ui.get('message').textContent,/Next goal:.*music/);
  ui.app.start();depotEscape(()=>ui.app.run,ui.step,{music:true});for(let i=0;i<100;i++)ui.step();assert.match(ui.get('message').textContent,/First time set/);assert.match(ui.get('records').textContent,/Sun only: [\d.]+s.*Sun \+ music: [\d.]+s/);assert.equal(ui.map.has(MISCHIEF_KEY),false);ui.app.destroy();
 });
+
+ test('full vault mission completes through the controller and remains isolated from records',async()=>{
+ const ui=setup({search:'?route=heist'});await ui.app.ready;assert.equal(ui.app.run.vaultMission,true);assert.match(ui.get('title').textContent,/Sun Vault/);ui.app.start();vaultEscape(()=>ui.app.run,ui.step,{restore:true,music:true});for(let i=0;i<100;i++)ui.step();assert.equal(ui.app.run.status,'won');assert.equal(ui.app.run.relays.length,2);assert.match(ui.get('message').textContent,/restored the lift/);assert.equal(ui.map.has(MISCHIEF_KEY),false);ui.app.openMap();assert.equal(ui.get('map-panel').hidden,false);ui.app.destroy();
+ });

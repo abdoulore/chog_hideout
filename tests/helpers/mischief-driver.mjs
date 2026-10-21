@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 // Feasibility controller using only public movement/actions. No state teleport or guard overrides.
 export function driver(get,step){
  const wait=(seconds,input={})=>{for(let i=0;i<seconds*120&&get().status==='playing';i++)step(input);};
- function go(x,{jump=false,dash=false}={}){let n=0,j=jump,d=false;while(Math.abs(get().x-x)>5&&n++<1000&&get().status==='playing'){const s=get(),input={right:s.x<x,left:s.x>x,jump:j&&s.ground,dash:dash&&!s.ground&&s.vy>-360&&!d};if(input.jump)j=false;if(input.dash)d=true;step(input);}assert(Math.abs(get().x-x)<6,`Cannot reach ${x}: x=${get().x} status=${get().status}`);}
+ function go(x,{jump=false,dash=false,double=false}={}){let n=0,j=jump,d=false;while(Math.abs(get().x-x)>5&&n++<1000&&get().status==='playing'){const s=get(),input={right:s.x<x,left:s.x>x,jump:(j&&s.ground)||(double&&!j&&!s.ground&&!s.airJumpUsed&&s.vy>=0),dash:dash&&!s.ground&&s.vy>-360&&!d};if(input.jump)j=false;if(input.dash)d=true;step(input);}assert(Math.abs(get().x-x)<6,`Cannot reach ${x}: x=${get().x} status=${get().status}`);}
  function settle(){for(let i=0;i<220&&!get().ground&&get().status==='playing';i++)step({});assert(get().ground,'Could not land');}
  const act=()=>{wait(.8,{interact:true});step({});};
  return {wait,go,settle,act};

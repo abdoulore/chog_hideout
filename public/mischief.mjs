@@ -1,3 +1,4 @@
+import {prepareVault,vaultAction,performVault,vaultObjective,vaultHazards} from './vault-mission.mjs';
 import {prepareLoop,loopRoom,ringLoopAlarm,advanceLoop,loopObjective} from './loop-escape.mjs';
 import {newRun,stepRun,STEP,FLOOR,overlap} from './engine.mjs?motion=1';
 export const JOB_ID='one-more-thing-v1';
@@ -5,10 +6,10 @@ export const BLOCK={width:1720,home:110,gate:{x:570,y:330,w:42,h:130},lift:{x:10
 export const TREASURES={battery:{id:'battery',name:'Lift battery',x:444,y:460,value:1,hold:.45},sun:{id:'sun',name:'Pocket Sun',x:1335,y:460,value:3,hold:.65},music:{id:'music',name:'Music box',x:1460,y:310,value:2,hold:.55}};
 const roofs=[{x:300,y:385,w:160,h:12},{x:500,y:310,w:185,h:12},{x:730,y:310,w:210,h:12},{x:1240,y:310,w:330,h:12}];
 function room(powered=true,liftY=385,movementTrial=null){return {id:JOB_ID,movementTrial,platformDrop:!!movementTrial,doubleJump:movementTrial==='double',heist:true,mischief:true,name:'One More Thing',width:BLOCK.width,gaps:[],spikes:[],orbs:[],platforms:[...roofs,...(movementTrial?[{x:190,y:310,w:70,h:12}]:[]),...(powered?[{x:BLOCK.lift.x,y:liftY,w:BLOCK.lift.w,h:12,kind:'lift'}]:[])],solids:powered?[{...BLOCK.gate,kind:'shutter'}]:[]};}
-export function newMischief({movementTrial=null,loopTrial=false,extendedLoop=false}={}){if(loopTrial)movementTrial='double';movementTrial=['single','double'].includes(movementTrial)?movementTrial:null;const s=Object.assign(newRun(room(true,385,movementTrial)),{movementTrial},{phase:'sneak',jobId:JOB_ID,loot:[],items:Object.fromEntries(Object.entries(TREASURES).map(([id,t])=>[id,{...t,state:'world'}])),powered:true,liftY:385,pot:'ready',potTime:0,noise:[],noiseId:0,musicAt:0,action:null,actionTime:0,actionCooldown:0,requireRelease:false,alerted:false,catches:0,eventId:0,event:null,banked:false,caretaker:{x:1190,y:FLOOR-34,facing:1,mode:'patrol',suspicion:0,target:1510,lastSeen:null,search:0,heard:0,wait:0,visible:false,notice:0,roofWatch:false,walk:0,moving:false}});if(loopTrial){prepareLoop(s,extendedLoop);s.room=loopRoom(s.room,s);}return s;}
+export function newMischief({movementTrial=null,loopTrial=false,extendedLoop=false,vaultMission=false}={}){if(vaultMission){loopTrial=true;extendedLoop=true;}if(loopTrial)movementTrial='double';movementTrial=['single','double'].includes(movementTrial)?movementTrial:null;const s=Object.assign(newRun(room(true,385,movementTrial)),{movementTrial},{phase:'sneak',jobId:JOB_ID,loot:[],items:Object.fromEntries(Object.entries(TREASURES).map(([id,t])=>[id,{...t,state:'world'}])),powered:true,liftY:385,pot:'ready',potTime:0,noise:[],noiseId:0,musicAt:0,action:null,actionTime:0,actionCooldown:0,requireRelease:false,alerted:false,catches:0,eventId:0,event:null,banked:false,caretaker:{x:1190,y:FLOOR-34,facing:1,mode:'patrol',suspicion:0,target:1510,lastSeen:null,search:0,heard:0,wait:0,visible:false,notice:0,roofWatch:false,walk:0,moving:false}});if(loopTrial){prepareLoop(s,extendedLoop);if(vaultMission)prepareVault(s);s.room=loopRoom(s.room,s);}return s;}
 function emit(s,type,text){s.event={id:++s.eventId,type,text};}
 function noise(s,x,y,radius,kind){s.noise.push({id:++s.noiseId,x,y,radius,kind,time:s.time});s.noise=s.noise.slice(-8);}
-export function lootValue(s){return s.loot.reduce((n,id)=>n+TREASURES[id].value,0);}
+export function lootValue(s){return s.loot.reduce((n,id)=>n+(s.vaultMission&&id==='battery'?0:TREASURES[id].value),0);}
 export function canSee(s){const g=s.caretaker,px=s.x+14,py=s.y+17,gx=g.x+14,gy=g.y+10,dx=px-gx,dy=py-gy;const facing=dx*g.facing>=-24;const distance=Math.hypot(dx,dy),range=g.mode==='chase'?400:300;
  if(!facing||distance>range||Math.abs(dy)>180)return false;
  // A solid shutter and the marked planter block vision. Upper roofs remain visible.
@@ -16,15 +17,17 @@ export function canSee(s){const g=s.caretaker,px=s.x+14,py=s.y+17,gx=g.x+14,gy=g
  return true;
 }
 export function nearbyAction(s){
+ const missionAction=vaultAction(s);if(missionAction)return missionAction;
  if(s.x<190&&s.ground&&s.y+34===FLOOR&&s.loot.length&&(!s.loopTrial||s.loot.includes('sun')))return {id:'home',label:'Head home',detail:'Bank '+s.loot.length+' treasure'+(s.loot.length===1?'':'s')+' · or go back for more',hold:.45};
  const near=(x,y,r=62)=>Math.abs(s.x+14-x)<r&&Math.abs(s.y+34-y)<45;
  if(s.pot==='ready'&&near(BLOCK.pot.x,BLOCK.pot.y))return {id:'pot',label:'Knock the pot',detail:'A crash down below will draw the caretaker',hold:.12};
- if(s.items.battery.state==='carried'&&near(TREASURES.battery.x,TREASURES.battery.y,52))return {id:'restore',label:'Restore power',detail:'Give up the battery · restart lift · close gate',hold:.45};
- for(const id of ['music','sun','battery']){const item=s.items[id];if(item.state==='world'&&near(item.x,item.y))return {id,label:'Take '+item.name.toLowerCase(),detail:s.loopTrial&&id==='sun'?'Opens the street home. Upper gate closes after the bell.':id==='battery'?'Opens the street gate. Stops the lift.':id==='music'?'Worth 2. Plays until you drop it.':'Worth 3. The depot bell will ring.',hold:item.hold};}
+ if(!s.vaultMission&&s.items.battery.state==='carried'&&near(TREASURES.battery.x,TREASURES.battery.y,52))return {id:'restore',label:'Restore power',detail:'Give up the battery · restart lift · close gate',hold:.45};
+ for(const id of ['music','sun','battery']){const item=s.items[id];if(s.vaultMission&&id==='sun'&&(!s.vaultOpen||s.relays.length<2))continue;if(item.state==='world'&&near(item.x,item.y))return {id,label:'Take '+item.name.toLowerCase(),detail:s.loopTrial&&id==='sun'?'Opens the street home. Upper gate closes after the bell.':id==='battery'?'Opens the street gate. Stops the lift.':id==='music'?'Worth 2. Plays until you drop it.':'Worth 3. The depot bell will ring.',hold:item.hold};}
  return null;
 }
-function take(s,id){const item=s.items[id];s.theftFX={id,x:item.x,y:item.y,time:.32};item.state='carried';s.loot.push(id);s.phase='escape';if(id==='battery'){s.powered=false;noise(s,item.x,item.y-20,520,'clank');emit(s,'steal','Battery taken. Street gate open; lift stopped.');}else if(id==='sun'){s.alerted=true;noise(s,item.x,item.y-20,1100,'bell');const changed=s.loopTrial&&ringLoopAlarm(s);emit(s,'alarm',changed?'Bell! Street home open. Drop below the upper shutter.':'The Sun is yours. The depot bell rang.');}else{item.playing=true;s.musicAt=s.time+.15;emit(s,'steal','Music box taken. Drop it to leave a noisy decoy.');}}
+function take(s,id){const item=s.items[id];s.theftFX={id,x:item.x,y:item.y,time:.32};item.state='carried';s.loot.push(id);s.phase='escape';if(id==='battery'){s.powered=false;noise(s,item.x,item.y-20,520,'clank');emit(s,'steal',s.vaultMission?'Power cell taken. Lift offline. Carry it to the vault socket.':'Battery taken. Street gate open; lift stopped.');}else if(id==='sun'){s.alerted=true;noise(s,item.x,item.y-20,1100,'bell');const changed=s.loopTrial&&ringLoopAlarm(s);emit(s,'alarm',changed?'Bell! Street home open. Drop below the upper shutter.':'The Sun is yours. The depot bell rang.');}else{item.playing=true;s.musicAt=s.time+.15;emit(s,'steal','Music box taken. Drop it to leave a noisy decoy.');}}
 function perform(s,id){
+ if(s.vaultMission){const message=performVault(s,id);if(message){emit(s,'power',message);return;}}
  if(id==='home'){s.status='won';s.banked=true;emit(s,'win',s.loot.length===3?'Everything, and home in one piece.':'Home safe. You chose when to leave.');return;}
  if(id==='pot'){s.pot='falling';s.potTime=.42;emit(s,'pot','A little accident. Watch where the caretaker goes.');return;}
  if(id==='restore'){s.items.battery.state='world';s.items.battery.x=TREASURES.battery.x;s.items.battery.y=FLOOR;s.loot=s.loot.filter(id=>id!=='battery');s.powered=true;
@@ -84,6 +87,6 @@ export function stepMischief(s,input={},dt=STEP){if(s.status!=='playing')return 
  if(s.status!=='playing')return s;
  if(s.pot==='falling'){s.potTime-=dt;if(s.potTime<=0){s.pot='broken';noise(s,970,FLOOR-10,800,'pot');}}
  const music=s.items.music;if(music.playing&&s.time>=s.musicAt){noise(s,music.state==='carried'?s.x+14:music.x,music.state==='carried'?s.y:music.y,630,'music');s.musicAt=s.time+1.6;}
- guardStep(s,dt);return s;
+ vaultHazards(s);if(s.status==='playing')guardStep(s,dt);return s;
 }
-export function jobObjective(s){if(s.loopTrial)return loopObjective(s);if(s.status==='won')return 'HOME WITH '+s.loot.length+' / 3 TREASURES';if(s.loot.length)return s.x<210?'LEAVE SAFELY · OR GO BACK FOR MORE':'← HOME IS OPEN · ONE MORE THING?';return s.x<250?'ANY ONE TREASURE IS ENOUGH':'WATCH. DISTRACT. TAKE YOUR CHANCE.';}
+export function jobObjective(s){if(s.vaultMission)return vaultObjective(s);if(s.loopTrial)return loopObjective(s);if(s.status==='won')return 'HOME WITH '+s.loot.length+' / 3 TREASURES';if(s.loot.length)return s.x<210?'LEAVE SAFELY · OR GO BACK FOR MORE':'← HOME IS OPEN · ONE MORE THING?';return s.x<250?'ANY ONE TREASURE IS ENOUGH':'WATCH. DISTRACT. TAKE YOUR CHANCE.';}

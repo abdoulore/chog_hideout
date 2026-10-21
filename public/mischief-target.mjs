@@ -1,7 +1,8 @@
+import {POWER_SOCKET,VAULT_SOCKET,RELAYS} from './vault-mission.mjs';
 import {FLOOR} from './engine.mjs';
 import {sceneLayout} from './scene-layout.mjs';
 import {BLOCK,TREASURES} from './mischief.mjs';
-export function actionTarget(run,action){if(!action)return null;if(action.id==='home')return {x:BLOCK.home,y:FLOOR-52,label:'GO HOME'};if(action.id==='pot')return {x:BLOCK.pot.x,y:BLOCK.pot.y-20,label:'KNOCK'};if(action.id==='restore')return {x:TREASURES.battery.x,y:FLOOR-20,label:'RESTORE'};const item=run.items[action.id];return item?{x:item.x,y:item.y-24,label:'TAKE'}:null;}
+export function actionTarget(run,action){if(!action)return null;const relay=RELAYS.find(r=>r.id===action.id);if(relay)return {x:relay.x,y:relay.y-30,label:'RELEASE SEAL'};if(['unlock-vault','recover-cell','restore-lift'].includes(action.id)){const p=action.id==='restore-lift'?POWER_SOCKET:VAULT_SOCKET;return {x:p.x,y:p.y-30,label:action.id==='unlock-vault'?'POWER VAULT':action.id==='recover-cell'?'RETRIEVE':'RESTORE'};}if(action.id==='home')return {x:BLOCK.home,y:FLOOR-52,label:'GO HOME'};if(action.id==='pot')return {x:BLOCK.pot.x,y:BLOCK.pot.y-20,label:'KNOCK'};if(action.id==='restore')return {x:TREASURES.battery.x,y:FLOOR-20,label:'RESTORE'};const item=run.items[action.id];return item?{x:item.x,y:item.y-24,label:'TAKE'}:null;}
 export function projectTarget(run,action,{width,height,displayWidth,displayHeight,cameraBias}){const target=actionTarget(run,action);if(!target)return null;const l=sceneLayout({...run,cameraBias},displayWidth,width,height);return {...target,x:(target.x-l.camera.x)*l.camera.zoom*displayWidth/width,y:(l.groundY+(target.y-FLOOR)*l.camera.zoom)*displayHeight/height};}
 
 export function guardScreenDirection(run,{width,height,displayWidth,cameraBias}){
@@ -10,6 +11,7 @@ export function guardScreenDirection(run,{width,height,displayWidth,cameraBias})
  return px<24?-1:px>displayWidth-24?1:0;
 }
 export function captureExplanation(run){
+ if(run.deathReason==='steam')return 'You crossed an active steam vent. Amber warns before the plume. Wait for it to clear, or cross on the upper platforms. Dash does not protect you.';
  if(run.deathReason==='spikes')return 'You landed on a marked spike trap. Jump before the warning sign, or use the ledges above. Dashing does not protect you from spikes.';
  if(run.deathReason==='gap')return 'You missed the landing. Save the air jump for recovery and use dash to cross the wider gap.';
  if(run.capture?.cause==='drop')return 'You dropped within the caretaker’s reach. Check below before swiping down, or jump and dash past him first.';

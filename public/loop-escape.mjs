@@ -1,3 +1,4 @@
+import {VAULT_DOOR,VAULT_PLATFORMS} from './vault-mission.mjs';
 // Isolated room experiment. No records or competitive submissions.
 export const LOOP_GATE={x:1188,y:110,w:34,h:280,kind:'alarm-shutter'};
 export const LOOP_WARNING=1.2;
@@ -17,7 +18,7 @@ export function prepareLoop(s,extended=false){s.loopExtended=extended;
 }
 export function loopRoom(room,s){
  if(!s?.loopTrial)return room;
- return {...room,id:s.loopExtended?'sunloop-depot-v1':'sunloop-v1',name:'The Sunloop',width:s.loopExtended?2660:room.width,spikes:s.loopExtended?[35,39]:room.spikes,platforms:[...room.platforms,{x:840,y:385,w:125,h:12},...(s.loopExtended?DEPOT_PLATFORMS:[])],solids:[...room.solids,...(s.loopGateClosed?[{...loopGate(s)}]:[])]};
+ return {...room,id:s.loopExtended?'sunloop-depot-v1':'sunloop-v1',name:'The Sunloop',width:s.vaultMission?4300:s.loopExtended?2660:room.width,spikes:s.loopExtended?[35,39]:room.spikes,platforms:[...room.platforms,...(s.vaultMission?VAULT_PLATFORMS:[]),{x:840,y:385,w:125,h:12},...(s.loopExtended?DEPOT_PLATFORMS:[])],solids:[...room.solids,...(s.vaultMission&&!s.vaultOpen?[{...VAULT_DOOR}]:[]),...(s.loopGateClosed?[{...loopGate(s)}]:[])]};
 }
 export function ringLoopAlarm(s){
  if(s.loopAlarm)return false;
