@@ -97,3 +97,8 @@ test('Sunloop results compare separate haul goals across retries without saving 
  test('full vault mission completes through the controller and remains isolated from records',async()=>{
  const ui=setup({search:'?route=heist'});await ui.app.ready;assert.equal(ui.app.run.vaultMission,true);assert.match(ui.get('title').textContent,/Sun Vault/);ui.app.start();vaultEscape(()=>ui.app.run,ui.step,{restore:true,music:true});for(let i=0;i<100;i++)ui.step();assert.equal(ui.app.run.status,'won');assert.equal(ui.app.run.relays.length,2);assert.match(ui.get('message').textContent,/restored the lift/);assert.equal(ui.map.has(MISCHIEF_KEY),false);ui.app.openMap();assert.equal(ui.get('map-panel').hidden,false);ui.app.destroy();
  });
+
+test('tapping install stops a resting movement thumb and installs the cell once',async()=>{
+ const ui=setup({search:'?route=heist'});await ui.app.ready;ui.app.start();const s=ui.app.run;Object.assign(s,{x:2005,y:276,ground:true,loot:['battery'],powered:false});s.items.battery.state='carried';ui.step();
+ const canvas=ui.get('canvas'),e=(id,x,y,t)=>({pointerId:id,clientX:x,clientY:y,timeStamp:t,pointerType:'touch',preventDefault(){},currentTarget:canvas});canvas.onpointerdown(e(1,60,650,0));canvas.onpointermove(e(1,100,650,30));ui.get('world-action').click();for(let i=0;i<110;i++)ui.advance();assert.equal(s.vaultOpen,true);assert.equal(s.items.battery.state,'vault');assert(!s.loot.includes('battery'));ui.app.destroy();
+});

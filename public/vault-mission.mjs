@@ -16,7 +16,7 @@ export function vaultAction(s){
 }
 export function performVault(s,id){
  if(RELAYS.some(r=>r.id===id)&&!s.relays.includes(id)){s.relays.push(id);return s.relays.length===2?'Both seals released. The Sun is yours to take.':'First seal released. Find the other brass relay.';}
- if(id==='unlock-vault'){s.vaultOpen=true;s.items.battery.state='vault';s.loot=s.loot.filter(x=>x!=='battery');return 'Vault powered. Take the Sun. The lift is still offline.';}
+ if(id==='unlock-vault'){s.vaultOpen=true;s.items.battery.state='vault';s.loot=s.loot.filter(x=>x!=='battery');return 'Cell installed. Vault open. Release both brass seals inside.';}
  if(id==='recover-cell'){s.items.battery.state='carried';s.loot.push('battery');return 'Cell recovered. Restore the lift at the brass socket, or leave by the street.';}
  if(id==='restore-lift'){s.items.battery.state='installed';s.loot=s.loot.filter(x=>x!=='battery');s.powered=true;s.powerRestored=true;return 'Lift restored. Street gate closed. Take the rooftops home.';}
  return null;
