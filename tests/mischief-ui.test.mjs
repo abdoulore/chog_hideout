@@ -99,6 +99,6 @@ test('Sunloop results compare separate haul goals across retries without saving 
  });
 
 test('tapping install stops a resting movement thumb and installs the cell once',async()=>{
- const ui=setup({search:'?route=heist'});await ui.app.ready;ui.app.start();const s=ui.app.run;Object.assign(s,{x:2005,y:276,ground:true,loot:['battery'],powered:false});s.items.battery.state='carried';ui.step();
- const canvas=ui.get('canvas'),e=(id,x,y,t)=>({pointerId:id,clientX:x,clientY:y,timeStamp:t,pointerType:'touch',preventDefault(){},currentTarget:canvas});canvas.onpointerdown(e(1,60,650,0));canvas.onpointermove(e(1,100,650,30));ui.get('world-action').click();for(let i=0;i<110;i++)ui.advance();assert.equal(s.vaultOpen,true);assert.equal(s.items.battery.state,'vault');assert(!s.loot.includes('battery'));ui.app.destroy();
+ const ui=setup({search:'?route=heist'});await ui.app.ready;ui.app.start();const s=ui.app.run;Object.assign(s,{x:2005,y:276,ground:true,loot:['battery'],powered:false});s.items.battery.state='carried';ui.step();assert(ui.get('world-action').classList.contains('floating-install'));assert.equal(ui.get('world-action-label').textContent,'INSTALL CELL');
+ const canvas=ui.get('canvas'),e=(id,x,y,t)=>({pointerId:id,clientX:x,clientY:y,timeStamp:t,pointerType:'touch',preventDefault(){},currentTarget:canvas});canvas.onpointerdown(e(1,60,650,0));canvas.onpointermove(e(1,100,650,30));ui.get('world-action').click();for(let i=0;i<110;i++)ui.advance();assert.equal(s.vaultOpen,true);assert.equal(s.items.battery.state,'vault');assert(!s.loot.includes('battery'));assert.equal(ui.get('world-action').classList.contains('floating-install'),false);ui.app.destroy();
 });
