@@ -21,14 +21,20 @@ export function performVault(s,id){
  if(id==='restore-lift'){s.items.battery.state='installed';s.loot=s.loot.filter(x=>x!=='battery');s.powered=true;s.powerRestored=true;return 'Lift restored. Street gate closed. Take the rooftops home.';}
  return null;
 }
+export function guideVaultTarget(s,p,label){
+ const dx=p.x-(s.x+14),dy=p.y-(s.y+34);
+ const horizontal=Math.abs(dx)<58?'':dx<0?'←':'→';
+ const vertical=Math.abs(dy)<45?'':dy<0?'↑':'↓';
+ return label+' · '+([horizontal,vertical].filter(Boolean).join(' ')||'NEARBY');
+}
 export function vaultObjective(s){
  if(s.status==='won')return 'THE SUN VAULT · HOME SAFE';
- if(!s.vaultOpen)return s.loot.includes('battery')?'02 · CARRY CELL → VAULT SOCKET':s.items.battery.state==='world'?'01 · FIND THE POWER CELL →':'02 · OPEN THE VAULT';
- if(!s.loopAlarm)return s.relays.length<2?'03 · RELEASE BOTH SEALS · '+s.relays.length+' / 2':'03 · SEALS OPEN → STEAL THE SUN';
- if(!s.loot.includes('sun'))return 'RECOVER THE SUN BEFORE LEAVING';
+ if(!s.vaultOpen)return s.loot.includes('battery')?guideVaultTarget(s,VAULT_SOCKET,'02 · INSTALL CELL AT VAULT'):s.items.battery.state==='world'?guideVaultTarget(s,s.items.battery,'01 · COLLECT POWER CELL'):'02 · OPEN THE VAULT';
+ if(!s.loopAlarm){const remaining=RELAYS.filter(r=>!s.relays.includes(r.id)).sort((a,b)=>Math.abs(a.x-s.x)-Math.abs(b.x-s.x));return remaining.length?guideVaultTarget(s,remaining[0],'03 · '+remaining[0].name.toUpperCase()+' · '+s.relays.length+'/2'):guideVaultTarget(s,s.items.sun,'03 · STEAL THE SUN');}
+ if(!s.loot.includes('sun'))return guideVaultTarget(s,s.items.sun,'RECOVER THE SUN');
  if(s.x<210)return 'BANK THE SUN AT YOUR HOME DOOR';
  if(s.powerRestored)return '04 · LIFT RUNNING · ← ROOFTOPS HOME';
- if(s.loot.includes('battery'))return '04 · ← RESTORE LIFT AT BRASS SOCKET';
+ if(s.loot.includes('battery'))return guideVaultTarget(s,POWER_SOCKET,'04 · RESTORE LIFT');
  if(s.x>2550)return '04 · ← THROUGH THE STEAM HALL · WATCH THE VENTS';
  if(s.x>1900)return '04 · STREET BELOW · OR RETRIEVE CELL AT VAULT SOCKET';
  return '← STREET HOME · JUMP TRAPS · WATCH THE CARETAKER';
