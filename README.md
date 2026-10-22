@@ -3,7 +3,7 @@
 ## Current pixel missions
 
 - **The Sun Vault:** `/mischief.html?route=heist&renderer=pixel` — recover the cell, release two seals and choose a street or restored-lift escape.
-- **The East Annex:** `/mischief.html?route=annex&renderer=pixel` — unlocks after the Sun Vault. Starts directly at the east wing, with two local seals, two steam vents, high crossings and lower recovery ledges. Return to the nearby extraction door; optional music is a bonus.
+- **The East Annex:** `/mischief.html?route=annex&renderer=pixel` — unlocks after the Sun Vault. Starts directly at the east wing, with a local caretaker, planter cover, flowerpot distraction, two seals and a distant tower. Return through the steam yard; optional music on a high detour changes the guard encounter.
 
 - **The Lantern Run:** `/mischief.html?route=lantern&renderer=pixel` — unlocks after the Annex. Carry the Sun forward, collect the exit cell and power the far extraction door. Optional music waits on a high detour. See [mission details](docs/LANTERN_RUN.md).
 

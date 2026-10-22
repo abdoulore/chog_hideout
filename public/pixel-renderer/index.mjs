@@ -39,7 +39,7 @@ export function drawPixelWorld(ctx,s,im,width,height,{feedback={},reducedMotion=
  for(const x of [BLOCK.lift.x+8,BLOCK.lift.x+BLOCK.lift.w-8]){rect(x,246,2,liftY-246,'#bd9c6a');for(let y=250;y<liftY;y+=5)rect(x,y,3,1,'#3a2838');}
  spr('lift',BLOCK.lift.x,liftY);label(cues.lift,1090,240,s.powered?'#c8ebc1':'#e5bd91');if(!s.powered&&Math.abs(s.x-1090)<180)label(s.vaultMission?'CELL SOCKET ON ROOF →':'RETURN CELL AT STREET SOCKET',1090,225);
  if(s.vaultMission)drawPixelVault(c,s,im,{rect,spr,label,reducedMotion});
- if(s.pot!=='broken'){const t=s.pot==='falling'?1-s.potTime/.42:0;spr('pot',815+t*155-im.pot.width/2,310+t*140-im.pot.height);}else for(let i=0;i<5;i++)rect(950+i*8,455-i%2*3,5,3,'#cf8055');
+ const pot=s.potPosition||BLOCK.pot; if(s.pot!=='broken'){const t=s.pot==='falling'?1-s.potTime/.42:0;spr('pot',pot.x+t*155-im.pot.width/2,pot.y+t*(460-pot.y)-im.pot.height);}else for(let i=0;i<5;i++)rect(pot.x+135+i*8,455-i%2*3,5,3,'#cf8055');
  for(const item of Object.values(s.items))if(item.state==='world'){const bob=reducedMotion?0:Math.round(Math.sin(s.time*3)*1);spr(item.id,item.x-im[item.id].width/2,item.y-im[item.id].height+bob);rect(item.x-1,item.y-im[item.id].height-6+bob,2,2,'#ffe7a6');}
  for(const n of s.noise){const age=s.time-n.time;if(age>1.2)continue;c.globalAlpha=(1-age/1.2)*.65;c.strokeStyle=n.kind==='bell'?'#ff9a84':'#ffe2ac';c.lineWidth=1;c.beginPath();c.ellipse(Math.round(n.x),Math.round(n.y-10),Math.round(12+age*60),Math.round(7+age*25),0,0,Math.PI*2);c.stroke();}c.globalAlpha=1;
  const frames=actorFrames(s,feedback,reducedMotion),guard=s.caretaker;
@@ -49,7 +49,7 @@ export function drawPixelWorld(ctx,s,im,width,height,{feedback={},reducedMotion=
  actor('care',frames.care,48,48,guard.x+14,460,guard.facing);
  for(const [r,alpha] of [[10,.1],[6,.15],[2,.8]]){c.globalAlpha=alpha;rect(light.x-r,light.y-r,r*2,r*2,'#fff1ac');}c.globalAlpha=1;
  // Cover is drawn over the guard and covers the simulation's entire 80-unit height.
- spr('planter',BLOCK.cover.x-15,460-im.planter.height);
+ spr('planter',(s.cover||BLOCK.cover).x-15,460-im.planter.height);if(s.cover&&Math.abs(s.x-s.cover.x)<220)label('PLANTER · BREAK SIGHT',s.cover.x+40,365,'#b9e3c0');if(s.potPosition&&s.pot==='ready'&&Math.abs(s.x-pot.x)<190)label('KNOCK · DISTRACT',pot.x,pot.y-45);
  if(cues.guard){label(cues.guard,guard.x+14,393,guard.mode==='chase'?'#ffb59e':'#ffe3a4');rect(guard.x-4,400,36,5,'#281b31');rect(guard.x-3,401,34*(guard.mode==='chase'?1:guard.suspicion),3,guard.mode==='chase'?'#ff766e':'#ffd166');}
  if(cues.cover)label(cues.cover,s.x+14,s.y-19,'#b9e3c0');
  if(s.dashTime>0&&!reducedMotion){c.globalAlpha=.22;actor('chog',6,48,42,s.x+14-s.facing*18,s.y+35,s.facing);c.globalAlpha=.4;actor('chog',6,48,42,s.x+14-s.facing*9,s.y+35,s.facing);c.globalAlpha=1;}

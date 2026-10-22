@@ -6,7 +6,7 @@ export function actorFrames(run,fx={},reduced=false){
 export const PIXEL_KEYS=['chog','care','city','ground','plankL','plankM','plankR','home','planter','shutter','lift','socket','pot','battery','sun','music','lamp'];
 // Presentation cues follow real state, never a separate stealth simulation.
 export function encounterCues(s){
- const g=s.caretaker,atCover=s.x+14>=1090&&s.x+14<=1170&&s.y+34>380;
+ const g=s.caretaker,cover=s.cover||{x:1090,y:380,w:80},atCover=s.x+14>=cover.x&&s.x+14<=cover.x+cover.w&&s.y+34>cover.y;
  return {socket:s.powered?'CELL CONNECTED':s.loot.includes('battery')?'RETURN CELL':'CELL MISSING',
  gate:s.powered?'GATE CLOSED':'GATE OPEN',lift:s.powered?'LIFT POWERED':'NEEDS CELL',
  guard:g.mode==='chase'?(g.notice>0?'! SPOTTED':g.roofWatch?'! WATCHING LANDING':'! CHASING'):g.suspicion>.05?'? NOTICING':g.mode==='investigate'?'? HEARD SOMETHING':g.mode==='search'?'SEARCHING':'',

@@ -3,7 +3,7 @@ import {LANTERN_EXIT,EXIT_SOCKET,LANTERN_PLATFORMS,LANTERN_VENTS,lanternAction,p
 export const POWER_SOCKET={x:1500,y:310};
 export const VAULT_SOCKET={x:2030,y:310};
 export const VAULT_DOOR={x:2220,y:110,w:34,h:350,kind:'vault'};
-export function prepareVault(s,annexMission=false){s.annexMission=annexMission;s.vaultMission=true;s.relays=[];s.vaultOpen=false;s.powerRestored=false;s.jobId=annexMission?'east-annex-v1':'sun-vault-v1';Object.assign(s.items.battery,{state:'world',x:1500,y:310,name:'Power cell'});Object.assign(s.items.sun,{x:annexMission?5050:3930,y:310});if(annexMission){Object.assign(s.items.music,{x:4490,y:310});Object.assign(s,{x:3920,y:276,ground:true,powered:false,vaultOpen:true});s.items.battery.state='vault';}}
+export function prepareVault(s,annexMission=false){s.annexMission=annexMission;s.vaultMission=true;s.relays=[];s.vaultOpen=false;s.powerRestored=false;s.jobId=annexMission?'east-annex-v1':'sun-vault-v1';Object.assign(s.items.battery,{state:'world',x:1500,y:310,name:'Power cell'});Object.assign(s.items.sun,{x:annexMission?5750:3930,y:310});if(annexMission){Object.assign(s.items.music,{x:4750,y:170});Object.assign(s,{x:3920,y:276,ground:true,powered:false,vaultOpen:true});s.items.battery.state='vault';s.guardPatrol={min:4420,max:4780};s.guardBounds={min:4100,max:5200};s.guardAlarmTarget=4420;s.cover={x:4440,y:380,w:80,h:80};s.potPosition={x:4490,y:310};Object.assign(s.caretaker,{x:4650,target:4780,facing:1});}}
 export function vaultAction(s){
  if(!s.vaultMission)return null;if(s.lanternMission)return lanternAction(s);
  const near=p=>Math.abs(s.x+14-p.x)<58&&Math.abs(s.y+34-p.y)<45;
@@ -31,6 +31,7 @@ export function guideVaultTarget(s,p,label){
 }
 export function vaultObjective(s){
  if(s.lanternMission){if(s.status==='won')return 'THE LANTERN RUN · LIGHT DELIVERED';if(!s.loot.includes('sun'))return guideVaultTarget(s,s.items.sun,'01 · TAKE THE SUN');if(!s.powerRestored)return s.loot.includes('battery')?guideVaultTarget(s,EXIT_SOCKET,'03 · POWER THE EXIT'):guideVaultTarget(s,s.items.battery,'02 · COLLECT THE EXIT CELL');return guideVaultTarget(s,LANTERN_EXIT,'04 · EXTRACT WITH THE SUN');}
+ if(s.annexMission){if(s.status==='won')return 'THE EAST ANNEX · HOME SAFE';if(!s.loopAlarm){const remaining=missionRelays(s).filter(r=>!s.relays.includes(r.id)).sort((a,b)=>Math.abs(a.x-s.x)-Math.abs(b.x-s.x));return remaining.length?guideVaultTarget(s,remaining[0],'01 · '+remaining[0].name.toUpperCase()+' · '+s.relays.length+'/2'):guideVaultTarget(s,s.items.sun,'02 · RECOVER THE SUN');}if(!s.loot.includes('sun'))return guideVaultTarget(s,s.items.sun,'RECOVER THE SUN');if(s.x>5580)return '03 · SWIPE ↓ · ESCAPE BELOW THE SHUTTER';if(s.x>4800)return '03 · ← CROSS THE STEAM YARD · WATCH THE VENTS';if(s.x>4140)return '04 · ← PASS THE CARETAKER · PLANTER BLOCKS SIGHT';return guideVaultTarget(s,{x:3920,y:460},'05 · EXTRACT AT THE ANNEX DOOR');}
  if(s.status==='won')return (s.annexMission?'THE EAST ANNEX':'THE SUN VAULT')+' · HOME SAFE';
  if(!s.vaultOpen)return s.loot.includes('battery')?guideVaultTarget(s,VAULT_SOCKET,'02 · INSTALL CELL AT VAULT'):s.items.battery.state==='world'?guideVaultTarget(s,s.items.battery,'01 · COLLECT POWER CELL'):'02 · OPEN THE VAULT';
  if(!s.loopAlarm){const remaining=missionRelays(s).filter(r=>!s.relays.includes(r.id)).sort((a,b)=>Math.abs(a.x-s.x)-Math.abs(b.x-s.x));return remaining.length?guideVaultTarget(s,remaining[0],'03 · '+remaining[0].name.toUpperCase()+' · '+s.relays.length+'/'+missionRelays(s).length):guideVaultTarget(s,s.items.sun,'03 · STEAL THE SUN');}
@@ -50,9 +51,9 @@ export function ventState(time,vent){const t=(time+vent.offset)%4.8;return {phas
 export function vaultHazards(s){if(!s.vaultMission||s.status!=='playing')return;for(const vent of missionVents(s))if(ventState(s.time,vent).phase==='active'&&s.x+28>vent.x&&s.x<vent.x+vent.w&&s.y+34>350){s.status='dead';s.deathReason='steam';return;}}
 
 // Annex reuses the approach but adds a high route and recoverable lower ledges.
-export const ANNEX_PLATFORMS=[{x:4140,y:385,w:180,h:12},{x:4380,y:310,w:180,h:12},{x:4620,y:245,w:180,h:12},{x:4860,y:310,w:360,h:12},{x:4590,y:385,w:160,h:12}];
-export const ANNEX_RELAYS=[{id:'relay-yard',x:4420,y:310,name:'Yard seal'},{id:'relay-annex',x:4700,y:245,name:'Annex seal'}];
-export const ANNEX_VENTS=[{x:4260,w:90,offset:.9},{x:4800,w:100,offset:2.6}];
+export const ANNEX_PLATFORMS=[{x:4140,y:385,w:180,h:12},{x:4380,y:310,w:180,h:12},{x:4620,y:245,w:180,h:12},{x:4860,y:310,w:360,h:12},{x:4590,y:385,w:160,h:12},{x:4700,y:170,w:110,h:12},{x:5340,y:245,w:220,h:12},{x:5580,y:310,w:340,h:12},{x:5300,y:385,w:160,h:12}];
+export const ANNEX_RELAYS=[{id:'relay-yard',x:4420,y:310,name:'Yard seal'},{id:'relay-annex',x:5500,y:245,name:'Tower seal'}];
+export const ANNEX_VENTS=[{x:4320,w:60,offset:.9},{x:4800,w:100,offset:2.6},{x:5400,w:100,offset:1.4}];
 export const missionRelays=s=>s.lanternMission?[]:s.annexMission?ANNEX_RELAYS:RELAYS;
 export const missionVents=s=>s.lanternMission?LANTERN_VENTS:s.annexMission?ANNEX_VENTS:VENTS;
 export const missionPlatforms=s=>s.lanternMission?LANTERN_PLATFORMS:s.annexMission?[...VAULT_PLATFORMS,...ANNEX_PLATFORMS]:VAULT_PLATFORMS;

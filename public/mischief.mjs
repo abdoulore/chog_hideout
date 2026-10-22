@@ -14,14 +14,14 @@ export function lootValue(s){return s.loot.reduce((n,id)=>n+(s.vaultMission&&id=
 export function canSee(s){const g=s.caretaker,px=s.x+14,py=s.y+17,gx=g.x+14,gy=g.y+10,dx=px-gx,dy=py-gy;const facing=dx*g.facing>=-24;const distance=Math.hypot(dx,dy),range=g.mode==='chase'?400:300;
  if(!facing||distance>range||Math.abs(dy)>180)return false;
  // A solid shutter and the marked planter block vision. Upper roofs remain visible.
- for(const b of [...s.room.solids,BLOCK.cover]){for(let i=1;i<20;i++){const t=i/20,x=gx+dx*t,y=gy+dy*t;if(x>b.x&&x<b.x+b.w&&y>b.y&&y<b.y+b.h)return false;}}
+ for(const b of [...s.room.solids,s.cover||BLOCK.cover]){for(let i=1;i<20;i++){const t=i/20,x=gx+dx*t,y=gy+dy*t;if(x>b.x&&x<b.x+b.w&&y>b.y&&y<b.y+b.h)return false;}}
  return true;
 }
 export function nearbyAction(s){
  const missionAction=vaultAction(s);if(missionAction)return missionAction;
  if((s.lanternMission?Math.abs(s.x+14-LANTERN_EXIT.x)<58&&s.powerRestored:s.annexMission?Math.abs(s.x+14-3920)<58:s.x<190)&&s.ground&&s.y+34===FLOOR&&s.loot.length&&(!s.loopTrial||s.loot.includes('sun')))return {id:'home',label:s.lanternMission?'Deliver the light':s.annexMission?'Leave the annex':'Head home',detail:'Bank '+s.loot.length+' treasure'+(s.loot.length===1?'':'s')+' · or go back for more',hold:.45};
  const near=(x,y,r=62)=>Math.abs(s.x+14-x)<r&&Math.abs(s.y+34-y)<45;
- if(s.pot==='ready'&&near(BLOCK.pot.x,BLOCK.pot.y))return {id:'pot',label:'Knock the pot',detail:'A crash down below will draw the caretaker',hold:.12};
+ if(s.pot==='ready'&&near((s.potPosition||BLOCK.pot).x,(s.potPosition||BLOCK.pot).y))return {id:'pot',label:'Knock the pot',detail:'A crash down below will draw the caretaker',hold:.12};
  if(!s.vaultMission&&s.items.battery.state==='carried'&&near(TREASURES.battery.x,TREASURES.battery.y,52))return {id:'restore',label:'Restore power',detail:'Give up the battery · restart lift · close gate',hold:.45};
  for(const id of ['music','sun','battery']){const item=s.items[id];if(s.vaultMission&&id==='sun'&&(!s.vaultOpen||s.relays.length<missionRelays(s).length))continue;if(item.state==='world'&&near(item.x,item.y))return {id,label:'Take '+item.name.toLowerCase(),detail:s.loopTrial&&id==='sun'?'Opens the street home. Upper gate closes after the bell.':id==='battery'?'Opens the street gate. Stops the lift.':id==='music'?'Worth 2. Plays until you drop it.':'Worth 3. The depot bell will ring.',hold:item.hold};}
  return null;
@@ -46,11 +46,11 @@ export function landingTarget(s){
  return Math.max(s.powered?640:260,Math.min(s.room.width-90,s.x+s.vx*flight));
 }
 function guardStep(s,dt){
- const g=s.caretaker,oldX=g.x;g.visible=canSee(s);g.notice=Math.max(0,(g.notice||0)-dt);
+ const g=s.caretaker,oldX=g.x,patrol=s.guardPatrol||BLOCK.patrol,alarmTarget=s.guardAlarmTarget??1000;g.visible=canSee(s);g.notice=Math.max(0,(g.notice||0)-dt);
  const elevated=s.y+34<FLOOR-65;
  if(g.visible){
   g.suspicion=Math.min(1,g.suspicion+dt*(g.mode==='chase'?2:s.loopTrial&&s.loopAlarm?5:1.05));g.lastSeen=s.x;g.search=3.2;
-  if(g.suspicion>=1&&g.mode!=='chase'){g.mode='chase';g.notice=s.loopTrial&&s.loopAlarm?.15:.55;emit(s,'spotted','Spotted! The caretaker is choosing an escape to block.');}
+  if(g.suspicion>=1&&g.mode!=='chase'){g.mode='chase';g.notice=s.loopTrial&&s.loopAlarm&&!s.guardPatrol?.15:.55;emit(s,'spotted','Spotted! The caretaker is choosing an escape to block.');}
  }else g.suspicion=Math.max(0,g.suspicion-dt*.43);
  if(g.mode==='chase'){
   if(g.visible){
@@ -63,15 +63,16 @@ function guardStep(s,dt){
   if(!g.visible&&g.search<2.6&&lure){g.heard=lure.id;g.mode='investigate';g.target=lure.x;g.wait=1.6;g.roofWatch=false;g.notice=.35;emit(s,'heard','He followed the music. Make your move.');}
  }else{
   const heard=s.noise.filter(n=>n.id>g.heard&&s.time-n.time<1.5&&Math.hypot(g.x-n.x,g.y-n.y)<n.radius).at(-1);
-  if(heard&&!g.visible){g.heard=heard.id;g.mode='investigate';g.target=s.loopTrial&&heard.kind==='bell'?1000:heard.x;g.wait=s.loopTrial&&heard.kind==='bell'?(s.loopExtended?8:3.2):1.6;g.notice=.35;g.roofWatch=false;emit(s,'heard','The caretaker heard '+(heard.kind==='music'?'the music.':heard.kind==='pot'?'the crash.':'a noise.'));}
+  if(heard&&!g.visible){g.heard=heard.id;g.mode='investigate';g.target=s.loopTrial&&heard.kind==='bell'?alarmTarget:heard.x;g.wait=s.loopTrial&&heard.kind==='bell'?(s.loopExtended?8:3.2):1.6;g.notice=.35;g.roofWatch=false;emit(s,'heard','The caretaker heard '+(heard.kind==='music'?'the music.':heard.kind==='pot'?'the crash.':'a noise.'));}
  }
- if(g.mode==='patrol'&&Math.abs(g.x-g.target)<8){g.target=g.target===BLOCK.patrol.max?BLOCK.patrol.min:BLOCK.patrol.max;g.wait=.65;}
- if((g.mode==='investigate'||g.mode==='search')&&Math.abs(g.x-g.target)<10){if(s.loopTrial&&s.loopAlarm&&g.target===1000)g.facing=1;g.wait-=dt;if(g.wait<=0){g.mode='patrol';g.roofWatch=false;g.target=g.x<1100?BLOCK.patrol.max:BLOCK.patrol.min;}}
+ if(s.guardBounds)g.target=Math.max(s.guardBounds.min,Math.min(s.guardBounds.max,g.target));
+ if(g.mode==='patrol'&&Math.abs(g.x-g.target)<8){g.target=g.target===patrol.max?patrol.min:patrol.max;g.wait=.65;}
+ if((g.mode==='investigate'||g.mode==='search')&&Math.abs(g.x-g.target)<10){if(s.loopTrial&&s.loopAlarm&&g.target===alarmTarget)g.facing=1;g.wait-=dt;if(g.wait<=0){g.mode='patrol';g.roofWatch=false;g.target=g.x<(patrol.min+patrol.max)/2?patrol.max:patrol.min;}}
  const speed=g.mode==='chase'?202:g.mode==='investigate'?145:78,dx=g.target-g.x;
  if(g.notice>0){if(Math.abs(dx)>8)g.facing=Math.sign(dx);}
  else if(g.mode==='patrol'&&g.wait>0)g.wait-=dt;
  else if(Math.abs(dx)>8){g.facing=Math.sign(dx);g.x+=Math.sign(dx)*Math.min(Math.abs(dx),speed*dt);}
- g.x=Math.max(s.powered?620:240,Math.min(BLOCK.width-70,g.x));
+ g.x=Math.max(s.guardBounds?.min??(s.powered?620:240),Math.min(s.guardBounds?.max??(BLOCK.width-70),g.x));
  g.moving=Math.abs(g.x-oldX)>.001;g.walk=(g.walk||0)+Math.abs(g.x-oldX)/65*Math.PI*2;
  const close=Math.abs(s.x-g.x)<42&&Math.abs(s.y-g.y)<54;
  if(close&&g.mode==='chase'&&g.suspicion>.75&&g.notice===0){s.status='dead';s.deathReason='caught';s.capture={cause:s.dropThroughTime>0?'drop':s.ground?'street':'air',x:s.x,y:s.y,guardX:g.x};s.catches++;emit(s,'caught','Caught with your paws full. Another route?');}
@@ -83,10 +84,10 @@ export function stepMischief(s,input={},dt=STEP){if(s.status!=='playing')return 
  const wasLift=s.powered&&s.ground&&Math.abs(s.y+34-s.liftY)<.2&&s.x+28>BLOCK.lift.x&&s.x<BLOCK.lift.x+BLOCK.lift.w;
  const nextLift=320+65*Math.cos((s.time+dt)*1.15);if(s.powered){if(wasLift)s.y+=nextLift-s.liftY;s.liftY=nextLift;}s.room=loopRoom(room(s.powered,s.liftY,s.movementTrial),s);
  s.actionCooldown=Math.max(0,s.actionCooldown-dt);if(input.drop){drop(s,input.dropId);s.actionCooldown=.28;}
- const a=nearbyAction(s);if(input.interact&&!s.requireRelease&&a&&s.actionCooldown===0&&!input.jump&&!input.dash&&!input.down){if(s.action!==a.id){s.action=a.id;s.actionTime=0;const at=a.id==='pot'?BLOCK.pot.x:a.id==='restore'?TREASURES.battery.x:s.items[a.id]?.x;if(at!==undefined&&Math.abs(at-s.x-14)>6)s.facing=Math.sign(at-s.x-14);}s.actionTime+=dt;stepRun(s,{...input,left:false,right:false},dt);if(s.actionTime>=a.hold){perform(s,a.id);s.requireRelease=true;s.action=null;s.actionTime=0;s.actionCooldown=.3;}}
+ const a=nearbyAction(s);if(input.interact&&!s.requireRelease&&a&&s.actionCooldown===0&&!input.jump&&!input.dash&&!input.down){if(s.action!==a.id){s.action=a.id;s.actionTime=0;const at=a.id==='pot'?(s.potPosition||BLOCK.pot).x:a.id==='restore'?TREASURES.battery.x:s.items[a.id]?.x;if(at!==undefined&&Math.abs(at-s.x-14)>6)s.facing=Math.sign(at-s.x-14);}s.actionTime+=dt;stepRun(s,{...input,left:false,right:false},dt);if(s.actionTime>=a.hold){perform(s,a.id);s.requireRelease=true;s.action=null;s.actionTime=0;s.actionCooldown=.3;}}
  else{s.action=null;s.actionTime=0;stepRun(s,input,dt);}
  if(s.status!=='playing')return s;
- if(s.pot==='falling'){s.potTime-=dt;if(s.potTime<=0){s.pot='broken';noise(s,970,FLOOR-10,800,'pot');}}
+ if(s.pot==='falling'){s.potTime-=dt;if(s.potTime<=0){s.pot='broken';noise(s,(s.potPosition||BLOCK.pot).x+155,FLOOR-10,800,'pot');}}
  const music=s.items.music;if(music.playing&&s.time>=s.musicAt){noise(s,music.state==='carried'?s.x+14:music.x,music.state==='carried'?s.y:music.y,630,'music');s.musicAt=s.time+1.6;}
  vaultHazards(s);if(s.status==='playing')guardStep(s,dt);return s;
 }
