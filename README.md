@@ -142,4 +142,8 @@ The first playable district now has a painted home facade and matching treasure/
 
 Open `/rehearsal.html` for the fictional rehearsal guild headquarters, `/tournament.html` to compete, and `/event-manage.html` for local rehearsal controls. Two example guilds can run local qualifiers, lock three-player squads, compete with fresh final scores and close a rehearsal with a trophy. Play actual One More Thing runs or explicitly fill other seats with labelled example scores. Scoring prioritises banked treasure, then exact game ticks; all three squad members must finish. Ordinary solo play remains available.
 
-This is browser-local and unverified: no wallet connection, NFT founding, real membership, shared server standings or funded prize exists yet. See [the rehearsal guide](docs/GUILD_REHEARSAL.md) for the full test flow and implementation boundaries.
+This rehearsal is browser-local and unverified. The separate live guild and competition pages support NFT founding, real membership and shared server standings. Funded prizes are not implemented. See [the rehearsal guide](docs/GUILD_REHEARSAL.md) for the full test flow and implementation boundaries.
+
+## Live competitions
+
+Open `/compete.html`. Verified NFT guild masters host timed events and lock one- or three-player squads. Members play without a wallet; the server replays inputs, ranks complete squads, and saves event trophies. See [Live competitions](docs/LIVE_COMPETITIONS.md) for rules and release limitations.

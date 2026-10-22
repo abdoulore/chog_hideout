@@ -11,14 +11,14 @@ import {mountMischief} from '../public/mischief-play.mjs';
 import {freshTrial,saveTrial,loadTrial,TRIAL_KEY} from '../public/guild-trial.mjs';
 import {MISCHIEF_KEY} from '../public/mischief-records.mjs';
 import {driver,batteryRoute,allTreasuresRoute} from './helpers/mischief-driver.mjs';
-function setup({store,search='',artLoader=async()=>({city:{width:1400,height:788},roof:{},props:{},chog:{},sun:{},timber:{},shutter:{},caretaker:{}})}={}){
+function setup({store,fetcher,search='',artLoader=async()=>({city:{width:1400,height:788},roof:{},props:{},chog:{},sun:{},timber:{},shutter:{},caretaker:{}})}={}){
  const nodes=new Map(),events=new Map(),map=new Map();let doc;
  const pixelArtLoader=async()=>Object.fromEntries(PIXEL_KEYS.map(key=>{const b=fs.readFileSync('public/pixel/'+key+'.png');return [key,{width:b.readUInt32BE(16),height:b.readUInt32BE(20)}];}));
  const gradient=()=>({addColorStop(){}}),ctx=new Proxy({canvas:{ownerDocument:{createElement:()=>({getContext:()=>ctx})}},createLinearGradient:gradient,createRadialGradient:gradient},{get:(o,k)=>o[k]||(()=>{}),set:()=>true});
  function element(tag,attrs=''){const classes=new Set();return {tagName:tag.toUpperCase(),hidden:/\bhidden\b/.test(attrs),disabled:/\bdisabled\b/.test(attrs),textContent:'',value:0,style:{},classList:{toggle(k,on){const yes=on??!classes.has(k);yes?classes.add(k):classes.delete(k);},contains:k=>classes.has(k)},setAttribute(k,v){this[k]=v;},getContext:()=>ctx,getBoundingClientRect:()=>({width:360,height:720}),focus(){doc.activeElement=this;},setPointerCapture(){},click(){if(!this.disabled)this.onclick?.();}};}
  const html=fs.readFileSync(new URL('../public/mischief.html',import.meta.url),'utf8');for(const m of html.matchAll(/<([a-z][a-z0-9]*)\b([^>]*\bid="([^"]+)"[^>]*)>/g))nodes.set(m[3],element(m[1],m[2]));
  const surface=prefix=>({addEventListener:(t,fn)=>events.set(prefix+t,fn),removeEventListener:t=>events.delete(prefix+t)});doc={...surface('doc:'),hidden:false,activeElement:null,getElementById:id=>{assert(nodes.has(id),id);return nodes.get(id);},body:element('body')};const audio={muted:false,plays:[],setMuted(v){this.muted=v;},pause(){},async unlock(){return true;},play(e){this.plays.push(e);}};
- const storage=store||{getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)},app=mountMischief({doc,events:surface(''),store:storage,raf:cb=>events.set('raf',cb),media:()=>({matches:true}),artLoader,pixelArtLoader,audio,search});let clock=0;
+ const storage=store||{getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)},app=mountMischief({doc,events:surface(''),store:storage,raf:cb=>events.set('raf',cb),media:()=>({matches:true}),artLoader,pixelArtLoader,audio,search,fetcher});let clock=0;
  const key=k=>({key:k,repeat:false,preventDefault(){}});function advance(){clock+=1000/120+.0001;events.get('raf')(clock);}function step(command={}){for(const k of ['ArrowLeft','ArrowRight','e'])events.get('keyup')(key(k));for(const [id,k] of [['left','ArrowLeft'],['right','ArrowRight'],['jump',' '],['dash','x'],['interact','e'],['drop','q'],['down','ArrowDown']])if(command[id])events.get('keydown')(key(k));advance();}
  return {app,doc,audio,events,map,advance,get:id=>nodes.get(id),step,storage};
 }
@@ -129,3 +129,13 @@ test('third mission unlocks from Annex, completes through controller and stays u
  const {lanternEscape}=await import('./helpers/lantern-driver.mjs');const ui=setup({search:'?route=annex&continue=vault'});await ui.app.ready;ui.app.start();annexEscape(()=>ui.app.run,ui.step);for(let i=0;i<100;i++)ui.step();assert.match(ui.get('next-mission').href,/route=lantern/);assert.equal(ui.get('next-mission').hidden,false);const third=setup({store:ui.storage,search:'?route=lantern'});await third.app.ready;assert.match(third.get('title').textContent,/Carry the light/);third.app.start();lanternEscape(()=>third.app.run,third.step,{music:true});for(let i=0;i<100;i++)third.step();assert.equal(third.app.run.status,'won');assert.equal(third.get('next-mission').hidden,true);assert.equal(JSON.parse(ui.storage.getItem(CAMPAIGN_KEY)).lantern,true);third.app.openMap();third.app.start();assert.equal(third.app.run.powerRestored,false);assert.equal(third.app.run.items.sun.state,'world');third.app.destroy();ui.app.destroy();
 });
 test('third mission direct link remains locked until Annex completion',async()=>{const ui=setup({search:'?route=lantern'});await ui.app.ready;assert(ui.get('play').disabled);assert.match(ui.get('next-mission').href,/route=annex/);ui.app.start();for(let i=0;i<30;i++)ui.step({right:true});assert.equal(ui.app.run.time,0);ui.app.destroy();});
+
+
+test('live event controller produces a replay accepted by the server',async()=>{
+ const {RULESET}=await import('../public/competitive-replay.mjs');
+ const {verifyReplay}=await import('../server/replay-verify.mjs');
+ const {lanternEscape}=await import('./helpers/lantern-driver.mjs');
+ let score=null;const ui=setup({search:'?route=lantern&renderer=pixel&event='+ 'a'.repeat(48),fetcher:async(url,opts)=>{
+ const data=url.endsWith('attempt')?{attemptId:'b'.repeat(48),mission:'lantern',ruleset:RULESET}:(score=verifyReplay('lantern',JSON.parse(opts.body).frames));return {ok:true,json:async()=>data};
+ }});await ui.app.ready;await ui.app.start();ui.step();lanternEscape(()=>ui.app.run,ui.step);await new Promise(resolve=>setImmediate(resolve));assert.equal(ui.app.run.status,'won');assert(score?.ticks>0);assert.match(ui.get('competition-status').textContent,/Verified/);assert.equal(ui.get('competition-return').hidden,false);ui.app.destroy();
+});

@@ -1,6 +1,6 @@
 # Live guild alpha
 
-17 October 2026. This milestone adds persistent membership and NFT-backed guild-master authority. Competition still lives in a separate browser-local rehearsal; no prize funding or payouts are implemented.
+17 October 2026. This milestone adds persistent membership and NFT-backed guild-master authority. Live server competitions are now available at `/compete.html`; see LIVE_COMPETITIONS.md. No prize funding or payouts are implemented.
 
 ## Player experience
 
@@ -50,4 +50,4 @@ A production build and live read-only chain probe are included. Unit tests do no
 
 ## Next gate
 
-After host access is agreed, have a real Chog holder found a guild and a different signed-in account accept its invitation. Then move tournaments, attempt issuance and validated game replays to the server. Keep prizes disabled until that verification path is reliable.
+After host access is agreed, have a real Chog holder found a guild and a different signed-in account accept its invitation. Server tournaments, attempt issuance and validated replays are implemented. Complete a real holder and second-account end-to-end test before opening public competition. Keep funded prizes disabled until that verification path is reliable.
