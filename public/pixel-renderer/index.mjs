@@ -1,3 +1,4 @@
+import {drawPixelVault} from './vault.mjs';
 import {pixelLayout} from './camera.mjs';
 import {actorFrames,PIXEL_KEYS,encounterCues,pixelMotion} from './model.mjs';
 import {BLOCK} from '../mischief.mjs';
@@ -25,9 +26,10 @@ export function drawPixelWorld(ctx,s,im,width,height,{feedback={},reducedMotion=
  spr('home',45,460-im.home.height);label('HOME',110,460-im.home.height-9);
  for(const x of [260,750,1230,1600])spr('lamp',x,460-im.lamp.height);
  // The source socket stays readable after the cell is removed.
- spr('socket',444-im.socket.width/2,460-im.socket.height);if(Math.abs(s.x-444)<210)label(encounterCues(s).socket,444,419,s.powered?'#c8ebc1':'#ffe3a4');
+ if(!s.vaultMission){spr('socket',444-im.socket.width/2,460-im.socket.height);if(Math.abs(s.x-444)<210)label(encounterCues(s).socket,444,419,s.powered?'#c8ebc1':'#ffe3a4');
  // Visible wiring explains why taking this cell changes both machines.
  c.strokeStyle='#46313c';c.lineWidth=4;c.beginPath();c.moveTo(450,449);c.lineTo(480,449);c.lineTo(480,350);c.lineTo(590,350);c.lineTo(590,352);c.lineTo(1090,352);c.lineTo(1090,246);c.stroke();c.strokeStyle=s.powered?'#cba76b':'#77636a';c.lineWidth=1;c.stroke();
+ }else{c.strokeStyle=s.powered?'#cba76b':'#77636a';c.lineWidth=2;c.beginPath();c.moveTo(1500,310);c.lineTo(1500,350);c.lineTo(1180,350);c.lineTo(1180,246);c.lineTo(1090,246);c.stroke();}
  const cues=encounterCues(s);
  const g=BLOCK.gate;
  rect(g.x-3,g.y-3,g.w+6,3,'#d49b3a');rect(g.x-3,g.y,3,g.h,'#60434b');rect(g.x+g.w,g.y,3,g.h,'#60434b');
@@ -35,7 +37,8 @@ export function drawPixelWorld(ctx,s,im,width,height,{feedback={},reducedMotion=
  if(Math.abs(s.x-g.x)<210)label(cues.gate,g.x+g.w/2,g.y-15,s.powered?'#e9ba91':'#b9e3c0');
  const liftY=s.powered?s.liftY:460;
  for(const x of [BLOCK.lift.x+8,BLOCK.lift.x+BLOCK.lift.w-8]){rect(x,246,2,liftY-246,'#bd9c6a');for(let y=250;y<liftY;y+=5)rect(x,y,3,1,'#3a2838');}
- spr('lift',BLOCK.lift.x,liftY);label(cues.lift,1090,240,s.powered?'#c8ebc1':'#e5bd91');if(!s.powered&&Math.abs(s.x-1090)<180)label('RETURN CELL AT STREET SOCKET',1090,225);
+ spr('lift',BLOCK.lift.x,liftY);label(cues.lift,1090,240,s.powered?'#c8ebc1':'#e5bd91');if(!s.powered&&Math.abs(s.x-1090)<180)label(s.vaultMission?'CELL SOCKET ON ROOF →':'RETURN CELL AT STREET SOCKET',1090,225);
+ if(s.vaultMission)drawPixelVault(c,s,im,{rect,spr,label,reducedMotion});
  if(s.pot!=='broken'){const t=s.pot==='falling'?1-s.potTime/.42:0;spr('pot',815+t*155-im.pot.width/2,310+t*140-im.pot.height);}else for(let i=0;i<5;i++)rect(950+i*8,455-i%2*3,5,3,'#cf8055');
  for(const item of Object.values(s.items))if(item.state==='world'){const bob=reducedMotion?0:Math.round(Math.sin(s.time*3)*1);spr(item.id,item.x-im[item.id].width/2,item.y-im[item.id].height+bob);rect(item.x-1,item.y-im[item.id].height-6+bob,2,2,'#ffe7a6');}
  for(const n of s.noise){const age=s.time-n.time;if(age>1.2)continue;c.globalAlpha=(1-age/1.2)*.65;c.strokeStyle=n.kind==='bell'?'#ff9a84':'#ffe2ac';c.lineWidth=1;c.beginPath();c.ellipse(Math.round(n.x),Math.round(n.y-10),Math.round(12+age*60),Math.round(7+age*25),0,0,Math.PI*2);c.stroke();}c.globalAlpha=1;

@@ -17,7 +17,7 @@ import {createSound} from './sound.mjs?feedback=1';
 function storage(){try{return globalThis.localStorage;}catch{return null;}}
 export function mountMischief({doc=globalThis.document,events=globalThis.window,store=storage(),raf=globalThis.requestAnimationFrame,media=globalThis.matchMedia,pixelArtLoader=loadPixelArt,artLoader=async()=>{const [art,caretaker,district]=await Promise.all([loadArt(),loadCaretaker(),loadDistrictArt()]);return {...art,caretaker,...district};},audio=createSound(),search=globalThis.location?.search||''}={}){
  const params=new URLSearchParams(search),vaultMission=params.get('route')==='heist',loopTrial=vaultMission||params.get('route')==='loop',extendedLoop=loopTrial&&(vaultMission||params.get('layout')!=='short'),requestedMovement=params.get('movement'),movementTrial=loopTrial?'double':['single','double'].includes(requestedMovement)?requestedMovement:null;
- const pixelRenderer=params.get('renderer')==='pixel'&&!loopTrial&&!movementTrial;
+ const pixelRenderer=params.get('renderer')==='pixel'&&(vaultMission||(!loopTrial&&!movementTrial));
  doc.body.classList.toggle('pixel',pixelRenderer);
  const viewRun=s=>pixelRenderer?{...s,pixelRenderer:true}:s;
  const mastery=createLoopMastery();

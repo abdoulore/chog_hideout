@@ -37,3 +37,7 @@ Automated state tests do not prove fun or real-device performance. The converted
 ## Encounter polish after phone feedback
 
 User reports pixel feels smoother and more enjoyable. Preserve movement and camera sizing for this pass. Added whole-pixel idle/run motion, contact shadow, pickup travel from the actual item location, visible power wiring, state-specific socket/gate/lift labels, actual guard warning states and a cover cue that never appears while the caretaker sees the player. No hitboxes, movement constants, AI, records or level geometry changed. Sun Vault conversion remains the next stage after this encounter review.
+
+## Sun Vault comparison
+
+`/mischief.html?route=heist&renderer=pixel` now renders the full vault mission. All platform surfaces retain simulation coordinates. Pixel trap teeth use `spikeBounds`; steam timing uses `ventState`, and the plume occupies the actual 350-to-460 hazard band. Vault and alarm shutters are clipped to their respective collision bounds. Source cradle and installation receptacle have distinct shapes, with state-specific labels; cell location is taken from mission state. The existing contextual install button, double jump, platform drop and both return paths are preserved. Both full escape paths, floating installation, steam failure and reset are exercised through the real controller. Other loop and movement comparisons still use painted rendering. Phone visual readability remains a playtest gate; this does not switch the default renderer.
