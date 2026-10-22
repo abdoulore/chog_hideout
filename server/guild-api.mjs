@@ -1,3 +1,4 @@
+import {createCompetition} from './competition.mjs';
 import {COLLECTION,CHAIN_ID,ORIGIN,canonicalAddress,walletMessage,makeChain} from './chain.mjs';
 const FIVE_MIN=300_000,DAY=86_400_000;
 class Problem extends Error{constructor(status,message){super(message);this.status=status;}}
@@ -23,19 +24,22 @@ export function createGuildApi({db,chain=makeChain(),clock=Date.now,origin=ORIGI
   let invitation=null,invitationError=null;if(code){try{const i=await inviteInfo(code);invitation={guildId:i.guild_id,name:i.name,motto:i.motto,expires:i.expires};}catch(e){invitationError=e.message;}}
   return {signedIn:true,wallet:w?{address:w.address,verified:w.proof_expires>clock(),proofExpires:w.proof_expires}:null,guild,ownershipError,invitation,invitationError,collection:COLLECTION,chainId:CHAIN_ID};
  }
+ const competition=createCompetition({db,stmt,one,master,rate,clock,fail,text,random,hash});
  return async function handle(request){try{
   if(!db)fail(503,'Guild storage is unavailable. Solo play is still available.');
   const u=new URL(request.url),action=u.pathname.split('/').pop(),user=request.headers.get('oai-authenticated-user-id');
   if(action==='health'&&request.method==='GET')return json({ok:true,storage:!!(await one('SELECT count(*) AS total FROM guilds')),collection:COLLECTION,chainId:CHAIN_ID});
   if(!user)fail(401,'Sign in with ChatGPT to save your guild membership across devices.');
+  if(request.method==='GET'&&['competition-list','competition-detail'].includes(action))return json(await competition(user,action,u.searchParams));
   if(request.method==='GET'&&action==='state')return json(await state(user,u.searchParams.get('invite')));
   if(request.method!=='POST')fail(405,'Method not allowed.');
   if(request.headers.get('origin')!==origin)fail(403,'This request must come from Chog Hideout.');
   if(!request.headers.get('content-type')?.startsWith('application/json'))fail(415,'Send JSON.');
   // Stream-bound the body rather than trusting Content-Length.
-  let raw='',bytes=0;const reader=request.body?.getReader();if(reader){const decoder=new TextDecoder();while(true){const {done,value}=await reader.read();if(done)break;bytes+=value.byteLength;if(bytes>8192){await reader.cancel();fail(413,'Request too large.');}raw+=decoder.decode(value,{stream:true});}raw+=decoder.decode();}
+  let raw='',bytes=0;const reader=request.body?.getReader();if(reader){const decoder=new TextDecoder();while(true){const {done,value}=await reader.read();if(done)break;bytes+=value.byteLength;if(bytes>(action==='competition-submit'?65536:8192)){await reader.cancel();fail(413,'Request too large.');}raw+=decoder.decode(value,{stream:true});}raw+=decoder.decode();}
   let body;try{body=JSON.parse(raw);}catch{fail(400,'Invalid request.');}if(!body||typeof body!=='object'||Array.isArray(body))fail(400,'Invalid request.');
   await rate(user,'writes',30);
+  if(action.startsWith('competition-'))return json(await competition(user,action,body));
   const now=clock();
   if(action==='challenge'){
    await rate(user,'signatures',5);const a=address(body.address),existing=await one('SELECT address FROM guild_wallets WHERE user_id=?',user);
@@ -83,5 +87,5 @@ export function createGuildApi({db,chain=makeChain(),clock=Date.now,origin=ORIGI
   }
   if(action==='leave'){await stmt('DELETE FROM guild_members WHERE user_id=?',user).run();return json({left:true});}
   fail(404,'Unknown guild action.');
- }catch(e){if(e instanceof Problem)return json({error:e.message},e.status);if(/UNIQUE constraint/i.test(e.message||''))return json({error:'That wallet, guild name or Chog is already registered. You can belong to one guild at a time; a founding NFT can have one guild.'},409);console.error('Guild operation failed:',e.name);return json({error:'The guild service could not complete this request. Please try again.'},503);}};
+ }catch(e){if(e instanceof Problem)return json({error:e.message},e.status);if(/UNIQUE constraint/i.test(e.message||''))return json({error:'That registration already exists. Wallets, founding NFTs and event squads must be unique; a player can enter only one squad per event.'},409);console.error('Guild operation failed:',e.name);return json({error:'The guild service could not complete this request. Please try again.'},503);}};
 }

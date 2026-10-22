@@ -1,3 +1,6 @@
+import {annexEscape} from './helpers/annex-driver.mjs';
+import {CAMPAIGN_KEY} from '../public/campaign.mjs';
+import {PIXEL_KEYS} from '../public/pixel-renderer/model.mjs';
 import {vaultEscape} from './helpers/vault-driver.mjs';
 import {depotEscape} from './helpers/depot-driver.mjs';
 import test from 'node:test';
@@ -8,13 +11,14 @@ import {mountMischief} from '../public/mischief-play.mjs';
 import {freshTrial,saveTrial,loadTrial,TRIAL_KEY} from '../public/guild-trial.mjs';
 import {MISCHIEF_KEY} from '../public/mischief-records.mjs';
 import {driver,batteryRoute,allTreasuresRoute} from './helpers/mischief-driver.mjs';
-function setup({store,search='',artLoader=async()=>({city:{width:1400,height:788},roof:{},props:{},chog:{},sun:{},timber:{},shutter:{},caretaker:{}})}={}){
+function setup({store,fetcher,search='',artLoader=async()=>({city:{width:1400,height:788},roof:{},props:{},chog:{},sun:{},timber:{},shutter:{},caretaker:{}})}={}){
  const nodes=new Map(),events=new Map(),map=new Map();let doc;
- const gradient=()=>({addColorStop(){}}),ctx=new Proxy({createLinearGradient:gradient,createRadialGradient:gradient},{get:(o,k)=>o[k]||(()=>{}),set:()=>true});
+ const pixelArtLoader=async()=>Object.fromEntries(PIXEL_KEYS.map(key=>{const b=fs.readFileSync('public/pixel/'+key+'.png');return [key,{width:b.readUInt32BE(16),height:b.readUInt32BE(20)}];}));
+ const gradient=()=>({addColorStop(){}}),ctx=new Proxy({canvas:{ownerDocument:{createElement:()=>({getContext:()=>ctx})}},createLinearGradient:gradient,createRadialGradient:gradient},{get:(o,k)=>o[k]||(()=>{}),set:()=>true});
  function element(tag,attrs=''){const classes=new Set();return {tagName:tag.toUpperCase(),hidden:/\bhidden\b/.test(attrs),disabled:/\bdisabled\b/.test(attrs),textContent:'',value:0,style:{},classList:{toggle(k,on){const yes=on??!classes.has(k);yes?classes.add(k):classes.delete(k);},contains:k=>classes.has(k)},setAttribute(k,v){this[k]=v;},getContext:()=>ctx,getBoundingClientRect:()=>({width:360,height:720}),focus(){doc.activeElement=this;},setPointerCapture(){},click(){if(!this.disabled)this.onclick?.();}};}
  const html=fs.readFileSync(new URL('../public/mischief.html',import.meta.url),'utf8');for(const m of html.matchAll(/<([a-z][a-z0-9]*)\b([^>]*\bid="([^"]+)"[^>]*)>/g))nodes.set(m[3],element(m[1],m[2]));
  const surface=prefix=>({addEventListener:(t,fn)=>events.set(prefix+t,fn),removeEventListener:t=>events.delete(prefix+t)});doc={...surface('doc:'),hidden:false,activeElement:null,getElementById:id=>{assert(nodes.has(id),id);return nodes.get(id);},body:element('body')};const audio={muted:false,plays:[],setMuted(v){this.muted=v;},pause(){},async unlock(){return true;},play(e){this.plays.push(e);}};
- const storage=store||{getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)},app=mountMischief({doc,events:surface(''),store:storage,raf:cb=>events.set('raf',cb),media:()=>({matches:true}),artLoader,audio,search});let clock=0;
+ const storage=store||{getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)},app=mountMischief({doc,events:surface(''),store:storage,raf:cb=>events.set('raf',cb),media:()=>({matches:true}),artLoader,pixelArtLoader,audio,search,fetcher});let clock=0;
  const key=k=>({key:k,repeat:false,preventDefault(){}});function advance(){clock+=1000/120+.0001;events.get('raf')(clock);}function step(command={}){for(const k of ['ArrowLeft','ArrowRight','e'])events.get('keyup')(key(k));for(const [id,k] of [['left','ArrowLeft'],['right','ArrowRight'],['jump',' '],['dash','x'],['interact','e'],['drop','q'],['down','ArrowDown']])if(command[id])events.get('keydown')(key(k));advance();}
  return {app,doc,audio,events,map,advance,get:id=>nodes.get(id),step,storage};
 }
@@ -101,4 +105,37 @@ test('Sunloop results compare separate haul goals across retries without saving 
 test('tapping install stops a resting movement thumb and installs the cell once',async()=>{
  const ui=setup({search:'?route=heist'});await ui.app.ready;ui.app.start();const s=ui.app.run;Object.assign(s,{x:2005,y:276,ground:true,loot:['battery'],powered:false});s.items.battery.state='carried';ui.step();assert(ui.get('world-action').classList.contains('floating-install'));assert.equal(ui.get('world-action-label').textContent,'INSTALL CELL');
  const canvas=ui.get('canvas'),e=(id,x,y,t)=>({pointerId:id,clientX:x,clientY:y,timeStamp:t,pointerType:'touch',preventDefault(){},currentTarget:canvas});canvas.onpointerdown(e(1,60,650,0));canvas.onpointermove(e(1,100,650,30));ui.get('world-action').click();for(let i=0;i<110;i++)ui.advance();assert.equal(s.vaultOpen,true);assert.equal(s.items.battery.state,'vault');assert(!s.loot.includes('battery'));assert.equal(ui.get('world-action').classList.contains('floating-install'),false);ui.app.destroy();
+});
+
+ test('pixel comparison plays battery tradeoff and safe banking through the real controller',async()=>{const ui=setup({search:'?renderer=pixel'});await ui.app.ready;assert.equal(ui.get('play').disabled,false);assert(ui.doc.body.classList.contains('pixel'));ui.app.start();const d=driver(()=>ui.app.run,ui.step);d.go(430);ui.step();assert.equal(ui.get('world-action').hidden,false);ui.get('world-action').click();for(let i=0;i<150;i++)ui.advance();assert.equal(ui.app.run.powered,false);assert.deepEqual(ui.app.run.loot,['battery']);d.go(110);d.act();assert.equal(ui.app.run.status,'won');assert.equal(ui.app.records.escapes,1);ui.app.destroy();});
+ test('pixel comparison reports blocked saving and draws chase and capture',async()=>{const ui=setup({search:'?renderer=pixel',store:{getItem(){return null;},setItem(){throw Error('blocked');}}});await ui.app.ready;ui.app.start();batteryRoute(driver(()=>ui.app.run,ui.step));for(let i=0;i<100;i++)ui.step();assert.match(ui.get('records').textContent,/Saving unavailable/);ui.app.start();Object.assign(ui.app.run,{x:ui.app.run.caretaker.x,y:426,ground:true});Object.assign(ui.app.run.caretaker,{mode:'chase',notice:0,suspicion:1});for(let i=0;i<160;i++)ui.step();assert.equal(ui.app.run.status,'dead');assert.equal(ui.get('overlay').hidden,false);ui.app.start();assert.equal(ui.app.run.powered,true);assert.deepEqual(ui.app.run.loot,[]);ui.app.destroy();});
+
+for(const restore of [false,true])test('pixel Sun Vault completes '+(restore?'restored lift':'street')+' escape without saving records',async()=>{const ui=setup({search:'?route=heist&renderer=pixel'});await ui.app.ready;assert(ui.doc.body.classList.contains('pixel'));ui.app.start();vaultEscape(()=>ui.app.run,ui.step,{restore,music:true});for(let i=0;i<100;i++)ui.step();assert.equal(ui.app.run.status,'won');assert.equal(ui.app.run.relays.length,2);assert.equal(ui.app.run.powerRestored,restore);assert.equal(ui.map.has(MISCHIEF_KEY),false);ui.app.destroy();});
+test('pixel vault install button works and steam failure resets mission',async()=>{const ui=setup({search:'?route=heist&renderer=pixel'});await ui.app.ready;ui.app.start();const s=ui.app.run;Object.assign(s,{x:2005,y:276,ground:true,loot:['battery'],powered:false});s.items.battery.state='carried';ui.step();assert(ui.get('world-action').classList.contains('floating-install'));ui.get('world-action').click();for(let i=0;i<110;i++)ui.advance();assert.equal(s.vaultOpen,true);assert.equal(s.items.battery.state,'vault');Object.assign(s,{x:2820,y:426,time:3.8,ground:true});ui.step();assert.equal(s.deathReason,'steam');for(let i=0;i<100;i++)ui.step();assert.match(ui.get('message').textContent,/steam/i);ui.app.start();assert.equal(ui.app.run.vaultOpen,false);assert.equal(ui.app.run.items.battery.state,'world');assert.deepEqual(ui.app.run.relays,[]);ui.app.destroy();});
+
+test('annex controller loads pixel art, completes the new wing and resets every seal',async()=>{
+ const ui=setup({search:'?route=annex&renderer=pixel&continue=vault'});await ui.app.ready;assert.match(ui.get('title').textContent,/Go a little too far/);assert.equal(ui.app.run.room.width,6050);assert.match(ui.get('loop-layout-switch').href,/route=heist/);ui.app.start();annexEscape(()=>ui.app.run,ui.step,{music:true,low:true});for(let i=0;i<100;i++)ui.step();assert.equal(ui.app.run.status,'won');assert.equal(ui.app.run.relays.length,2);assert.equal(ui.map.has(MISCHIEF_KEY),false);ui.app.openMap();ui.app.start();assert.deepEqual(ui.app.run.relays,[]);assert.equal(ui.app.run.items.music.x,4750);ui.app.destroy();
+});
+
+test('campaign unlock survives reload, does not require music, and offers next mission after win',async()=>{
+ const ui=setup({search:'?route=heist&renderer=pixel'});await ui.app.ready;assert(ui.get('next-mission').hidden);ui.app.start();vaultEscape(()=>ui.app.run,ui.step);assert.equal(JSON.parse(ui.storage.getItem(CAMPAIGN_KEY)).vault,true);for(let i=0;i<100;i++)ui.step();assert.equal(ui.get('next-mission').hidden,false);assert.match(ui.get('next-mission').href,/route=annex/);const next=setup({store:ui.storage,search:'?route=annex'});await next.app.ready;next.app.start();assert.equal(next.app.run.x,3920);annexEscape(()=>next.app.run,next.step);assert.equal(JSON.parse(ui.storage.getItem(CAMPAIGN_KEY)).annex,true);next.app.destroy();ui.app.destroy();
+});
+test('locked direct annex link cannot start; blocked saving exposes a continuation without claiming persistence',async()=>{
+ const locked=setup({search:'?route=annex'});await locked.app.ready;assert.equal(locked.get('play').disabled,true);assert.match(locked.get('next-mission').href,/route=heist/);locked.app.start();for(let i=0;i<30;i++)locked.step({right:true});assert.equal(locked.app.run.time,0);locked.app.destroy();
+ const ui=setup({search:'?route=heist',store:{getItem(){throw Error();},setItem(){throw Error();}}});await ui.app.ready;ui.app.start();vaultEscape(()=>ui.app.run,ui.step);for(let i=0;i<100;i++)ui.step();assert.match(ui.get('records').textContent,/Saving unavailable/);assert.match(ui.get('next-mission').href,/continue=vault/);ui.app.destroy();
+});
+
+test('third mission unlocks from Annex, completes through controller and stays unlocked on replay',async()=>{
+ const {lanternEscape}=await import('./helpers/lantern-driver.mjs');const ui=setup({search:'?route=annex&continue=vault'});await ui.app.ready;ui.app.start();annexEscape(()=>ui.app.run,ui.step);for(let i=0;i<100;i++)ui.step();assert.match(ui.get('next-mission').href,/route=lantern/);assert.equal(ui.get('next-mission').hidden,false);const third=setup({store:ui.storage,search:'?route=lantern'});await third.app.ready;assert.match(third.get('title').textContent,/Carry the light/);third.app.start();lanternEscape(()=>third.app.run,third.step,{music:true});for(let i=0;i<100;i++)third.step();assert.equal(third.app.run.status,'won');assert.equal(third.get('next-mission').hidden,true);assert.equal(JSON.parse(ui.storage.getItem(CAMPAIGN_KEY)).lantern,true);third.app.openMap();third.app.start();assert.equal(third.app.run.powerRestored,false);assert.equal(third.app.run.items.sun.state,'world');third.app.destroy();ui.app.destroy();
+});
+test('third mission direct link remains locked until Annex completion',async()=>{const ui=setup({search:'?route=lantern'});await ui.app.ready;assert(ui.get('play').disabled);assert.match(ui.get('next-mission').href,/route=annex/);ui.app.start();for(let i=0;i<30;i++)ui.step({right:true});assert.equal(ui.app.run.time,0);ui.app.destroy();});
+
+
+test('live event controller produces a replay accepted by the server',async()=>{
+ const {RULESET}=await import('../public/competitive-replay.mjs');
+ const {verifyReplay}=await import('../server/replay-verify.mjs');
+ const {lanternEscape}=await import('./helpers/lantern-driver.mjs');
+ let score=null;const ui=setup({search:'?route=lantern&renderer=pixel&event='+ 'a'.repeat(48),fetcher:async(url,opts)=>{
+ const data=url.endsWith('attempt')?{attemptId:'b'.repeat(48),mission:'lantern',ruleset:RULESET}:(score=verifyReplay('lantern',JSON.parse(opts.body).frames));return {ok:true,json:async()=>data};
+ }});await ui.app.ready;await ui.app.start();ui.step();lanternEscape(()=>ui.app.run,ui.step);await new Promise(resolve=>setImmediate(resolve));assert.equal(ui.app.run.status,'won');assert(score?.ticks>0);assert.match(ui.get('competition-status').textContent,/Verified/);assert.equal(ui.get('competition-return').hidden,false);ui.app.destroy();
 });

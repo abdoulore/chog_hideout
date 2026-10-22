@@ -1,136 +1,122 @@
 # Chog Hideout
 
-A browser-playable Chog rooftop heist. In **One More Thing**, choose what to steal, distract a caretaker, and decide when to bank your haul. Theft changes the available routes. The earlier Borrowed Sunshine mission and movement/editor experiments remain playable.
+**Steal the light. Lead your guild. Bring it home.**
 
-The chosen production art direction is **Rooftop Mischief**. Its illustrated world and story are documented alongside the working gameplay experiment.
+Chog Hideout is a pixel-art rooftop heist game built for the Chog community on Monad. Jump between rooftops, dash through hazards, outwit a caretaker and recover the Pocket Sun across three connected missions. Chog NFT holders become guild masters, bringing players together for team competitions with server-verified scores.
 
-![Rooftop Mischief visual target](docs/art-direction/rooftop-mischief.jpg)
+**[Submission guide](docs/SUBMISSION.md) · [Demo walkthrough](docs/DEMO.md) · [NFT and guilds](docs/LIVE_GUILDS.md) · [Competition rules](docs/LIVE_COMPETITIONS.md)**
 
-*Concept art target. The focused game now uses illustrated city, rooftop, prop, and character assets inspired by this direction.*
+> Submission branch: **`main`**. Clone this branch to run the current game and guild system.
+
+## Play first. Build your crew.
+
+Start the solo campaign without a wallet. Learn the rooftops, discover optional routes and improve your escape. Join a guild with your player account when you want to compete with a crew. NFT ownership gives holders a leadership role: founding a guild, inviting members, hosting events and choosing the squad.
+
+The NFT is the guild's foundation. When ownership changes, the new holder can claim leadership while the guild keeps its identity and members.
+
+## Three missions, three heists
+
+| Mission | Your objective | What makes it different |
+| --- | --- | --- |
+| **01 · The Sun Vault** | Carry a power cell to the vault, release two seals and recover the Sun. | Choose a street escape or restore the lift for a rooftop return. |
+| **02 · The East Annex** | Cross the steam yard, release the yard and tower seals, and bring the Sun back. | A patrolling caretaker, planter cover and a flowerpot distraction reward timing and route choice. |
+| **03 · The Lantern Run** | Carry the Sun forward, collect the exit cell and power the extraction door. | A forward-moving rooftop escape with an optional music-box detour. |
+
+Campaign completion unlocks the next mission and saves progress in the browser. Optional treasure adds another reason to replay.
+
+## Movement made for mobile
+
+| Action | Touch | Keyboard |
+| --- | --- | --- |
+| Move | Drag the left control | A / D or left / right arrows |
+| Jump / double jump | Swipe up on the right; swipe again in the air | Space; press again in the air |
+| Dash | Swipe left or right on the right side | X or Shift |
+| Drop through a platform | Swipe down | Down arrow |
+| Use a nearby object | Stop beside it and tap the glowing object | Hold E |
+| Drop a carried item | Tap its inventory icon | Q |
+| Pause / map | Pause menu | Escape / M |
+
+The pause menu also offers button controls. Jump buffering, coyote time, ledge assistance, camera look-ahead and animated feedback make movement responsive across the campaign.
+
+## The NFT has a job
+
+Chog Genesis ownership on **Monad** anchors each guild. A holder signs a wallet message; the server checks ownership of the selected on-chain token ID. Verification uses a signature rather than a payment or token approval.
+
+- **Found a guild:** give a Chog-backed crew its name and identity.
+- **Invite your community:** bring up to 50 players into the guild; members join through their player accounts.
+- **Host an event:** select a mission, duration and one- or three-player squads.
+- **Lead the team:** lock the roster and compete against other guilds.
+- **Earn a guild trophy:** complete squads climb shared standings and receive a saved in-game award.
+
+Guild-master actions check current NFT ownership. Members can play guild events without connecting a wallet.
+
+## Competition that follows the gameplay
+
+Each player has ten attempts per event. Successful runs submit a compact recording of their inputs. The server replays those inputs through the game simulation and calculates the result.
+
+Every squad member must finish for the guild to rank. Each player's best haul counts, with time breaking ties. Guilds rank by combined haul and then combined time; exact ties share the trophy. Event rewards are saved in-game trophies.
 
 ## Run locally
 
-Requires Node.js 22.13 or newer. The games remain ordinary browser assets; live guild membership uses a Vinext Worker and D1.
+Use **Node.js 22.13 or newer**.
 
 ```bash
+git clone --branch main https://github.com/abdoulore/chog_hideout.git
+cd chog_hideout
 npm ci
+npm run solo
+```
+
+Open **http://localhost:8080/home.html** and start the campaign. This command serves the game directly and is the quickest gameplay demo.
+
+For the full application development server:
+
+```bash
 npm run dev
 ```
 
-Use the local URL printed by Vinext. For the game alone, `npm run solo` serves `public/` at **http://localhost:8080** without live guild APIs. Game files are edited in `public/`; `dist/` is generated production output. The existing localStorage records and game URLs are unchanged.
+Use the URL printed in the terminal. The hosted guild service uses platform-authenticated player identity and a D1 database bound as `DB`. See [guild architecture and setup](docs/LIVE_GUILDS.md) for that environment. Solo gameplay and automated guild tests run locally.
 
 ```bash
 npm test
 npm run build
 ```
 
-Live guilds are at `/guild.html`; the original local guild demonstration is at `/rehearsal.html`. See [Live guilds](docs/LIVE_GUILDS.md) for authentication, database setup, verification and access limitations.
+**190 automated tests passed for the submission build**, covering mission completion, real game controls, ownership checks, guild membership, squad entry, replay validation and trophy results.
 
-## One More Thing — current gameplay prototype
+## Architecture
 
-Open **http://localhost:8080/mischief.html**, or enter from the illustrated home. Any one treasure counts as an escape. Hold the action near the home door to bank what you carry, or turn back for more. Getting caught loses only the current, unbanked haul.
-
-- **Lift battery (1):** opens the street shutter, disables the moving lift. Return it to its socket to reverse that tradeoff.
-- **Pocket Sun (3):** rings the depot bell when taken.
-- **Music box (2):** keeps sounding while carried. Drop it as a recoverable decoy.
-- **Flowerpot:** knock it from the canopy to draw the caretaker away.
-- **Caretaker:** patrols, investigates noises, fills a visible suspicion bar, then chases. A marked planter and shutter block sight; breaking sight lets pursuit expire. The caretaker warns before pursuit and heads toward a visible jumper’s predicted landing. Breaking sight then dropping the music box can lure him away. He stays on the street; the canopy is the safer route.
-
-Touch defaults to a gesture trial: drag the lower left to move; swipe up on the right to jump; swipe horizontally on the right to dash. Stop beside a glowing object and tap it to interact. Tap an item in the carried-loot row to drop that specific item. The pause menu contains the map, sound toggle, and a saved Buttons/Gestures option. Buttons retain the contextual hold action. Keyboard: arrows/A D, Space, X/Shift, hold E, Q to drop, M for a paused map, Escape to pause. The prototype has no hard countdown. Highest banked haul is the primary record; time breaks ties for the same haul. Records and recovered treasures save on this browser. No wallet is needed.
-
-See [implementation and test limits](docs/ONE_MORE_THING.md). Automated routes establish feasibility, not whether players find the game fun.
-
-## Borrowed Sunshine — original heist
-
-Open **http://localhost:8080/play.html** for the illustrated heist. The bridge retracts and a shutter closes after pickup; return home via the upper maintenance route and a leftward dash crossing. It has a layered city, textured rooftops, eight character poses, touch controls, and pause/retry. Movement now has interpolated presentation, landing dust, dash trails, sparkle bursts, and original synthesized sound cues. Sound starts after pressing Play and can be muted with the music-note button; the preference is saved on this browser. `/movement.html` redirects here. The technical Canvas/Phaser comparison is preserved at `/renderer-lab.html`; both use the same movement simulation.
-
-See [scene depth and background hierarchy](docs/SCENE_DEPTH.md) and [art implementation notes](docs/ART_IMPLEMENTATION.md) for asset briefs, provenance, and validation limits.
-
-## Play
-
-| Action | Keyboard | Touch |
-| --- | --- | --- |
-| Move | Left/right arrows or A/D | Direction buttons |
-| Jump | Space, W, or up arrow | Jump button |
-| Dash | Shift or X | Dash button |
-| Retry | R | Restart button |
-
-Jump before a gap, then dash in the air. Dash adds distance, not invulnerability. Sparks are optional. Recover the Pocket Sun from its plinth, turn left, and bring it home to finish. The vault checkpoint supports practice retries after pickup; clean-heist and escape records are separate and browser-local. R restarts the whole heist. The original lab still uses an exit flag. The editor lets you place up to five traps in a short room and save the layout after completing it.
-
-An earlier **Dojo** experiment remains available in the comparison tab. It uses deterministic fights and editable behaviour rules; Hideout is the current gameplay direction.
-
-## What exists
-
-- A persistent illustrated guest home, renamed locally, with recovered treasures, latest haul, personal records and earned keepsakes.
-- A connected rooftop block with reactive security, optional thefts, a power tradeoff, recoverable noise decoys and voluntary banking.
-- A complete two-phase heist with a retracted bridge, closed shutter, roof bypass, Sun carry cue, and home restoration.
-- A vault checkpoint, clean-heist/practice records, and direction-aware camera.
-- Portrait framing with a larger Chog, compact active HUD, and supported timber platforms.
-- Three original scrolling raids, jump buffering, coyote time, and dash cooldown.
-- Keyboard and touch-input handlers.
-- High-contrast illustrated traps with static warning markers, plus illustrated bridge, shutter and Pocket Sun assets.
-- Local trap editor with completion-gated saving.
-- Replays of the player's own attempts.
-- Browser-local personal bests and copyable feedback.
-- World and art bible, supporting cast, opening story arc, and approved visual reference.
-- Automated checks covering simulation, timing sweeps, camera framing, and DOM-mock interaction flows.
-
-## What is planned
-
-- Further animation cleanup, richer foreground structure, and consistent chapter art.
-- More missions in **The Missing Light** after external playtests validate the first heist.
-- Ambient soundscape, story payoff, and further in-game polish.
-- Verified Chog ownership, owner-controlled shared hideouts, and limited guest permissions.
-
-NFT integration, shared rooms, and wallet connections are **not implemented**. The new illustrated assets are a playable art pass, not a finished production animation pipeline. Current saves and statistics belong to the browser. Dojo has a cautious strategy that beats all sample opponents and is not evidence of lasting strategic depth.
-
-## Known playtest issue
-
-The unfair crossings have been shortened and given at least 200 world units of clear landing space before the next spike. Dash holds height briefly. Timing sweeps cover a range of jump positions and dash delays. These checks establish broader mechanical tolerance, not enjoyable touch feel: real-browser and device validation are still required.
-
-## Project files
-
-| Path | Purpose |
+| Layer | Implementation |
 | --- | --- |
-| `public/engine.mjs` | Movement, collision, room data, and Dojo combat rules |
-| `public/app.mjs` | Rendering, controls, menus, editor, replay, and local progress |
-| `public/index.html` | Redirect to the illustrated home |
-| `public/home.html` / `public/home.mjs` / `public/home.css` | Illustrated guest home |
-| `public/home-model.mjs` / `public/home-scene.mjs` | Saved home state and scene composition |
-| `public/lab.html` / `public/style.css` | Original playtest interface |
-| `tests/` | Automated checks |
-| `public/mischief.html` / `public/mischief-play.mjs` / `public/mischief.css` | Current rooftop heist UI and controls |
-| `public/mischief.mjs` / `public/mischief-records.mjs` / `public/mischief-visuals.mjs` | Reactive job, local banking, caretaker and object presentation |
-| `public/play.html` / `public/play.mjs` / `public/play.css` | Illustrated full-screen game |
-| `public/world-renderer.mjs` / `public/assets/` | Layered scene and optimized raster assets |
-| `public/heist.mjs` / `public/heist-records.mjs` | Two-phase mission, checkpoint and versioned local records |
-| `public/heist-visuals.mjs` | Mechanism states, Sun and home restoration |
-| `docs/HEIST_SLICE.md` | Implemented mission, validation and limits |
-| `public/renderer-lab.html` / `public/renderer-lab.mjs` | Technical renderer comparison |
-| `public/art.mjs` | Code-drawn mascot reference |
-| `docs/MOVEMENT_SLICE.md` | Tuning changes, verification, and remaining validation |
-| `docs/WORLD_AND_ART_BIBLE.md` | Proposed universe, art rules, and production plan |
-| `docs/art-direction/rooftop-mischief.jpg` | Selected concept image |
-| `scripts/serve.mjs` | Dependency-free local development server |
+| Game | JavaScript, Canvas rendering, pixel assets and a deterministic 120 Hz simulation |
+| Player experience | Responsive HTML/CSS, touch gestures, keyboard controls and browser campaign saves |
+| Application | Vinext/React Worker with server API routes |
+| Guild identity | Platform-authenticated accounts and signed holder verification using viem |
+| Ownership | Chog Genesis ERC-721 on Monad, checked through `ownerOf` |
+| Persistence | D1 with Drizzle schema and generated SQL migrations |
+| Competition | Server-issued attempts, input replay verification, shared standings and saved trophies |
+| Verification | Node test runner, SQLite-backed server fixtures and controller tests |
 
-See `docs/PERSISTENT_HOME.md` for saved-state behaviour, migration, artwork provenance and ownership preparation. This guest home is browser-local; NFT ownership and shared homes are not yet connected.
+## Explore the code
 
-## Lore and artwork
+| Path | What to find |
+| --- | --- |
+| `public/home.html` | Campaign home and mission progression |
+| `public/mischief.mjs` | Mission rules, movement, guards, objects and extraction |
+| `public/mischief-play.mjs` | Gameplay screen and controls |
+| `public/pixel/` | Pixel-art assets |
+| `public/guild.html` | Guild membership and holder verification |
+| `public/compete.html` | Event hosting, squad entry and standings |
+| `server/guild-api.mjs` | Authentication, ownership and guild operations |
+| `server/competition.mjs` | Event lifecycle, attempts, scores and awards |
+| `server/replay-verify.mjs` | Server simulation of submitted gameplay |
+| `db/schema.ts` / `drizzle/` | Database schema and migrations |
+| `tests/` | Gameplay, interface and server verification |
 
-The new story, characters, and locations are proposed game lore, not official Chog canon. The visual concept uses Chog as a character reference. No licence to the underlying Chog brand or collection artwork is granted by this repository.
+## Built for Chogathon
 
-Official project: https://www.chog.xyz/ · Hackathon: https://chogathon.chog.xyz/
+Chog Hideout turns NFT ownership into a community leadership role around an accessible game. Solo players have a campaign to enjoy; guilds have a reason to assemble, practice and compete.
 
-### Movement and pursuit pass
+Built by [abdoulore](https://github.com/abdoulore) for [Chogathon](https://chogathon.chog.xyz/).
 
-One More Thing now uses quick acceleration, sharp braking, forgiving roof lips, animated turns/landings and visible treasure plucks. The caretaker telegraphs pursuit and leads visible jumps; a dropped music box can redirect him after sight is broken. Gesture controls are unchanged. The 65 automated checks include both complete treasure routes and new movement/pursuit cases. See [MOVEMENT_FEEL.md](docs/MOVEMENT_FEEL.md) for scope and verification limits.
-
-### Painted district pass
-
-The first playable district now has a painted home facade and matching treasure/machinery art, substantial timber platforms, connected power hardware, clearer battery consequences and a quieter HUD. See [DISTRICT_ART.md](docs/DISTRICT_ART.md) for asset provenance, generation prompts, sizes and validation limits.
-
-## Guild tournament rehearsal
-
-Open `/rehearsal.html` for the fictional rehearsal guild headquarters, `/tournament.html` to compete, and `/event-manage.html` for local rehearsal controls. Two example guilds can run local qualifiers, lock three-player squads, compete with fresh final scores and close a rehearsal with a trophy. Play actual One More Thing runs or explicitly fill other seats with labelled example scores. Scoring prioritises banked treasure, then exact game ticks; all three squad members must finish. Ordinary solo play remains available.
-
-This is browser-local and unverified: no wallet connection, NFT founding, real membership, shared server standings or funded prize exists yet. See [the rehearsal guide](docs/GUILD_REHEARSAL.md) for the full test flow and implementation boundaries.
+Game story and locations are original Chog-inspired interpretations. Chog branding and collection artwork remain the property of their respective owners.
