@@ -33,3 +33,7 @@ Prototype profile reproduces the 21 supplied PNGs and metadata exactly against t
 ## Verification limits
 
 Automated state tests do not prove fun or real-device performance. The converted eight-pose Chog is not a finished hand-animated character. The comparison is deliberately limited to the base job; menus receive only a scoped frame treatment at this stage.
+
+## Encounter polish after phone feedback
+
+User reports pixel feels smoother and more enjoyable. Preserve movement and camera sizing for this pass. Added whole-pixel idle/run motion, contact shadow, pickup travel from the actual item location, visible power wiring, state-specific socket/gate/lift labels, actual guard warning states and a cover cue that never appears while the caretaker sees the player. No hitboxes, movement constants, AI, records or level geometry changed. Sun Vault conversion remains the next stage after this encounter review.
