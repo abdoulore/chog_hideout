@@ -1,9 +1,10 @@
-# Two-mission campaign
+# Campaign progression
 
 1. The Sun Vault: `/mischief.html?route=heist&renderer=pixel`.
 2. The East Annex: `/mischief.html?route=annex&renderer=pixel`.
+3. The Lantern Run: `/mischief.html?route=lantern&renderer=pixel` (see LANTERN_RUN.md).
 
-Finishing the Sun Vault with the Sun unlocks the Annex. Music is optional. The result screen prioritizes Next mission, with replay and home options. The home screen resumes the next unlocked mission and keeps replay links. Both completions save under `chog-campaign:v1` on this browser; timing records remain session-only. No tournament or guild records are created.
+Finishing the Sun Vault with the Sun unlocks the Annex. Finishing the Annex unlocks the Lantern Run. Music is optional. The result screen prioritizes Next mission, with replay and home options. The home screen resumes the next unlocked mission and keeps replay links. All three completions save under `chog-campaign:v1` on this browser; timing records remain session-only. No tournament or guild records are created.
 
 Progress writes immediately at extraction, before the result animation. Failed runs never unlock levels. Invalid storage defaults safely; replaying level one does not clear level two. If saving is unavailable, the win screen says so and supplies a local continuation URL. This is a convenience for solo progression, not anti-cheat, ownership verification or competitive evidence. Previous session-only wins cannot be reconstructed and are not silently awarded.
 

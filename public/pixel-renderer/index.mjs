@@ -23,7 +23,7 @@ export function drawPixelWorld(ctx,s,im,width,height,{feedback={},reducedMotion=
  const tile=(key,x,y,w)=>{c.save();c.beginPath();c.rect(x,y,w,im[key].height);c.clip();for(let tx=x;tx<x+w;tx+=im[key].width)spr(key,tx,y);c.restore();};
  rect(cx,460,b.width,b.height,'#392839');tile('ground',cx-cx%im.ground.width,460,b.width+im.ground.width);
  for(const p of s.room.platforms.filter(p=>!p.kind)){for(const x of [p.x+12,p.x+p.w-12]){rect(x,p.y+12,4,55,'#332538');rect(x+1,p.y+12,1,55,'#a5734b');}tile('plankM',p.x,p.y,p.w);spr('plankL',p.x,p.y);spr('plankR',p.x+p.w-im.plankR.width,p.y);}
- const homeX=s.annexMission?3920:110;spr('home',homeX-65,460-im.home.height);label(s.annexMission?'EXTRACT HERE':'HOME',homeX,460-im.home.height-9);if(s.annexMission){rect(3840,-2000,40,2460,'#453247');for(let y=200;y<460;y+=24)rect(3844,y,32,2,'#82615e');}
+ const homeX=s.lanternMission?5200:s.annexMission?3920:110;spr('home',homeX-65,460-im.home.height);label(s.lanternMission?(s.powerRestored?'EXIT OPEN':'EXIT · NEEDS POWER'):s.annexMission?'EXTRACT HERE':'HOME',homeX,460-im.home.height-9);if(s.annexMission){rect(3840,-2000,40,2460,'#453247');for(let y=200;y<460;y+=24)rect(3844,y,32,2,'#82615e');}
  for(const x of [260,750,1230,1600])spr('lamp',x,460-im.lamp.height);
  // The source socket stays readable after the cell is removed.
  if(!s.vaultMission){spr('socket',444-im.socket.width/2,460-im.socket.height);if(Math.abs(s.x-444)<210)label(encounterCues(s).socket,444,419,s.powered?'#c8ebc1':'#ffe3a4');
@@ -59,7 +59,7 @@ export function drawPixelWorld(ctx,s,im,width,height,{feedback={},reducedMotion=
  actor('chog',frames.chog,48,42,s.x+14+motion.x,s.y+35+motion.y,s.facing);
  s.loot.forEach((id,i)=>{const targetX=s.x+14-im[id].width/2+(i-(s.loot.length-1)/2)*17,targetY=s.y-4-im[id].height;const theft=s.theftFX?.id===id&&!reducedMotion?s.theftFX:null,t=theft?Math.min(1,1-theft.time/.32):1,ease=1-(1-t)**3;spr(id,theft?(theft.x-im[id].width/2)+(targetX-(theft.x-im[id].width/2))*ease:targetX,theft?(theft.y-im[id].height)+(targetY-(theft.y-im[id].height))*ease-Math.sin(t*Math.PI)*15:targetY+motion.y);});
  if(!reducedMotion)for(const p of feedback.particles||[]){c.globalAlpha=Math.max(0,1-p.age/p.life);rect(p.x,p.y,Math.max(1,p.size/2),Math.max(1,p.size/2),p.color);}c.globalAlpha=1;
- if(s.status==='won'){label(s.annexMission?'ANNEX COMPLETE':'SAFE AT HOME',homeX,395);rect(homeX-11,429,22,31,'#ffe3a466');}
+ if(s.status==='won'){label(s.lanternMission?'LIGHT DELIVERED':s.annexMission?'ANNEX COMPLETE':'SAFE AT HOME',homeX,395);rect(homeX-11,429,22,31,'#ffe3a466');}
  c.restore();if(s.status==='dead'){c.fillStyle='#982d4b33';c.fillRect(0,0,b.width,b.height);}
  ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,width,height);ctx.drawImage(b,0,0,b.width*z,b.height*z);
 }

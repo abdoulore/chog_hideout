@@ -3,7 +3,7 @@ import {loopGate} from '../loop-escape.mjs';
 import {spikeBounds} from '../engine.mjs';
 export function vaultCues(s){return {source:s.powerRestored?'LIFT RESTORED':s.loot.includes('battery')?(s.loopAlarm?'RESTORE LIFT':'CELL TAKEN'):'LIFT SOURCE',destination:!s.vaultOpen?'INSTALL CELL':s.items.battery.state==='vault'?(s.loopAlarm?'RETRIEVE CELL':'CELL INSTALLED'):'CELL REMOVED',door:!s.vaultOpen?'VAULT LOCKED':s.loopGateClosed?'CLOSED · EXIT BELOW':s.loopAlarm?'CLOSING · DROP BELOW':'VAULT OPEN'};}
 export function drawPixelVault(c,s,im,{rect,spr,label,reducedMotion}){
- const cues=vaultCues(s);
+ const cues=vaultCues(s);if(s.lanternMission){rect(5139,273,42,37,'#bb8547');rect(5146,280,28,28,'#403045');if(s.powerRestored)spr('battery',5160-im.battery.width/2,304-im.battery.height);else rect(5155,285,10,16,'#ffe3a4');if(Math.abs(s.x-5160)<270)label(s.powerRestored?'EXIT POWERED':'INSTALL EXIT CELL',5160,260,s.powerRestored?'#b9e3c0':'#ffe3a4');}
  // Socket shapes differ: the lift source is a low cradle; the vault is a tall brass receptacle.
  const source=POWER_SOCKET,dest=VAULT_SOCKET;
  rect(source.x-20,source.y-10,40,10,'#32263b');rect(source.x-18,source.y-9,36,2,'#8c9fa1');
@@ -29,6 +29,6 @@ export function drawPixelVault(c,s,im,{rect,spr,label,reducedMotion}){
  }
  // Trap teeth match spikeBounds exactly. The coral warning is separate from gold loot.
  for(const slot of s.room.spikes){const b=spikeBounds(slot),mid=b.x+b.w/2;rect(b.x-4,459,b.w+8,5,'#23182e');for(let x=b.x;x<b.x+b.w;x+=10){c.fillStyle='#f1dfcc';c.beginPath();c.moveTo(x,460);c.lineTo(x+5,b.y);c.lineTo(Math.min(x+10,b.x+b.w),460);c.fill();}rect(mid-7,b.y-24,14,16,'#2c1b32');rect(mid-5,b.y-22,10,12,'#ffb49e');rect(mid-1,b.y-20,2,6,'#402638');rect(mid-1,b.y-12,2,2,'#402638');}
- if(s.loopAlarm&&s.x>2300)label(s.annexMission?'← ANNEX EXIT':'← STREET EXIT',Math.round(s.x+14),440,'#b9e3c0');
+ if(s.loopAlarm&&s.x>2300)label(s.lanternMission?'EXIT →':s.annexMission?'← ANNEX EXIT':'← STREET EXIT',Math.round(s.x+14),440,'#b9e3c0');
  if(!s.loopAlarm&&s.x>3650&&s.relays.length<missionRelays(s).length){const missing=missionRelays(s).find(r=>!s.relays.includes(r.id));label(guideVaultTarget(s,missing,missing.name.toUpperCase()),s.items.sun.x,270);}
 }
