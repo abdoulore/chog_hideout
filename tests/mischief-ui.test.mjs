@@ -1,3 +1,5 @@
+import {annexEscape} from './helpers/annex-driver.mjs';
+import {CAMPAIGN_KEY} from '../public/campaign.mjs';
 import {PIXEL_KEYS} from '../public/pixel-renderer/model.mjs';
 import {vaultEscape} from './helpers/vault-driver.mjs';
 import {depotEscape} from './helpers/depot-driver.mjs';
@@ -112,5 +114,13 @@ for(const restore of [false,true])test('pixel Sun Vault completes '+(restore?'re
 test('pixel vault install button works and steam failure resets mission',async()=>{const ui=setup({search:'?route=heist&renderer=pixel'});await ui.app.ready;ui.app.start();const s=ui.app.run;Object.assign(s,{x:2005,y:276,ground:true,loot:['battery'],powered:false});s.items.battery.state='carried';ui.step();assert(ui.get('world-action').classList.contains('floating-install'));ui.get('world-action').click();for(let i=0;i<110;i++)ui.advance();assert.equal(s.vaultOpen,true);assert.equal(s.items.battery.state,'vault');Object.assign(s,{x:2820,y:426,time:3.8,ground:true});ui.step();assert.equal(s.deathReason,'steam');for(let i=0;i<100;i++)ui.step();assert.match(ui.get('message').textContent,/steam/i);ui.app.start();assert.equal(ui.app.run.vaultOpen,false);assert.equal(ui.app.run.items.battery.state,'world');assert.deepEqual(ui.app.run.relays,[]);ui.app.destroy();});
 
 test('annex controller loads pixel art, completes the new wing and resets every seal',async()=>{
- const ui=setup({search:'?route=annex&renderer=pixel'});await ui.app.ready;assert.match(ui.get('title').textContent,/Go a little too far/);assert.equal(ui.app.run.room.width,5350);assert.match(ui.get('loop-layout-switch').href,/route=heist/);ui.app.start();vaultEscape(()=>ui.app.run,ui.step,{restore:true,music:true,annexLow:true});for(let i=0;i<100;i++)ui.step();assert.equal(ui.app.run.status,'won');assert.equal(ui.app.run.relays.length,3);assert.equal(ui.map.has(MISCHIEF_KEY),false);ui.app.openMap();ui.app.start();assert.deepEqual(ui.app.run.relays,[]);assert.equal(ui.app.run.items.music.x,4450);ui.app.destroy();
+ const ui=setup({search:'?route=annex&renderer=pixel&continue=vault'});await ui.app.ready;assert.match(ui.get('title').textContent,/Go a little too far/);assert.equal(ui.app.run.room.width,5350);assert.match(ui.get('loop-layout-switch').href,/route=heist/);ui.app.start();annexEscape(()=>ui.app.run,ui.step,{music:true,low:true});for(let i=0;i<100;i++)ui.step();assert.equal(ui.app.run.status,'won');assert.equal(ui.app.run.relays.length,2);assert.equal(ui.map.has(MISCHIEF_KEY),false);ui.app.openMap();ui.app.start();assert.deepEqual(ui.app.run.relays,[]);assert.equal(ui.app.run.items.music.x,4490);ui.app.destroy();
+});
+
+test('campaign unlock survives reload, does not require music, and offers next mission after win',async()=>{
+ const ui=setup({search:'?route=heist&renderer=pixel'});await ui.app.ready;assert(ui.get('next-mission').hidden);ui.app.start();vaultEscape(()=>ui.app.run,ui.step);assert.equal(JSON.parse(ui.storage.getItem(CAMPAIGN_KEY)).vault,true);for(let i=0;i<100;i++)ui.step();assert.equal(ui.get('next-mission').hidden,false);assert.match(ui.get('next-mission').href,/route=annex/);const next=setup({store:ui.storage,search:'?route=annex'});await next.app.ready;next.app.start();assert.equal(next.app.run.x,3920);annexEscape(()=>next.app.run,next.step);assert.equal(JSON.parse(ui.storage.getItem(CAMPAIGN_KEY)).annex,true);next.app.destroy();ui.app.destroy();
+});
+test('locked direct annex link cannot start; blocked saving exposes a continuation without claiming persistence',async()=>{
+ const locked=setup({search:'?route=annex'});await locked.app.ready;assert.equal(locked.get('play').disabled,true);assert.match(locked.get('next-mission').href,/route=heist/);locked.app.start();for(let i=0;i<30;i++)locked.step({right:true});assert.equal(locked.app.run.time,0);locked.app.destroy();
+ const ui=setup({search:'?route=heist',store:{getItem(){throw Error();},setItem(){throw Error();}}});await ui.app.ready;ui.app.start();vaultEscape(()=>ui.app.run,ui.step);for(let i=0;i<100;i++)ui.step();assert.match(ui.get('records').textContent,/Saving unavailable/);assert.match(ui.get('next-mission').href,/continue=vault/);ui.app.destroy();
 });

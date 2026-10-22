@@ -2,16 +2,16 @@
 export const POWER_SOCKET={x:1500,y:310};
 export const VAULT_SOCKET={x:2030,y:310};
 export const VAULT_DOOR={x:2220,y:110,w:34,h:350,kind:'vault'};
-export function prepareVault(s,annexMission=false){s.annexMission=annexMission;s.vaultMission=true;s.relays=[];s.vaultOpen=false;s.powerRestored=false;s.jobId=annexMission?'east-annex-v1':'sun-vault-v1';Object.assign(s.items.battery,{state:'world',x:1500,y:310,name:'Power cell'});Object.assign(s.items.sun,{x:annexMission?5050:3930,y:310});if(annexMission)Object.assign(s.items.music,{x:4450,y:310});}
+export function prepareVault(s,annexMission=false){s.annexMission=annexMission;s.vaultMission=true;s.relays=[];s.vaultOpen=false;s.powerRestored=false;s.jobId=annexMission?'east-annex-v1':'sun-vault-v1';Object.assign(s.items.battery,{state:'world',x:1500,y:310,name:'Power cell'});Object.assign(s.items.sun,{x:annexMission?5050:3930,y:310});if(annexMission){Object.assign(s.items.music,{x:4490,y:310});Object.assign(s,{x:3920,y:276,ground:true,powered:false,vaultOpen:true});s.items.battery.state='vault';}}
 export function vaultAction(s){
  if(!s.vaultMission)return null;
  const near=p=>Math.abs(s.x+14-p.x)<58&&Math.abs(s.y+34-p.y)<45;
  for(const relay of missionRelays(s))if(s.vaultOpen&&!s.relays.includes(relay.id)&&near(relay))return {id:relay.id,label:'Release '+relay.name.toLowerCase(),detail:'Disengage this vault seal. Release every seal to free the Sun.',hold:.45};
- if(near(VAULT_SOCKET)){
+ if(!s.annexMission&&near(VAULT_SOCKET)){
   if(!s.vaultOpen&&s.loot.includes('battery'))return {id:'unlock-vault',label:'Power the vault',detail:'Install cell. Open the vault; lift stays offline.',hold:.65};
   if(s.loopAlarm&&s.items.battery.state==='vault')return {id:'recover-cell',label:'Retrieve power cell',detail:'Carry it back to the lift socket for a rooftop escape.',hold:.45};
  }
- if(near(POWER_SOCKET)&&s.loopAlarm&&s.loot.includes('battery'))return {id:'restore-lift',label:'Restore the lift',detail:'Give up the cell. Lift running; use the roofs home.',hold:.45};
+ if(!s.annexMission&&near(POWER_SOCKET)&&s.loopAlarm&&s.loot.includes('battery'))return {id:'restore-lift',label:'Restore the lift',detail:'Give up the cell. Lift running; use the roofs home.',hold:.45};
  return null;
 }
 export function performVault(s,id){
@@ -32,6 +32,7 @@ export function vaultObjective(s){
  if(!s.vaultOpen)return s.loot.includes('battery')?guideVaultTarget(s,VAULT_SOCKET,'02 · INSTALL CELL AT VAULT'):s.items.battery.state==='world'?guideVaultTarget(s,s.items.battery,'01 · COLLECT POWER CELL'):'02 · OPEN THE VAULT';
  if(!s.loopAlarm){const remaining=missionRelays(s).filter(r=>!s.relays.includes(r.id)).sort((a,b)=>Math.abs(a.x-s.x)-Math.abs(b.x-s.x));return remaining.length?guideVaultTarget(s,remaining[0],'03 · '+remaining[0].name.toUpperCase()+' · '+s.relays.length+'/'+missionRelays(s).length):guideVaultTarget(s,s.items.sun,'03 · STEAL THE SUN');}
  if(!s.loot.includes('sun'))return guideVaultTarget(s,s.items.sun,'RECOVER THE SUN');
+ if(s.annexMission)return guideVaultTarget(s,{x:3920,y:460},'04 · EXTRACT AT THE ANNEX DOOR');
  if(s.x<210)return 'BANK THE SUN AT YOUR HOME DOOR';
  if(s.powerRestored)return '04 · LIFT RUNNING · ← ROOFTOPS HOME';
  if(s.loot.includes('battery'))return guideVaultTarget(s,POWER_SOCKET,'04 · RESTORE LIFT');
@@ -47,8 +48,8 @@ export function vaultHazards(s){if(!s.vaultMission||s.status!=='playing')return;
 
 // Annex reuses the approach but adds a high route and recoverable lower ledges.
 export const ANNEX_PLATFORMS=[{x:4140,y:385,w:180,h:12},{x:4380,y:310,w:180,h:12},{x:4620,y:245,w:180,h:12},{x:4860,y:310,w:360,h:12},{x:4590,y:385,w:160,h:12}];
-export const ANNEX_RELAYS=[...RELAYS,{id:'relay-annex',x:4700,y:245,name:'Annex seal'}];
-export const ANNEX_VENTS=[...VENTS,{x:4260,w:90,offset:.9},{x:4800,w:100,offset:2.6}];
+export const ANNEX_RELAYS=[{id:'relay-yard',x:4420,y:310,name:'Yard seal'},{id:'relay-annex',x:4700,y:245,name:'Annex seal'}];
+export const ANNEX_VENTS=[{x:4260,w:90,offset:.9},{x:4800,w:100,offset:2.6}];
 export const missionRelays=s=>s.annexMission?ANNEX_RELAYS:RELAYS;
 export const missionVents=s=>s.annexMission?ANNEX_VENTS:VENTS;
 export const missionPlatforms=s=>s.annexMission?[...VAULT_PLATFORMS,...ANNEX_PLATFORMS]:VAULT_PLATFORMS;

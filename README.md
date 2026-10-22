@@ -3,9 +3,9 @@
 ## Current pixel missions
 
 - **The Sun Vault:** `/mischief.html?route=heist&renderer=pixel` — recover the cell, release two seals and choose a street or restored-lift escape.
-- **The East Annex:** `/mischief.html?route=annex&renderer=pixel` — extends the vault with a new eastern wing, third seal, two additional steam vents, high crossing and lower recovery ledges. Optional music is relocated deep inside.
+- **The East Annex:** `/mischief.html?route=annex&renderer=pixel` — unlocks after the Sun Vault. Starts directly at the east wing, with two local seals, two steam vents, high crossings and lower recovery ledges. Return to the nearby extraction door; optional music is a bonus.
 
-Both missions retain the same touch gestures and movement physics. Their results are session-only; they do not submit tournament scores. See [annex scope and verification](docs/EAST_ANNEX.md).
+Both missions retain the same touch gestures and movement physics. Mission completion saves on this browser and unlocks the next mission. Times remain session-only; neither submits tournament scores. See [annex scope and verification](docs/EAST_ANNEX.md).
 
 A browser-playable Chog rooftop heist. In **One More Thing**, choose what to steal, distract a caretaker, and decide when to bank your haul. Theft changes the available routes. The earlier Borrowed Sunshine mission and movement/editor experiments remain playable.
 

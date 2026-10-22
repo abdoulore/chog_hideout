@@ -29,6 +29,6 @@ export function drawPixelVault(c,s,im,{rect,spr,label,reducedMotion}){
  }
  // Trap teeth match spikeBounds exactly. The coral warning is separate from gold loot.
  for(const slot of s.room.spikes){const b=spikeBounds(slot),mid=b.x+b.w/2;rect(b.x-4,459,b.w+8,5,'#23182e');for(let x=b.x;x<b.x+b.w;x+=10){c.fillStyle='#f1dfcc';c.beginPath();c.moveTo(x,460);c.lineTo(x+5,b.y);c.lineTo(Math.min(x+10,b.x+b.w),460);c.fill();}rect(mid-7,b.y-24,14,16,'#2c1b32');rect(mid-5,b.y-22,10,12,'#ffb49e');rect(mid-1,b.y-20,2,6,'#402638');rect(mid-1,b.y-12,2,2,'#402638');}
- if(s.loopAlarm&&s.x>2300)label('← STREET EXIT',Math.round(s.x+14),440,'#b9e3c0');
+ if(s.loopAlarm&&s.x>2300)label(s.annexMission?'← ANNEX EXIT':'← STREET EXIT',Math.round(s.x+14),440,'#b9e3c0');
  if(!s.loopAlarm&&s.x>3650&&s.relays.length<missionRelays(s).length){const missing=missionRelays(s).find(r=>!s.relays.includes(r.id));label(guideVaultTarget(s,missing,missing.name.toUpperCase()),s.items.sun.x,270);}
 }

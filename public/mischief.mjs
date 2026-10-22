@@ -18,7 +18,7 @@ export function canSee(s){const g=s.caretaker,px=s.x+14,py=s.y+17,gx=g.x+14,gy=g
 }
 export function nearbyAction(s){
  const missionAction=vaultAction(s);if(missionAction)return missionAction;
- if(s.x<190&&s.ground&&s.y+34===FLOOR&&s.loot.length&&(!s.loopTrial||s.loot.includes('sun')))return {id:'home',label:'Head home',detail:'Bank '+s.loot.length+' treasure'+(s.loot.length===1?'':'s')+' · or go back for more',hold:.45};
+ if((s.annexMission?Math.abs(s.x+14-3920)<58:s.x<190)&&s.ground&&s.y+34===FLOOR&&s.loot.length&&(!s.loopTrial||s.loot.includes('sun')))return {id:'home',label:s.annexMission?'Leave the annex':'Head home',detail:'Bank '+s.loot.length+' treasure'+(s.loot.length===1?'':'s')+' · or go back for more',hold:.45};
  const near=(x,y,r=62)=>Math.abs(s.x+14-x)<r&&Math.abs(s.y+34-y)<45;
  if(s.pot==='ready'&&near(BLOCK.pot.x,BLOCK.pot.y))return {id:'pot',label:'Knock the pot',detail:'A crash down below will draw the caretaker',hold:.12};
  if(!s.vaultMission&&s.items.battery.state==='carried'&&near(TREASURES.battery.x,TREASURES.battery.y,52))return {id:'restore',label:'Restore power',detail:'Give up the battery · restart lift · close gate',hold:.45};

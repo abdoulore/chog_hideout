@@ -1,3 +1,4 @@
+import {readCampaign,VAULT_URL,ANNEX_URL} from './campaign.mjs';
 import {TREASURES} from './mischief.mjs';
 import {readHome,saveHomeName,keepsakes} from './home-model.mjs';
 import {loadHomeArt,drawHomeScene} from './home-scene.mjs';
@@ -13,7 +14,7 @@ export function mountHome({doc=globalThis.document,storage=browserStorage(),even
   $('story-copy').textContent=job.escapes?'You made it home with '+job.lastHaul.map(id=>TREASURES[id].name.toLowerCase()).join(' and ')+'. The caretaker will be looking. There is always one more thing.':'A caretaker, three temptations, and two ways through the block. Take something and come home. Only you decide when you have enough.';
   $('hook-caption').textContent=hasSun?'Your Pocket Sun':'An empty hook';
   $('scene-caption').textContent=hasSun?'Afternoon, back where it belongs.':'A little room for a little trouble.';
-  $('start-heist').textContent='Enter the Sun Vault →';
+  const campaign=readCampaign(storage);$('start-heist').textContent=campaign.vault?(campaign.annex?'Replay The East Annex →':'Continue · The East Annex →'):'Start Mission 01 · The Sun Vault →';$('start-heist').href=campaign.vault?ANNEX_URL:VAULT_URL;if(!job.escapes){$('story-title').textContent=campaign.annex?'Two jobs. One way home.':campaign.vault?'The east wing awaits.':'Your first rooftop job.';$('story-copy').textContent=campaign.annex?'Both missions complete. Return for the optional music box, or find a faster escape.':campaign.vault?'The Sun Vault is behind you. Enter the East Annex from its rooftop entrance and bring the next Sun to the extraction door.':'Recover the power cell, open the Sun Vault and bring its light home. Finish the job to unlock the East Annex.';}$('replay-vault').hidden=!campaign.vault;$('annex-link').hidden=!campaign.vault;$('campaign-status').textContent=campaign.annex?'2 / 2 missions complete · Replay either mission':campaign.vault?'1 / 2 complete · The East Annex unlocked':'Mission 01 ready · Finish it to unlock the East Annex';
   $('job-best').textContent=job.bestValue+' / 6';$('job-escapes').textContent=String(job.escapes);$('job-time').textContent=job.bestTime===null?'—':job.bestTime.toFixed(1)+'s';
   for(const id of ['battery','sun','music']){$('haul-'+id).classList.toggle('earned',job.treasures.includes(id));$('haul-'+id+'-state').textContent=job.treasures.includes(id)?'BROUGHT HOME':'STILL OUT THERE';}
   $('clean-best').textContent=fmt(r.bestClean);$('escape-best').textContent=fmt(r.bestEscape);$('spark-best').textContent=r.bestSparks+' / 8';
