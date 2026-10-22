@@ -6,7 +6,7 @@ Chog Hideout is a pixel-art rooftop heist game built for the Chog community on M
 
 **[Submission guide](docs/SUBMISSION.md) · [Demo walkthrough](docs/DEMO.md) · [NFT and guilds](docs/LIVE_GUILDS.md) · [Competition rules](docs/LIVE_COMPETITIONS.md)**
 
-> Submission branch: **`pixel-renderer`**. Clone this branch to run the current game and guild system.
+> Submission branch: **`main`**. Clone this branch to run the current game and guild system.
 
 ## Play first. Build your crew.
 
@@ -61,7 +61,7 @@ Every squad member must finish for the guild to rank. Each player's best haul co
 Use **Node.js 22.13 or newer**.
 
 ```bash
-git clone --branch pixel-renderer https://github.com/abdoulore/chog_hideout.git
+git clone --branch main https://github.com/abdoulore/chog_hideout.git
 cd chog_hideout
 npm ci
 npm run solo

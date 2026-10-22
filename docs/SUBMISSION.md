@@ -14,9 +14,9 @@ Competition results come from gameplay. The server issues attempts, replays subm
 
 ## Repository to submit
 
-https://github.com/abdoulore/chog_hideout/tree/pixel-renderer
+https://github.com/abdoulore/chog_hideout
 
-The `pixel-renderer` branch contains the submission build, all three missions, the live guild service and server-verified competitions.
+The `main` branch contains the submission build, all three missions, the live guild service and server-verified competitions.
 
 ## Review path
 
