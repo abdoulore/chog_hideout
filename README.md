@@ -1,5 +1,12 @@
 # Chog Hideout
 
+## Current pixel missions
+
+- **The Sun Vault:** `/mischief.html?route=heist&renderer=pixel` — recover the cell, release two seals and choose a street or restored-lift escape.
+- **The East Annex:** `/mischief.html?route=annex&renderer=pixel` — extends the vault with a new eastern wing, third seal, two additional steam vents, high crossing and lower recovery ledges. Optional music is relocated deep inside.
+
+Both missions retain the same touch gestures and movement physics. Their results are session-only; they do not submit tournament scores. See [annex scope and verification](docs/EAST_ANNEX.md).
+
 A browser-playable Chog rooftop heist. In **One More Thing**, choose what to steal, distract a caretaker, and decide when to bank your haul. Theft changes the available routes. The earlier Borrowed Sunshine mission and movement/editor experiments remain playable.
 
 The chosen production art direction is **Rooftop Mischief**. Its illustrated world and story are documented alongside the working gameplay experiment.
